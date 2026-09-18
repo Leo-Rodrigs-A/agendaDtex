@@ -8,7 +8,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar'
-import { LayoutDashboard, ShoppingCart, CalendarDays, Settings } from 'lucide-react'
+import { CalendarDays, Home, SquareMenu } from 'lucide-react'
 import { Link, useLocation } from '@tanstack/react-router'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
@@ -17,18 +17,18 @@ export function AppSidebar() {
 
   const navigationItems = [
     {
-      title: 'Dashboard',
+      title: 'Home',
       url: '/',
-      icon: LayoutDashboard,
+      icon: Home,
     },
     {
       title: 'Pedidos',
       url: '/pedidos',
-      icon: ShoppingCart,
+      icon: SquareMenu,
     },
     {
-      title: 'Agenda de Produção',
-      url: '/agenda',
+      title: 'Feriados',
+      url: '/feriados',
       icon: CalendarDays,
     },
   ]
@@ -41,8 +41,12 @@ export function AppSidebar() {
             DT
           </div>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <span className="font-semibold text-sidebar-foreground leading-tight">Agenda Dtex</span>
-            <span className="text-xs text-sidebar-foreground/60">Pedidos & Produção</span>
+            <span className="font-semibold text-sidebar-foreground leading-tight">
+              Agenda Dtex
+            </span>
+            <span className="text-xs text-sidebar-foreground/60">
+              Pedidos & Produção
+            </span>
           </div>
         </div>
       </SidebarHeader>
@@ -53,8 +57,15 @@ export function AppSidebar() {
             const isActive = pathname === item.url
             return (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-                  <Link to={item.url} className="flex items-center gap-3 font-medium">
+                <SidebarMenuButton
+                  render={<Link to={item.url} />}
+                  isActive={isActive}
+                  tooltip={item.title}
+                >
+                  <Link
+                    to={item.url}
+                    className="flex items-center gap-3 font-medium"
+                  >
                     <item.icon className="h-5 w-5" />
                     <span>{item.title}</span>
                   </Link>
@@ -72,8 +83,12 @@ export function AppSidebar() {
             <AvatarFallback>US</AvatarFallback>
           </Avatar>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <span className="text-sm font-medium text-sidebar-foreground">Operador Interno</span>
-            <span className="text-xs text-sidebar-foreground/60">operador@dtex.com</span>
+            <span className="text-sm font-medium text-sidebar-foreground">
+              Operador Interno
+            </span>
+            <span className="text-xs text-sidebar-foreground/60">
+              operador@dtex.com
+            </span>
           </div>
         </div>
       </SidebarFooter>

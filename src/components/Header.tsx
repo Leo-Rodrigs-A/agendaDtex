@@ -10,9 +10,9 @@ export function Header() {
       case '/':
         return 'Dashboard Geral'
       case '/pedidos':
-        return 'Gestão de Pedidos'
-      case '/agenda':
-        return 'Agenda & Capacidade de Produção'
+        return 'Acompanhamento de Pedidos'
+      case '/feriados':
+        return 'Lista de Feriados'
       default:
         return 'Sistema de Pedidos'
     }
@@ -23,7 +23,9 @@ export function Header() {
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mr-2 h-4" />
       <div className="flex items-center justify-between w-full">
-        <h1 className="text-lg font-semibold text-foreground">{getPageTitle(pathname)}</h1>
+        <h1 className="text-lg font-semibold text-foreground">
+          {getPageTitle(pathname)}
+        </h1>
         <div className="flex items-center gap-3">
           <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
             ● Sistema Online

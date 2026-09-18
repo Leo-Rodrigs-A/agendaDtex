@@ -10,7 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AgendaRouteImport } from './routes/agenda'
+import { Route as FeriadosRouteImport } from './routes/feriados'
 import { Route as PedidosRouteImport } from './routes/pedidos'
 
 const IndexRoute = IndexRouteImport.update({
@@ -18,9 +18,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AgendaRoute = AgendaRouteImport.update({
-  id: '/agenda',
-  path: '/agenda',
+const FeriadosRoute = FeriadosRouteImport.update({
+  id: '/feriados',
+  path: '/feriados',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PedidosRoute = PedidosRouteImport.update({
@@ -31,31 +31,31 @@ const PedidosRoute = PedidosRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/agenda': typeof AgendaRoute
+  '/feriados': typeof FeriadosRoute
   '/pedidos': typeof PedidosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/agenda': typeof AgendaRoute
+  '/feriados': typeof FeriadosRoute
   '/pedidos': typeof PedidosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/agenda': typeof AgendaRoute
+  '/feriados': typeof FeriadosRoute
   '/pedidos': typeof PedidosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/agenda' | '/pedidos'
+  fullPaths: '/' | '/feriados' | '/pedidos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/agenda' | '/pedidos'
-  id: '__root__' | '/' | '/agenda' | '/pedidos'
+  to: '/' | '/feriados' | '/pedidos'
+  id: '__root__' | '/' | '/feriados' | '/pedidos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AgendaRoute: typeof AgendaRoute
+  FeriadosRoute: typeof FeriadosRoute
   PedidosRoute: typeof PedidosRoute
 }
 
@@ -68,11 +68,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/agenda': {
-      id: '/agenda'
-      path: '/agenda'
-      fullPath: '/agenda'
-      preLoaderRoute: typeof AgendaRouteImport
+    '/feriados': {
+      id: '/feriados'
+      path: '/feriados'
+      fullPath: '/feriados'
+      preLoaderRoute: typeof FeriadosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pedidos': {
@@ -87,7 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AgendaRoute: AgendaRoute,
+  FeriadosRoute: FeriadosRoute,
   PedidosRoute: PedidosRoute,
 }
 export const routeTree = rootRouteImport
