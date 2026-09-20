@@ -9,6 +9,7 @@ React Frontend ──(HTTP)──▶ Google Apps Script Web App ──(LockServi
 ## Arquitetura de Camadas
 
 - **Frontend (React):** UI, estado local/global, formulários, tabelas, dashboard, consumo de API.
+- **Gerenciador de pacotes:** pnpm
 - **Backend (Apps Script):** gateway de acesso a planilha, inicialmente sem autenticação, repositório de planilhas, permite gravar/ler o conteúdo da planilha linkada.
 - **Persistência (Google Sheets):** Armazenamento em tabela.
 

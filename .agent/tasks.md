@@ -20,7 +20,8 @@
 
 ## Slice 3: Tipos TypeScript e Cliente HTTP
 
-- [ ] Criar `src/types/index.ts` com interfaces de Pedido, Usuário, Feriado
+- [x] Criar `src/types/index.ts` com interfaces de Pedido, Usuário, Feriado
+- [x] ajuste a responsividade de `src/routes/index.tsx` mantendo o layout dos alinhamentos dos cards de dia e de mês perto dos seus popovers correspondentes.
 - [ ] Criar `src/services/api.ts` para chamadas HTTP contra o Apps Script
 - [ ] Fetch inicial no root (últimos 500 pedidos + feriados) alimentando providers
 - [ ] Definir estratégia pós-POST (re-fetch vs update local do snapshot)
