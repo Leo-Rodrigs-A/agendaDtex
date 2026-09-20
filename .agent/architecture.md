@@ -38,9 +38,9 @@ React Frontend ──(HTTP)──▶ Google Apps Script Web App ──(LockServi
 
 ### Estratégia de dados e estado
 
-- **Fetch único na inicialização:** `GET /pedidos` (últimos 500). **Todos os filtros, validações e cálculos são client-side** — não há re-fetch por filtro.
+- **Fetch único na inicialização:** `GET /pedidos` + `GET /feriados` + `GET /users` em paralelo. **Todos os filtros, validações e cálculos são client-side** — não há re-fetch por filtro.
 - **Filtros globais de período:** `FilterProvider` (React Context) montado em `src/routes/__root.tsx` acima do `<Outlet />`, expondo `{ day, month, year, setDay, setMonthYear }` via hook `useFilters()`. Sobrevive à navegação entre rotas (decisão deliberada — operador alterna telas com frequência). **Não** usamos search params para isso.
 - **Componentes consumidores:** `DaySelector` (popover + Calendar) e `MonthSelector` (popover com stepper de ano + grid 3x4 de meses abreviados), usados no header da rota `/`.
 - **Datas:** formatação via `Intl.DateTimeFormat('pt-BR', ...)` nativo — sem date-fns no front.
-- **Loader do root (planejado):** o fetch inicial dos 500 pedidos ainda não existe no código (hoje tudo é mock); quando o Apps Script estiver no ar, entra como loader/data provider no root.
-- **Pós-POST (pendente de definição):** após `POST /pedidos` etc., o front deverá re-buscar o snapshot ou atualizar o estado em memória localmente.
+- **Dados vindos da API:** `DataProvider` (`src/components/DataProvider.tsx`) montado no `__root` dentro do `FilterProvider`, expondo `orders`/`holidays`/`users` + `isLoading`/`error` + `refresh*` via hook `useData()`. Cliente HTTP em `src/services/api.ts` (URL em `VITE_API_URL`).
+- **Pós-POST (definido):** a API não retorna o objeto criado — após um POST bem-sucedido, o front chama o `refresh*` correspondente (re-fetch do recurso; o backend invalida o cache do GET no POST).

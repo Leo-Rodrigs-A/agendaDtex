@@ -32,7 +32,7 @@ export interface Holiday {
   holiday_description: string
 }
 
-export interface ApiResponse<T> {
-  data: T
-  message?: string
-}
+// Payloads de criação (POST). id e created_at são gerados no backend.
+export type CreateOrderPayload = Omit<Order, 'id' | 'created_at'>
+export type CreateHolidayPayload = Holiday
+export type CreateUserPayload = Omit<User, 'id'>

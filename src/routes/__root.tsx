@@ -4,6 +4,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { AppSidebar } from '@/components/AppSidebar'
 import { Header } from '@/components/Header'
 import { FilterProvider } from '@/components/FilterProvider'
+import { DataProvider } from '@/components/DataProvider'
 import '@/styles.css'
 
 export const Route = createRootRoute({
@@ -15,15 +16,17 @@ function RootLayout() {
     <TooltipProvider>
       <SidebarProvider>
         <FilterProvider>
-          <div className="flex min-h-screen w-full bg-muted/20">
-            <AppSidebar />
-            <SidebarInset className="flex flex-col flex-1">
-              <Header />
-              <main className="flex-1 p-8">
-                <Outlet />
-              </main>
-            </SidebarInset>
-          </div>
+          <DataProvider>
+            <div className="flex min-h-screen w-full bg-muted/20">
+              <AppSidebar />
+              <SidebarInset className="flex flex-col flex-1">
+                <Header />
+                <main className="flex-1 p-8">
+                  <Outlet />
+                </main>
+              </SidebarInset>
+            </div>
+          </DataProvider>
         </FilterProvider>
       </SidebarProvider>
     </TooltipProvider>

@@ -18,23 +18,26 @@
 - [x] Header da home com os dois seletores à direita (padrão do botão de `/pedidos`)
 - [x] Cards da home exibindo os rótulos dinâmicos dos filtros (dados ainda mock)
 
-## Slice 3: Tipos TypeScript e Cliente HTTP
+## Slice 3: Tipos TypeScript e Cliente HTTP ✅
 
 - [x] Criar `src/types/index.ts` com interfaces de Pedido, Usuário, Feriado
 - [x] ajuste a responsividade de `src/routes/index.tsx` mantendo o layout dos alinhamentos dos cards de dia e de mês perto dos seus popovers correspondentes.
-- [ ] Criar `src/services/api.ts` para chamadas HTTP contra o Apps Script
-- [ ] Fetch inicial no root (últimos 500 pedidos + feriados) alimentando providers
-- [ ] Definir estratégia pós-POST (re-fetch vs update local do snapshot)
+- [x] Criar `src/services/api.ts` para chamadas HTTP contra o Apps Script (GET retorna array puro; POST com `?resource=`, `Content-Type: text/plain` para evitar preflight CORS; body `{ error }` vira `Error`)
+- [x] Fetch inicial no root (últimos 500 pedidos + feriados + usuários) alimentando providers (`DataProvider` em `src/components/DataProvider.tsx`, fetch paralelo com `Promise.allSettled`)
+- [x] Definir estratégia pós-POST: **re-fetch do recurso** via `refreshOrders`/`refreshHolidays`/`refreshUsers` do `useData()` (a API não retorna o objeto criado, e o POST já invalida o cache do GET)
 
-## Slice 4: Dados reais na Home
+## Slice 4: Dados reais na Home ✅
 
-- [ ] Funções puras de filtro/cálculo em `src/lib/` (recebem `pedidos` + `useFilters()`)
-- [ ] Ligar KPIs de dia/mês e lista "pedidos do dia" aos dados reais
-- [ ] Bloquear fins de semana e feriados no `DaySelector` (`disabled` do Calendar)
-- [ ] Gráfico "Status da Semana" (barras, sempre relativo a hoje, sem interação)
+- [x] Funções puras de filtro/cálculo em `src/lib/` (`orders.ts` recebe `orders` + filtros; `dates.ts` com `toDateKey`/`nextBusinessDays`)
+- [x] Ligar KPIs de dia/mês e lista "pedidos do dia" aos dados reais (cotas visuais: >15 pedidos/dia ou >100 peças/dia ficam âmbar — não é bloqueio)
+- [x] Fins de semana e feriados destacados em cinza no `DaySelector` (sem bloqueio — bloqueio fica só no form de criação, Slice 5)
+- [x] Gráfico "Status da Semana" (barras com divs Tailwind, próximos 7 dias úteis a partir de hoje, sem interação)
 
 ## Slice 5: Módulo de Pedidos
 
+- [ ] remover badge de sistema online e Adicionar botão de trocar tema light/dark, salvando no local storage, ao lado do botão de tema fica o botão de escolher cor primária onde tem 6 cores disponíveis para escolha de cor primaria, (vermelho, laranja, amarelo, azul, verde, ou roxo), essa cor reflete nos botões e no gráfico area chart.
+- [ ] na tela de visualização da lista dos pedidos para o dia escolhido, usar uma tabela do shadcn bem bonita com os cabeçalhos: (nome do pedido, quant. camisetas, quant short/outros, data de encomenda(já que botar data de entrega aqui seria redundancia))
+- [ ] Substituir o gráfico de barras por um area chart do chadcn ui com seletor de próximos 3 dias, 7 dias ou 30 dias, aparecendo como um segmented control e duas linhas, uma para o número de camisetas e outra pro número de shorts/outros.
 - [ ] Listagem real em `src/routes/pedidos.tsx` (busca e filtro de status client-side)
 - [ ] Form/modal "Novo Pedido" com seletor de data bloqueando fds/feriados
 - [ ] Integrar criação (`POST /pedidos`) e atualização do snapshot local

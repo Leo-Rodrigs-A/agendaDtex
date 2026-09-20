@@ -9,9 +9,12 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { useFilters } from '@/components/FilterProvider'
+import { useData } from '@/components/DataProvider'
+import { WEEKEND_MATCHER, holidayDates } from '@/lib/dates'
 
 export function DaySelector() {
   const { day, setDay } = useFilters()
+  const { holidays } = useData()
   const [open, setOpen] = useState(false)
 
   const label = new Intl.DateTimeFormat('pt-BR', {
@@ -23,9 +26,7 @@ export function DaySelector() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
-        render={
-          <Button variant="outline" className="gap-2 font-normal" />
-        }
+        render={<Button variant="outline" className="gap-2 font-normal" />}
       >
         <CalendarDays className="h-4 w-4" />
         {label}
@@ -41,6 +42,14 @@ export function DaySelector() {
             }
           }}
           locale={ptBR}
+          modifiers={{
+            weekend: WEEKEND_MATCHER,
+            holiday: holidayDates(holidays),
+          }}
+          modifiersClassNames={{
+            weekend: 'text-muted-foreground/50',
+            holiday: 'text-muted-foreground/50',
+          }}
         />
       </PopoverContent>
     </Popover>
