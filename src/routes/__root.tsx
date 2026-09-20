@@ -4,7 +4,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { AppSidebar } from '@/components/AppSidebar'
 import { Header } from '@/components/Header'
 import { FilterProvider } from '@/components/FilterProvider'
-import '../styles.css'
+import '@/styles.css'
 
 export const Route = createRootRoute({
   component: RootLayout,
