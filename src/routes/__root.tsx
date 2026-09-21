@@ -1,12 +1,8 @@
 import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-import { TooltipProvider } from '@/components/ui/tooltip'
+import { SidebarInset } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/AppSidebar'
 import { Header } from '@/components/Header'
-import { FilterProvider } from '@/components/FilterProvider'
-import { DataProvider } from '@/components/DataProvider'
-import { ThemeProvider } from '@/components/ThemeProvider'
-import { UserProvider } from '@/components/UserProvider'
+import { AppProviders } from '@/contexts'
 import '@/styles.css'
 
 export const Route = createRootRoute({
@@ -15,26 +11,16 @@ export const Route = createRootRoute({
 
 function RootLayout() {
   return (
-    <ThemeProvider>
-      <TooltipProvider>
-        <SidebarProvider>
-          <FilterProvider>
-            <DataProvider>
-              <UserProvider>
-                <div className="flex min-h-screen w-full bg-muted/20">
-                  <AppSidebar />
-                  <SidebarInset className="flex flex-col flex-1">
-                    <Header />
-                    <main className="flex-1 p-8">
-                      <Outlet />
-                    </main>
-                  </SidebarInset>
-                </div>
-              </UserProvider>
-            </DataProvider>
-          </FilterProvider>
-        </SidebarProvider>
-      </TooltipProvider>
-    </ThemeProvider>
+    <AppProviders>
+      <div className="flex min-h-screen w-full bg-muted/20">
+        <AppSidebar />
+        <SidebarInset className="flex flex-col flex-1">
+          <Header />
+          <main className="flex-1 p-8">
+            <Outlet />
+          </main>
+        </SidebarInset>
+      </div>
+    </AppProviders>
   )
 }

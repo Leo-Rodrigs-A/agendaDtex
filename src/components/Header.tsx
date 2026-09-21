@@ -1,13 +1,21 @@
-import { SidebarTrigger } from '@/components/ui/sidebar'
-import { Separator } from '@/components/ui/separator'
+import { useState } from 'react'
+import { Plus } from 'lucide-react'
 import { useLocation } from '@tanstack/react-router'
+import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import {
   ColorPickerButton,
   ThemeToggleButton,
 } from '@/components/ThemeControls'
+import { NewOrderDialog } from '@/components/NewOrderDialog'
 
 export function Header() {
   const pathname = useLocation({ select: (loc) => loc.pathname })
+  const [newOrderOpen, setNewOrderOpen] = useState(false)
 
   const getPageTitle = (path: string) => {
     switch (path) {
@@ -23,18 +31,31 @@ export function Header() {
   }
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background px-6 transition-all">
-      <SidebarTrigger className="-ml-1" />
-      <Separator orientation="vertical" className="mr-2 h-4" />
-      <div className="flex items-center justify-between w-full">
+    <header className="flex h-16 shrink-0 items-center border-b border-border bg-background px-6 transition-all">
+      <div className="flex w-full items-center justify-between">
         <h1 className="text-lg font-semibold text-foreground">
           {getPageTitle(pathname)}
         </h1>
         <div className="flex items-center gap-2">
           <ColorPickerButton />
           <ThemeToggleButton />
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setNewOrderOpen(true)}
+                />
+              }
+            >
+              <Plus className="h-4 w-4" />
+            </TooltipTrigger>
+            <TooltipContent>Novo pedido</TooltipContent>
+          </Tooltip>
         </div>
       </div>
+      <NewOrderDialog open={newOrderOpen} onOpenChange={setNewOrderOpen} />
     </header>
   )
 }

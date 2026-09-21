@@ -20,8 +20,8 @@ import {
   DAILY_ORDER_QUOTA,
   averageTicket,
   formatBRL,
+  ordersCreatedInMonth,
   ordersForDay,
-  ordersForMonth,
   sumPieces,
   sumRevenue,
 } from '@/lib/orders'
@@ -58,8 +58,8 @@ function DashboardPage() {
   const overPieceQuota = dayPieces > DAILY_PIECE_QUOTA
   const capacityPct = Math.min((dayPieces / DAILY_PIECE_QUOTA) * 100, 100)
 
-  // ---- Grupo Mês (KPIs do usuário ativo) ----
-  const monthOrders = ordersForMonth(orders, month, year).filter(
+  // ---- Grupo Mês (KPIs do usuário ativo, por data de encomenda) ----
+  const monthOrders = ordersCreatedInMonth(orders, month, year).filter(
     (o) => o.user_id === activeUser?.id,
   )
   const monthCount = monthOrders.length
@@ -68,7 +68,7 @@ function DashboardPage() {
   const monthTicket = averageTicket(monthOrders)
 
   const prevDate = new Date(year, month - 1, 1)
-  const prevMonthOrders = ordersForMonth(
+  const prevMonthOrders = ordersCreatedInMonth(
     orders,
     prevDate.getMonth(),
     prevDate.getFullYear(),

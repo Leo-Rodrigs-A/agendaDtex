@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { cn } from 'cn'
 import { ArrowDownUp, LayoutGrid, List, Plus, Search } from 'lucide-react'
@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
@@ -42,6 +43,7 @@ const SORT_OPTIONS: Array<{
 ]
 
 const VIEW_KEY = 'dtex-orders-view'
+const PAGE_SIZE = 50
 const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
   day: '2-digit',
   month: 'short',
@@ -79,6 +81,14 @@ function PedidosPage() {
     })
     return filtered
   }, [orders, search, sortField, sortDirection, sellerName])
+
+  // Carregamento incremental: 50 pedidos por rodada
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE)
+  }, [search, sortField, sortDirection])
+  const visibleOrders = filteredOrders.slice(0, visibleCount)
+  const hasMore = visibleCount < filteredOrders.length
 
   const changeView = (next: ViewMode) => {
     setView(next)
@@ -120,25 +130,27 @@ function PedidosPage() {
               <ArrowDownUp className="h-4 w-4" /> Ordenar
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Ordenar por</DropdownMenuLabel>
-              {SORT_OPTIONS.map((option) => {
-                const isSelected =
-                  option.field === sortField &&
-                  option.direction === sortDirection
-                return (
-                  <DropdownMenuItem
-                    key={`${option.field}-${option.direction}`}
-                    onClick={() => {
-                      setSortField(option.field)
-                      setSortDirection(option.direction)
-                    }}
-                    className={cn(isSelected && 'font-medium text-primary')}
-                  >
-                    {option.label}
-                    {isSelected && <span className="ml-auto">✓</span>}
-                  </DropdownMenuItem>
-                )
-              })}
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Ordenar por</DropdownMenuLabel>
+                {SORT_OPTIONS.map((option) => {
+                  const isSelected =
+                    option.field === sortField &&
+                    option.direction === sortDirection
+                  return (
+                    <DropdownMenuItem
+                      key={`${option.field}-${option.direction}`}
+                      onClick={() => {
+                        setSortField(option.field)
+                        setSortDirection(option.direction)
+                      }}
+                      className={cn(isSelected && 'font-medium text-primary')}
+                    >
+                      {option.label}
+                      {isSelected && <span className="ml-auto">✓</span>}
+                    </DropdownMenuItem>
+                  )
+                })}
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -182,19 +194,37 @@ function PedidosPage() {
           <div className="p-12 text-center text-muted-foreground">
             Carregando pedidos…
           </div>
-        ) : view === 'list' ? (
-          <OrdersTable
-            orders={filteredOrders}
-            users={users}
-            showSeller
-            showDeliveryDate
-          />
         ) : filteredOrders.length === 0 ? (
           <div className="p-12 text-center text-muted-foreground">
             Nenhum pedido encontrado.
           </div>
+        ) : view === 'list' ? (
+          <OrdersTable
+            orders={visibleOrders}
+            users={users}
+            showSeller
+            showDeliveryDate
+          />
         ) : (
-          <OrderGrid orders={filteredOrders} sellerName={sellerName} />
+          <OrderGrid orders={visibleOrders} sellerName={sellerName} />
+        )}
+
+        {!isLoading && filteredOrders.length > 0 && (
+          <div className="flex flex-col items-center gap-2 border-t border-border p-4">
+            <p className="text-xs text-muted-foreground tabular-nums">
+              Exibindo {Math.min(visibleCount, filteredOrders.length)} de{' '}
+              {filteredOrders.length} pedidos
+            </p>
+            {hasMore && (
+              <Button
+                variant="outline"
+                onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+              >
+                Carregar mais{' '}
+                {Math.min(PAGE_SIZE, filteredOrders.length - visibleCount)}
+              </Button>
+            )}
+          </div>
         )}
       </div>
 

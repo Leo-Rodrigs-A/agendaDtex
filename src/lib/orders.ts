@@ -35,6 +35,21 @@ export function ordersForMonth(
   })
 }
 
+/**
+ * Pedidos criados (encomendados) no mês informado (month: 0-11),
+ * com base em `created_at`. Base dos KPIs mensais de vendas.
+ */
+export function ordersCreatedInMonth(
+  orders: Array<Order>,
+  month: number,
+  year: number,
+): Array<Order> {
+  return orders.filter((o) => {
+    const created = new Date(o.created_at)
+    return created.getMonth() === month && created.getFullYear() === year
+  })
+}
+
 export function sumPieces(orders: Array<Order>): number {
   return orders.reduce((acc, o) => acc + countPieces(o), 0)
 }

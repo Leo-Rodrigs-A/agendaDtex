@@ -46,14 +46,17 @@
 - [x] Integrar criação (`POST /pedidos`) e atualização do snapshot local (refresh após POST nos 3 modais)
 - [x] `UserProvider`: usuário ativo persistido em localStorage; footer da sidebar com popover (hovercard do usuário + lista lateral com check + botão adicionar usuário + botão configurações placeholder); KPIs mensais da home filtrados pelo usuário ativo (diários seguem globais)
 
-## Slice 6: Feriados e Usuários
+## Slice 6: Feriados e Usuários ✅
 
-- [ ] Reescrever `/feriados` (hoje é placeholder): lista + form título/data → `POST /feriados`
-- [ ] Dropdown de usuário ativo no footer da sidebar (lista de `Users`, sem auth)
-- [ ] Reposicionar o toggle da sidebar para ficar dentro do header da sidebar, no modo retraido o icone do logo de torna o icone do toggle quando em hover para indicar que um clique ali restaura a sidebar.
-- [ ] exibir o cargo do usuário ao invés do email em todos oss locais onde atualmente são exibidos nome e email.
-- [ ] atualmente ao clicar em ordenar pedidos temos um erro de basi ui "Base UI: MenuGroupContext is missing. Menu group parts must be used within <Menu.Group> or <Menu.RadioGroup>."
-- [ ] adicionar um botão somente icone ao lado dos toggles de tema e cor primária para rápida criação de pedido em qualquer tela, o modal que abre deve ser exatamente o mesmo do botão novo pedido.
+- [x] Reescrever `/feriados`: toolbar (título à esquerda, search, toggle lista/grade persistido, botão Adicionar) + tabela/cards reais de `holidays` (data asc, destaque para "hoje") + `AddHolidayDialog` → `POST /feriados`
+- [x] Dropdown de usuário ativo no footer da sidebar (lista de `Users`, sem auth) — entregue no Slice 5 (`UserMenu`)
+- [x] Reposicionar o toggle da sidebar para o header da sidebar; no modo recolhido o logo "DT" vira o botão de expansão no hover (ícone `PanelLeftOpen`)
+- [x] Exibir o cargo do usuário ao invés do e-mail no trigger e no hovercard do `UserMenu`
+- [x] Corrigir erro Base UI "MenuGroupContext is missing" no menu de ordenação de `/pedidos` (itens envolvidos em `DropdownMenuGroup`)
+- [x] Botão icon-only de criação rápida de pedido no Header (mesmo `NewOrderDialog`, disponível em qualquer tela)
+- [x] KPIs mensais da home passam a filtrar por `created_at` (mês da encomenda/venda) — nova `ordersCreatedInMonth` em `lib/orders.ts`
+- [x] `/pedidos` com carregamento incremental de 50 em 50 pedidos ("Carregar mais"), reiniciando ao mudar busca/ordenação
+- [x] Providers centralizados em `src/contexts/index.tsx` (`AppProviders` — Theme → Tooltip → Sidebar → Filter → Data → User)
 
 ## Manutenção (quando sobrar tempo)
 

@@ -63,8 +63,8 @@ export function UserMenu() {
             <span className="truncate text-sm font-medium text-sidebar-foreground">
               {isLoading ? 'Carregando…' : (activeUser?.name ?? 'Sem usuário')}
             </span>
-            <span className="truncate text-xs text-sidebar-foreground/60">
-              {activeUser?.mail ?? `${users.length} usuários`}
+            <span className="truncate text-xs text-sidebar-foreground/60 capitalize">
+              {activeUser?.role ?? `${users.length} usuários`}
             </span>
           </div>
         </PopoverTrigger>
@@ -89,14 +89,9 @@ export function UserMenu() {
                   <p className="truncate text-sm font-medium">
                     {activeUser?.name ?? 'Sem usuário ativo'}
                   </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {activeUser?.mail ?? '—'}
+                  <p className="truncate text-xs text-muted-foreground capitalize">
+                    {activeUser?.role ?? '—'}
                   </p>
-                  {activeUser?.role && (
-                    <p className="truncate text-xs text-muted-foreground capitalize">
-                      {activeUser.role}
-                    </p>
-                  )}
                 </div>
               </div>
             </PopoverTrigger>
