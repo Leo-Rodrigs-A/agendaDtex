@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/sidebar'
 import { CalendarDays, Home, SquareMenu } from 'lucide-react'
 import { Link, useLocation } from '@tanstack/react-router'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { UserMenu } from '@/components/UserMenu'
 
 export function AppSidebar() {
   const pathname = useLocation({ select: (loc) => loc.pathname })
@@ -76,21 +76,8 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-4">
-        <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
-          <Avatar className="h-9 w-9">
-            <AvatarImage src="https://github.com/shadcn.png" alt="Usuário" />
-            <AvatarFallback>US</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <span className="text-sm font-medium text-sidebar-foreground">
-              Operador Interno
-            </span>
-            <span className="text-xs text-sidebar-foreground/60">
-              operador@dtex.com
-            </span>
-          </div>
-        </div>
+      <SidebarFooter className="border-t border-sidebar-border p-2">
+        <UserMenu />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

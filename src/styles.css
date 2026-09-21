@@ -1,8 +1,7 @@
-
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
-@import "@fontsource-variable/inter";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/inter';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -130,6 +129,85 @@ body {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+/* Cor primária selecionável (data-primary no <html>, gerenciado pelo ThemeProvider).
+   chart-1 acompanha a primária; chart-2 é o tom claro da mesma família. */
+:root[data-primary='red'] {
+  --primary: oklch(0.637 0.237 25.33);
+  --sidebar-primary: oklch(0.637 0.237 25.33);
+  --chart-1: oklch(0.637 0.237 25.33);
+  --chart-2: oklch(0.808 0.114 19.57);
+}
+.dark[data-primary='red'] {
+  --primary: oklch(0.704 0.191 22.216);
+  --sidebar-primary: oklch(0.704 0.191 22.216);
+  --chart-1: oklch(0.704 0.191 22.216);
+  --chart-2: oklch(0.808 0.114 19.57);
+}
+:root[data-primary='orange'] {
+  --primary: oklch(0.705 0.213 47.604);
+  --sidebar-primary: oklch(0.705 0.213 47.604);
+  --chart-1: oklch(0.705 0.213 47.604);
+  --chart-2: oklch(0.837 0.128 66.29);
+}
+.dark[data-primary='orange'] {
+  --primary: oklch(0.75 0.183 55.934);
+  --sidebar-primary: oklch(0.75 0.183 55.934);
+  --chart-1: oklch(0.75 0.183 55.934);
+  --chart-2: oklch(0.837 0.128 66.29);
+}
+:root[data-primary='yellow'] {
+  --primary: oklch(0.795 0.184 86.047);
+  --primary-foreground: oklch(0.21 0.02 90);
+  --sidebar-primary: oklch(0.795 0.184 86.047);
+  --sidebar-primary-foreground: oklch(0.21 0.02 90);
+  --chart-1: oklch(0.795 0.184 86.047);
+  --chart-2: oklch(0.905 0.182 98.111);
+}
+.dark[data-primary='yellow'] {
+  --primary: oklch(0.852 0.199 91.936);
+  --primary-foreground: oklch(0.21 0.02 90);
+  --sidebar-primary: oklch(0.852 0.199 91.936);
+  --sidebar-primary-foreground: oklch(0.21 0.02 90);
+  --chart-1: oklch(0.852 0.199 91.936);
+  --chart-2: oklch(0.905 0.182 98.111);
+}
+:root[data-primary='blue'] {
+  --primary: oklch(0.623 0.214 259.815);
+  --sidebar-primary: oklch(0.623 0.214 259.815);
+  --chart-1: oklch(0.623 0.214 259.815);
+  --chart-2: oklch(0.809 0.105 251.813);
+}
+.dark[data-primary='blue'] {
+  --primary: oklch(0.707 0.165 254.624);
+  --sidebar-primary: oklch(0.707 0.165 254.624);
+  --chart-1: oklch(0.707 0.165 254.624);
+  --chart-2: oklch(0.809 0.105 251.813);
+}
+:root[data-primary='green'] {
+  --primary: oklch(0.723 0.219 149.579);
+  --sidebar-primary: oklch(0.723 0.219 149.579);
+  --chart-1: oklch(0.723 0.219 149.579);
+  --chart-2: oklch(0.871 0.15 154.449);
+}
+.dark[data-primary='green'] {
+  --primary: oklch(0.792 0.209 151.711);
+  --sidebar-primary: oklch(0.792 0.209 151.711);
+  --chart-1: oklch(0.792 0.209 151.711);
+  --chart-2: oklch(0.871 0.15 154.449);
+}
+:root[data-primary='purple'] {
+  --primary: oklch(0.627 0.265 303.9);
+  --sidebar-primary: oklch(0.627 0.265 303.9);
+  --chart-1: oklch(0.627 0.265 303.9);
+  --chart-2: oklch(0.827 0.119 306.383);
+}
+.dark[data-primary='purple'] {
+  --primary: oklch(0.714 0.203 305.504);
+  --sidebar-primary: oklch(0.714 0.203 305.504);
+  --chart-1: oklch(0.714 0.203 305.504);
+  --chart-2: oklch(0.827 0.119 306.383);
 }
 
 @layer base {

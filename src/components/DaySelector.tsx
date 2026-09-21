@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ptBR } from 'react-day-picker/locale'
-import { CalendarDays } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Calendar } from '@/components/ui/calendar'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,6 +11,12 @@ import {
 import { useFilters } from '@/components/FilterProvider'
 import { useData } from '@/components/DataProvider'
 import { WEEKEND_MATCHER, holidayDates } from '@/lib/dates'
+
+function shiftDay(day: Date, delta: number): Date {
+  const next = new Date(day)
+  next.setDate(next.getDate() + delta)
+  return next
+}
 
 export function DaySelector() {
   const { day, setDay } = useFilters()
@@ -24,34 +30,52 @@ export function DaySelector() {
   }).format(day)
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        render={<Button variant="outline" className="gap-2 font-normal" />}
+    <div className="flex items-center gap-1">
+      <Button
+        variant="outline"
+        size="icon"
+        title="Dia anterior"
+        onClick={() => setDay(shiftDay(day, -1))}
       >
-        <CalendarDays className="h-4 w-4" />
-        {label}
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="end">
-        <Calendar
-          mode="single"
-          selected={day}
-          onSelect={(nextDay) => {
-            if (nextDay) {
-              setDay(nextDay)
-              setOpen(false)
-            }
-          }}
-          locale={ptBR}
-          modifiers={{
-            weekend: WEEKEND_MATCHER,
-            holiday: holidayDates(holidays),
-          }}
-          modifiersClassNames={{
-            weekend: 'text-muted-foreground/50',
-            holiday: 'text-muted-foreground/50',
-          }}
-        />
-      </PopoverContent>
-    </Popover>
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger
+          render={<Button variant="outline" className="gap-2 font-normal" />}
+        >
+          <CalendarDays className="h-4 w-4" />
+          {label}
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="end">
+          <Calendar
+            mode="single"
+            selected={day}
+            onSelect={(nextDay) => {
+              if (nextDay) {
+                setDay(nextDay)
+                setOpen(false)
+              }
+            }}
+            locale={ptBR}
+            modifiers={{
+              weekend: WEEKEND_MATCHER,
+              holiday: holidayDates(holidays),
+            }}
+            modifiersClassNames={{
+              weekend: 'text-muted-foreground/50',
+              holiday: 'text-muted-foreground/50',
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+      <Button
+        variant="outline"
+        size="icon"
+        title="Próximo dia"
+        onClick={() => setDay(shiftDay(day, 1))}
+      >
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+    </div>
   )
 }

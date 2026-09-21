@@ -10,8 +10,11 @@ import {
 } from 'lucide-react'
 import { DaySelector } from '@/components/DaySelector'
 import { MonthSelector } from '@/components/MonthSelector'
+import { OrdersTable } from '@/components/OrdersTable'
+import { ProductionChart } from '@/components/ProductionChart'
 import { useFilters } from '@/components/FilterProvider'
 import { useData } from '@/components/DataProvider'
+import { useActiveUser } from '@/components/UserProvider'
 import {
   DAILY_PIECE_QUOTA,
   DAILY_ORDER_QUOTA,
@@ -21,7 +24,6 @@ import {
   ordersForMonth,
   sumPieces,
   sumRevenue,
-  weekStatus,
 } from '@/lib/orders'
 
 export const Route = createFileRoute('/')({
@@ -30,7 +32,8 @@ export const Route = createFileRoute('/')({
 
 function DashboardPage() {
   const { day, month, year } = useFilters()
-  const { orders, isLoading, error } = useData()
+  const { orders, users, isLoading, error } = useData()
+  const { activeUser } = useActiveUser()
 
   // Só relevante abaixo de lg: qual grupo (dia/mês) está visível.
   // Em lg+ os dois grupos aparecem lado a lado.
@@ -55,9 +58,12 @@ function DashboardPage() {
   const overPieceQuota = dayPieces > DAILY_PIECE_QUOTA
   const capacityPct = Math.min((dayPieces / DAILY_PIECE_QUOTA) * 100, 100)
 
-  // ---- Grupo Mês ----
-  const monthOrders = ordersForMonth(orders, month, year)
+  // ---- Grupo Mês (KPIs do usuário ativo) ----
+  const monthOrders = ordersForMonth(orders, month, year).filter(
+    (o) => o.user_id === activeUser?.id,
+  )
   const monthCount = monthOrders.length
+  const monthPieces = sumPieces(monthOrders)
   const monthRevenue = sumRevenue(monthOrders)
   const monthTicket = averageTicket(monthOrders)
 
@@ -66,7 +72,7 @@ function DashboardPage() {
     orders,
     prevDate.getMonth(),
     prevDate.getFullYear(),
-  )
+  ).filter((o) => o.user_id === activeUser?.id)
   const growthPct =
     prevMonthOrders.length > 0
       ? Math.round(
@@ -75,22 +81,8 @@ function DashboardPage() {
         )
       : null
 
-  // ---- Gráfico da semana (sempre relativo a hoje) ----
-  const week = weekStatus(orders, new Date())
-  const weekMax = Math.max(...week.map((d) => d.orderCount), 1)
-
-  const weekdayFormatter = new Intl.DateTimeFormat('pt-BR', {
-    weekday: 'short',
-  })
-
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center">
-        <p className="text-muted-foreground">
-          Visão geral do volume de pedidos, faturamento e progresso da produção.
-        </p>
-      </div>
-
       {error && (
         <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
           {error}
@@ -220,6 +212,9 @@ function DashboardPage() {
                 <h3 className="text-3xl font-bold mt-1">
                   {isLoading ? '…' : monthCount}
                 </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {monthPieces} peças encomendadas
+                </p>
                 {growthPct !== null && (
                   <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1 font-medium">
                     <TrendingUp className="h-3 w-3" />
@@ -265,64 +260,15 @@ function DashboardPage() {
             <div className="h-64 flex items-center justify-center text-muted-foreground">
               Carregando pedidos…
             </div>
-          ) : dayOrders.length === 0 ? (
-            <div className="h-64 flex items-center justify-center border border-dashed border-border rounded-lg text-muted-foreground">
-              Nenhum pedido para este dia.
-            </div>
           ) : (
-            <ul className="divide-y divide-border">
-              {dayOrders.map((order) => (
-                <li
-                  key={order.id}
-                  className="flex items-center justify-between gap-4 py-3"
-                >
-                  <div className="min-w-0">
-                    <p className="font-medium truncate">{order.order_name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {order.shirt_count} camisetas
-                      {Number(order.others_items_count) > 0 &&
-                        ` · ${order.others_items_count} outros itens`}
-                    </p>
-                  </div>
-                  <span className="text-sm font-medium whitespace-nowrap">
-                    {formatBRL(Number(order.total_amount) || 0)}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <OrdersTable
+              orders={dayOrders}
+              users={users}
+              emptyMessage="Nenhum pedido para este dia."
+            />
           )}
         </div>
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-          <h3 className="text-lg font-semibold mb-2">Status da Semana Atual</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Pedidos agendados para os próximos 7 dias úteis.
-          </p>
-          <div className="h-64 flex items-end gap-3">
-            {week.map((dayStatus, index) => (
-              <div
-                key={dayStatus.date.toISOString()}
-                className="flex flex-1 flex-col items-center gap-2 min-w-0"
-              >
-                <span className="text-sm font-semibold tabular-nums">
-                  {dayStatus.orderCount}
-                </span>
-                <div
-                  className={cn(
-                    'w-full rounded-t-md transition-all',
-                    index === 0 ? 'bg-primary' : 'bg-primary/40',
-                  )}
-                  style={{
-                    height: `${(dayStatus.orderCount / weekMax) * 100}%`,
-                    minHeight: dayStatus.orderCount > 0 ? '4px' : '2px',
-                  }}
-                />
-                <span className="text-xs text-muted-foreground capitalize whitespace-nowrap">
-                  {weekdayFormatter.format(dayStatus.date)}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <ProductionChart orders={orders} />
       </div>
     </div>
   )

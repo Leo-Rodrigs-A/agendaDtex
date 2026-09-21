@@ -1,6 +1,10 @@
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { Separator } from '@/components/ui/separator'
 import { useLocation } from '@tanstack/react-router'
+import {
+  ColorPickerButton,
+  ThemeToggleButton,
+} from '@/components/ThemeControls'
 
 export function Header() {
   const pathname = useLocation({ select: (loc) => loc.pathname })
@@ -26,10 +30,9 @@ export function Header() {
         <h1 className="text-lg font-semibold text-foreground">
           {getPageTitle(pathname)}
         </h1>
-        <div className="flex items-center gap-3">
-          <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-            ● Sistema Online
-          </span>
+        <div className="flex items-center gap-2">
+          <ColorPickerButton />
+          <ThemeToggleButton />
         </div>
       </div>
     </header>

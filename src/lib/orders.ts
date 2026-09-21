@@ -71,6 +71,39 @@ export function weekStatus(
   })
 }
 
+export type DayBreakdown = {
+  date: Date
+  /** Rótulo curto do eixo X (ex.: "seg 22"). */
+  label: string
+  shirts: number
+  others: number
+}
+
+const breakdownFormatter = new Intl.DateTimeFormat('pt-BR', {
+  weekday: 'short',
+  day: '2-digit',
+})
+
+/**
+ * Soma de camisetas e de shorts/outros agendados para os próximos `count`
+ * dias úteis a partir de `from` (inclusive). Base do area chart da home.
+ */
+export function businessDaysBreakdown(
+  orders: Array<Order>,
+  from: Date,
+  count: number,
+): Array<DayBreakdown> {
+  return nextBusinessDays(from, count).map((date) => {
+    const dayOrders = ordersForDay(orders, date)
+    return {
+      date,
+      label: breakdownFormatter.format(date),
+      shirts: dayOrders.reduce((acc, o) => acc + num(o.shirt_count), 0),
+      others: dayOrders.reduce((acc, o) => acc + num(o.others_items_count), 0),
+    }
+  })
+}
+
 const currencyFormatter = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
   currency: 'BRL',

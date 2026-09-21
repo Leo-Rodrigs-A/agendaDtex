@@ -1,23 +1,27 @@
+import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
+import { AddHolidayDialog } from '@/components/AddHolidayDialog'
 
 export const Route = createFileRoute('/feriados')({
   component: FeriadosPage,
 })
 
 function FeriadosPage() {
+  const [dialogOpen, setDialogOpen] = useState(false)
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <p className="text-muted-foreground">
-            Defina os feriados para que o sistema não permita agendamentos epara
+            Defina os feriados para que o sistema não permita agendamentos para
             esses dias.
           </p>
         </div>
 
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => setDialogOpen(true)}>
           <Plus className="h-4 w-4" /> Adicionar Feriado
         </Button>
       </div>
@@ -28,6 +32,8 @@ function FeriadosPage() {
           Nenhum Feriado Registrado no sistema por enquanto.
         </div>
       </div>
+
+      <AddHolidayDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   )
 }
