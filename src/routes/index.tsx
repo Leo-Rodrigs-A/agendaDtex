@@ -52,6 +52,14 @@ function DashboardPage() {
 
   // ---- Grupo Dia ----
   const dayOrders = ordersForDay(orders, day)
+  // Segmented control da tabela diária: todos os usuários x usuário ativo
+  const [dayScope, setDayScope] = useState<'all' | 'mine'>('all')
+  const dayScoped =
+    dayScope === 'mine'
+      ? dayOrders.filter((o) => o.user_id === activeUser?.id)
+      : dayOrders
+  const dayScopePieces = sumPieces(dayScoped)
+  const dayScopeRevenue = sumRevenue(dayScoped)
   const dayCount = dayOrders.length
   const dayPieces = sumPieces(dayOrders)
   const overOrderQuota = dayCount > DAILY_ORDER_QUOTA
@@ -255,11 +263,42 @@ function DashboardPage() {
 
       <div className="grid gap-6 md:grid-cols-2">
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-          <h3 className="text-lg font-semibold mb-2">
-            Todos os pedidos para {dayLabel}
-          </h3>
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+            <h3 className="text-lg font-semibold">
+              Pedidos para{' '}
+              <span className="font-medium text-primary">{dayLabel}</span>
+            </h3>
+            <div className="inline-flex items-center gap-1 rounded-lg bg-muted p-1">
+              <button
+                type="button"
+                onClick={() => setDayScope('all')}
+                className={cn(
+                  'rounded-md px-3 py-1 text-sm font-medium transition-colors',
+                  dayScope === 'all'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                Todos os usuários
+              </button>
+              <button
+                type="button"
+                onClick={() => setDayScope('mine')}
+                className={cn(
+                  'rounded-md px-3 py-1 text-sm font-medium transition-colors',
+                  dayScope === 'mine'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {activeUser?.name ?? 'Usuário ativo'}
+              </button>
+            </div>
+          </div>
           <p className="text-sm text-muted-foreground mb-4">
-            Os pedidos para o dia selecionado são exibidos aqui.
+            {isLoading
+              ? 'Carregando pedidos…'
+              : `${dayScoped.length} pedidos · ${dayScopePieces} peças · ${formatBRL(dayScopeRevenue)} em vendas`}
           </p>
           {isLoading ? (
             <div className="h-64 flex items-center justify-center text-muted-foreground">
@@ -267,8 +306,9 @@ function DashboardPage() {
             </div>
           ) : (
             <OrdersTable
-              orders={dayOrders}
+              orders={dayScoped}
               users={users}
+              variant="day"
               emptyMessage="Nenhum pedido para este dia."
             />
           )}

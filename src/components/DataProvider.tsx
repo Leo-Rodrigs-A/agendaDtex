@@ -8,7 +8,13 @@ import {
 } from 'react'
 import type { ReactNode } from 'react'
 import type { Order, Holiday, User } from '@/types'
-import { getOrders, getHolidays, getUsers } from '@/services/api'
+import {
+  getOrders,
+  getHolidays,
+  getUsers,
+  updateOrderDone,
+} from '@/services/api'
+import { toast } from 'sonner'
 
 type DataState = {
   orders: Array<Order>
@@ -20,6 +26,12 @@ type DataState = {
   refreshOrders: () => Promise<void>
   refreshHolidays: () => Promise<void>
   refreshUsers: () => Promise<void>
+  /**
+   * Alterna `is_done` com update otimista: a UI reage na hora (o pedido some
+   * da tabela diária / risca na geral), o POST vai em background e, em caso
+   * de erro, o valor é revertido e um toast de erro é exibido.
+   */
+  toggleOrderDone: (id: string, isDone: boolean) => Promise<void>
 }
 
 const DataContext = createContext<DataState | null>(null)
@@ -42,6 +54,34 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const refreshUsers = useCallback(async () => {
     setUsers(await getUsers())
   }, [])
+
+  const toggleOrderDone = useCallback(
+    async (id: string, isDone: boolean) => {
+      // 1) Otimista: aplica na hora no estado local
+      setOrders((current) =>
+        current.map((o) => (o.id === id ? { ...o, is_done: isDone } : o)),
+      )
+      try {
+        // 2) Background: persiste na API
+        await updateOrderDone({ id, is_done: isDone })
+        toast.success(isDone ? 'Pedido concluído!' : 'Pedido reaberto!')
+        // 3) Silencioso: sincroniza com o servidor sem loading visual
+        await refreshOrders()
+      } catch (err) {
+        // 4) Rollback + toast de erro
+        setOrders((current) =>
+          current.map((o) => (o.id === id ? { ...o, is_done: !isDone } : o)),
+        )
+        console.error('[toggleOrderDone] Falha no POST update_order', {
+          id,
+          is_done: isDone,
+          err,
+        })
+        toast.error('Falha ao atualizar o pedido!')
+      }
+    },
+    [refreshOrders],
+  )
 
   // Fetch inicial: todos os recursos em paralelo. allSettled garante que a
   // falha de um recurso não impeça o carregamento dos demais.
@@ -91,6 +131,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       refreshOrders,
       refreshHolidays,
       refreshUsers,
+      toggleOrderDone,
     }),
     [
       orders,
@@ -101,6 +142,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       refreshOrders,
       refreshHolidays,
       refreshUsers,
+      toggleOrderDone,
     ],
   )
 

@@ -23,3 +23,7 @@ Decisões:
 - IDs são gerados no backend com Utilities.getUuid().
 - `created_at` é gerado no backend com new Date().
 - Datas de calendário (`delivery_date` e `holiday_date`) devem chegar do frontend como `YYYY-MM-DD` e são convertidas no Apps Script para objetos `Date` sem timezone nem horário antes de serem salvas no Google Sheets, para que a planilha mantenha datas reais.
+
+Atualização parcial de pedidos: `POST ?resource=update_order` com payload `{ id, is_done }` — usado pelo checkbox de conclusão nas tabelas de pedidos (o front chama `refreshOrders()` em seguida).
+
+URLs de imagem do Drive aceitas pelo front (`src/lib/drive.ts`): `drive.google.com/file/d/<ID>/...` e `drive.google.com/open?id=<ID>` — ambas viram `https://lh3.googleusercontent.com/d/<ID>` para exibição em `<img>`.

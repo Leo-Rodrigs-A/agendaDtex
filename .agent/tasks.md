@@ -71,11 +71,12 @@
 - [x] Adicionar campo opcional de URL de imagem do Google Drive no formulário de novo pedido (`NewOrderDialog`; envia `imgurl` só se preenchido)
 - [x] Criar botão/ícone de link para imagem à esquerda do nome do pedido e modal de visualização nas tabelas diária e geral (`OrdersTable` + `lib/drive.ts` → `lh3.googleusercontent.com/d/<ID>`; botão **desabilitado** quando o pedido não tem imagem, em vez de placeholder clicável)
 
-## Slice 9: Evolução das Tabelas, Filtros de Usuário e Ordenação por Colunas
+## Slice 9: Evolução das Tabelas, Filtros de Usuário e Ordenação por Colunas ✅
 
-- [ ] Ajustar default sort da tabela de pedidos para exibir `created_at` mais recente no topo por padrão
-- [ ] Adicionar sort embutido diretamente no header de todas as colunas em ambas as tabelas (alfabético, numérico, data com inversão de ordem por clique)
-- [ ] Modificar colunas exibidas na tabela de pedidos por dia (`is_done` checkbox, nome + ícone de imagem, vendedor, camisetas, outros, valor)
-- [ ] Ocultar pedidos com `is_done = true` na tabela diária e aplicar formatação riscada/esmaecida na tabela geral
-- [ ] Adicionar segmented control na tabela diária para alternar entre "Todos os Usuários" e "Usuário Ativo"
-- [ ] Exibir informações de valor vendido, camisetas e outras peças na tabela diária, integradas ao segmented control de usuário
+- [x] Ajustar default sort da tabela de pedidos para exibir `created_at` mais recente no topo por padrão (ambas as tabelas)
+- [x] Adicionar sort embutido diretamente no header de todas as colunas em ambas as tabelas — dropdown de ordenação removido de `/pedidos`; datas comparam por timestamp (corrige "agrupamento por mês")
+- [x] Modificar colunas exibidas na tabela de pedidos por dia (`is_done` checkbox, nome + ícone de imagem, vendedor, camisetas, outros, valor)
+- [x] Ocultar pedidos com `is_done = true` na tabela diária e aplicar formatação riscada/esmaecida na tabela geral (lista e grade); checkbox chama `POST ?resource=update_order` com `{ id, is_done }` + refresh
+- [x] Adicionar segmented control na tabela diária para alternar entre "Todos os Usuários" e "Usuário Ativo"
+- [x] Exibir informações de valor vendido, camisetas e outras peças na tabela diária, integradas ao segmented control de usuário (linha de totais: pedidos · peças · R$)
+- [x] Fix: rolagem horizontal da tabela em telas estreitas (`overflow-x-auto` no `OrdersTable`)

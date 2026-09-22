@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { SidebarProvider } from '@/components/ui/sidebar'
+import { Toaster } from '@/components/ui/sonner'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { FilterProvider } from '@/components/FilterProvider'
 import { DataProvider } from '@/components/DataProvider'
@@ -23,7 +24,10 @@ export function AppProviders({ children }: { children: ReactNode }) {
         <SidebarProvider>
           <FilterProvider>
             <DataProvider>
-              <UserProvider>{children}</UserProvider>
+              <UserProvider>
+                {children}
+                <Toaster position="bottom-right" />
+              </UserProvider>
             </DataProvider>
           </FilterProvider>
         </SidebarProvider>

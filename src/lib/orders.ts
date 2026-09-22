@@ -119,6 +119,65 @@ export function businessDaysBreakdown(
   })
 }
 
+// ---- Ordenação das tabelas de pedidos ----
+
+export type OrderSortKey =
+  | 'order_name'
+  | 'seller'
+  | 'shirt_count'
+  | 'others_items_count'
+  | 'created_at'
+  | 'delivery_date'
+  | 'total_amount'
+
+export type OrderSortDir = 'asc' | 'desc'
+
+/**
+ * Compara datas por timestamp (número), não por string. Strings de data da
+ * planilha podem ter formatos variados ("YYYY-MM-DD", ISO com hora, Date
+ * serializado) — comparação textual agrupava errado por mês.
+ */
+function compareDates(a: string, b: string): number {
+  return new Date(a).getTime() - new Date(b).getTime()
+}
+
+/**
+ * Retorna uma cópia de `orders` ordenada pela coluna/direção informadas.
+ * `sellerName` resolve o nome do vendedor para a coluna "seller".
+ */
+export function sortOrders(
+  orders: Array<Order>,
+  key: OrderSortKey,
+  dir: OrderSortDir,
+  sellerName: (userId: string) => string = () => '',
+): Array<Order> {
+  const sorted = [...orders]
+  sorted.sort((a, b) => {
+    let cmp: number
+    switch (key) {
+      case 'created_at':
+      case 'delivery_date':
+        cmp = compareDates(a[key], b[key])
+        break
+      case 'shirt_count':
+      case 'others_items_count':
+      case 'total_amount':
+        cmp = num(a[key]) - num(b[key])
+        break
+      case 'seller':
+        cmp = sellerName(a.user_id).localeCompare(
+          sellerName(b.user_id),
+          'pt-BR',
+        )
+        break
+      default:
+        cmp = a.order_name.localeCompare(b.order_name, 'pt-BR')
+    }
+    return dir === 'asc' ? cmp : -cmp
+  })
+  return sorted
+}
+
 const currencyFormatter = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
   currency: 'BRL',

@@ -1,21 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { cn } from 'cn'
-import { ArrowDownUp, LayoutGrid, List, Plus, Search } from 'lucide-react'
+import { LayoutGrid, List, Plus, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { OrdersTable } from '@/components/OrdersTable'
 import { NewOrderDialog } from '@/components/NewOrderDialog'
 import { useData } from '@/components/DataProvider'
-import { countPieces, formatBRL } from '@/lib/orders'
+import type { OrderSortDir, OrderSortKey } from '@/lib/orders'
+import { countPieces, formatBRL, sortOrders } from '@/lib/orders'
 import { parseDateKey } from '@/lib/dates'
 import type { Order } from '@/types'
 
@@ -23,24 +16,7 @@ export const Route = createFileRoute('/pedidos')({
   component: PedidosPage,
 })
 
-type SortField = 'delivery_date' | 'created_at'
-type SortDirection = 'asc' | 'desc'
 type ViewMode = 'list' | 'grid'
-
-const SORT_OPTIONS: Array<{
-  field: SortField
-  direction: SortDirection
-  label: string
-}> = [
-  { field: 'delivery_date', direction: 'asc', label: 'Entrega · mais próxima' },
-  {
-    field: 'delivery_date',
-    direction: 'desc',
-    label: 'Entrega · mais distante',
-  },
-  { field: 'created_at', direction: 'asc', label: 'Encomenda · mais antiga' },
-  { field: 'created_at', direction: 'desc', label: 'Encomenda · mais recente' },
-]
 
 const VIEW_KEY = 'dtex-orders-view'
 const PAGE_SIZE = 50
@@ -54,8 +30,9 @@ function PedidosPage() {
   const { orders, users, isLoading, error } = useData()
 
   const [search, setSearch] = useState('')
-  const [sortField, setSortField] = useState<SortField>('delivery_date')
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
+  // Default: pedido vendido mais recentemente no topo
+  const [sortKey, setSortKey] = useState<OrderSortKey>('created_at')
+  const [sortDir, setSortDir] = useState<OrderSortDir>('desc')
   const [view, setView] = useState<ViewMode>(() =>
     localStorage.getItem(VIEW_KEY) === 'grid' ? 'grid' : 'list',
   )
@@ -74,19 +51,15 @@ function PedidosPage() {
             o.order_name.toLowerCase().includes(term) ||
             sellerName(o.user_id).toLowerCase().includes(term),
         )
-      : [...orders]
-    filtered.sort((a, b) => {
-      const compare = String(a[sortField]).localeCompare(String(b[sortField]))
-      return sortDirection === 'asc' ? compare : -compare
-    })
-    return filtered
-  }, [orders, search, sortField, sortDirection, sellerName])
+      : orders
+    return sortOrders(filtered, sortKey, sortDir, sellerName)
+  }, [orders, search, sortKey, sortDir, sellerName])
 
   // Carregamento incremental: 50 pedidos por rodada
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   useEffect(() => {
     setVisibleCount(PAGE_SIZE)
-  }, [search, sortField, sortDirection])
+  }, [search, sortKey, sortDir])
   const visibleOrders = filteredOrders.slice(0, visibleCount)
   const hasMore = visibleCount < filteredOrders.length
 
@@ -123,37 +96,6 @@ function PedidosPage() {
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={<Button variant="outline" className="gap-2" />}
-            >
-              <ArrowDownUp className="h-4 w-4" /> Ordenar
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Ordenar por</DropdownMenuLabel>
-                {SORT_OPTIONS.map((option) => {
-                  const isSelected =
-                    option.field === sortField &&
-                    option.direction === sortDirection
-                  return (
-                    <DropdownMenuItem
-                      key={`${option.field}-${option.direction}`}
-                      onClick={() => {
-                        setSortField(option.field)
-                        setSortDirection(option.direction)
-                      }}
-                      className={cn(isSelected && 'font-medium text-primary')}
-                    >
-                      {option.label}
-                      {isSelected && <span className="ml-auto">✓</span>}
-                    </DropdownMenuItem>
-                  )
-                })}
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
           <div className="inline-flex items-center gap-1 rounded-lg bg-muted p-1">
             <button
               type="button"
@@ -202,8 +144,13 @@ function PedidosPage() {
           <OrdersTable
             orders={visibleOrders}
             users={users}
-            showSeller
-            showDeliveryDate
+            variant="full"
+            sortKey={sortKey}
+            sortDir={sortDir}
+            onSortChange={(key, dir) => {
+              setSortKey(key)
+              setSortDir(dir)
+            }}
           />
         ) : (
           <OrderGrid orders={visibleOrders} sellerName={sellerName} />
@@ -245,9 +192,19 @@ function OrderGrid({
       {orders.map((order) => (
         <div
           key={order.id}
-          className="rounded-lg border border-border bg-background p-4 shadow-sm"
+          className={cn(
+            'rounded-lg border border-border bg-background p-4 shadow-sm',
+            order.is_done === true && 'opacity-60',
+          )}
         >
-          <p className="truncate font-medium">{order.order_name}</p>
+          <p
+            className={cn(
+              'truncate font-medium',
+              order.is_done === true && 'line-through',
+            )}
+          >
+            {order.order_name}
+          </p>
           <p className="text-xs text-muted-foreground">
             {sellerName(order.user_id) || '—'}
           </p>

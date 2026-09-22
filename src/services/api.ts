@@ -60,3 +60,7 @@ export const createOrder = (payload: CreateOrderPayload) =>
 export const createHoliday = (payload: CreateHolidayPayload) =>
   post('holidays', payload)
 export const createUser = (payload: CreateUserPayload) => post('users', payload)
+
+// Atualização parcial de pedido (hoje: toggle de is_done)
+export const updateOrderDone = (payload: { id: string; is_done: boolean }) =>
+  post('update_order', payload)

@@ -30,6 +30,18 @@ import {
 
 const dateLabel = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' })
 
+// Texto colado pode trazer quebras de linha/espaços extras — limpa antes de enviar
+function cleanText(value: string): string {
+  return value.replace(/\s+/g, ' ').trim()
+}
+
+// Number() retorna NaN para texto colado com formatação ("R$ 1.500,00");
+// NaN quebraria o JSON.parse do backend — sempre cair em número válido
+function toSafeNumber(value: string): number {
+  const n = Number(value)
+  return Number.isFinite(n) ? n : 0
+}
+
 type NewOrderDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -73,23 +85,37 @@ export function NewOrderDialog({ open, onOpenChange }: NewOrderDialogProps) {
       setError('Selecione um usuário ativo antes de criar um pedido.')
       return
     }
+    const cleanName = cleanText(orderName)
+    if (!cleanName) {
+      setError('Informe o nome do pedido.')
+      return
+    }
+    const cleanImageUrl = imageUrl.replace(/\s/g, '')
+    if (cleanImageUrl && !/^https?:\/\//i.test(cleanImageUrl)) {
+      setError('A imagem precisa ser uma URL começando com http:// ou https://')
+      return
+    }
+
     setIsSubmitting(true)
     setError(null)
+    const payload = {
+      user_id: activeUser.id,
+      order_name: cleanName,
+      shirt_count: toSafeNumber(shirts),
+      others_items_count: toSafeNumber(others),
+      total_amount: toSafeNumber(total),
+      delivery_date: toDateKey(deliveryDate),
+      // Campo opcional: só envia se preenchido
+      ...(cleanImageUrl && { imgurl: cleanImageUrl }),
+    }
     try {
-      await createOrder({
-        user_id: activeUser.id,
-        order_name: orderName,
-        shirt_count: Number(shirts) || 0,
-        others_items_count: Number(others) || 0,
-        total_amount: Number(total) || 0,
-        delivery_date: toDateKey(deliveryDate),
-        // Campo opcional: só envia se preenchido
-        ...(imageUrl.trim() && { imgurl: imageUrl.trim() }),
-      })
+      await createOrder(payload)
       await refreshOrders()
       onOpenChange(false)
       reset()
     } catch (err) {
+      // Log completo para diagnóstico (o erro visível ao usuário é genérico)
+      console.error('[Novo Pedido] Falha no POST /orders', { payload, err })
       setError(err instanceof Error ? err.message : 'Falha ao criar pedido')
     } finally {
       setIsSubmitting(false)
@@ -112,7 +138,7 @@ export function NewOrderDialog({ open, onOpenChange }: NewOrderDialogProps) {
             <strong>{activeUser?.name ?? '—'}</strong>.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="order-name" className="text-sm font-medium">
               Nome do pedido
@@ -179,7 +205,7 @@ export function NewOrderDialog({ open, onOpenChange }: NewOrderDialogProps) {
             </label>
             <Input
               id="order-image"
-              type="url"
+              type="text"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
               placeholder="Link de compartilhamento do Google Drive"
