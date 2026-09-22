@@ -37,9 +37,7 @@ export function MonthSelector() {
       }}
     >
       <PopoverTrigger
-        render={
-          <Button variant="outline" className="gap-2 font-normal" />
-        }
+        render={<Button variant="outline" className="gap-2 font-normal" />}
       >
         <CalendarRange className="h-4 w-4" />
         {label}

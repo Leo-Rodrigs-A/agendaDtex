@@ -58,6 +58,24 @@
 - [x] `/pedidos` com carregamento incremental de 50 em 50 pedidos ("Carregar mais"), reiniciando ao mudar busca/ordenação
 - [x] Providers centralizados em `src/contexts/index.tsx` (`AppProviders` — Theme → Tooltip → Sidebar → Filter → Data → User)
 
-## Manutenção (quando sobrar tempo)
+## Slice 7: Infraestrutura, PWA, Deploy e Ajustes Visuais Globais ✅
 
-- [ ] Rodar `pnpm format` para corrigir estilo de import nos arquivos de registry (`button`, `sidebar`, `calendar` — lint `import/consistent-type-specifier-style`)
+- [x] Adicionar arquivos de manifesto para PWA e vercel.json para redirecionamento SPA em subpáginas (ícones reais `icon-192.png`/`icon-512.png` no manifest + `<meta theme-color>` no `index.html`)
+- [x] Fixar o header geral da aplicação no topo independentemente do scroll (`sticky top-0 z-10` no `Header`)
+- [x] Destacar o nome do dia selecionado no KPI do dia com a cor primária atual (`dayLabel` envolto em `text-primary` em "Visão diária", "Pedidos para" e "Capacidade em")
+- [x] Rodar `pnpm format` para corrigir estilo de import nos arquivos de registry
+
+## Slice 8: Schema de Dados e Gestão de Imagens (Google Drive)
+
+- [ ] Modificar o schema da planilha /pedidos para adicionar colunas `imgurl` e `is_done`
+- [ ] Adicionar campo opcional de URL de imagem do Google Drive no formulário de novo pedido
+- [ ] Criar botão/ícone de link para imagem à esquerda do nome do pedido e modal de visualização (com placeholder para pedidos sem imagem) nas tabelas diária e geral
+
+## Slice 9: Evolução das Tabelas, Filtros de Usuário e Ordenação por Colunas
+
+- [ ] Ajustar default sort da tabela de pedidos para exibir `created_at` mais recente no topo por padrão
+- [ ] Adicionar sort embutido diretamente no header de todas as colunas em ambas as tabelas (alfabético, numérico, data com inversão de ordem por clique)
+- [ ] Modificar colunas exibidas na tabela de pedidos por dia (`is_done` checkbox, nome + ícone de imagem, vendedor, camisetas, outros, valor)
+- [ ] Ocultar pedidos com `is_done = true` na tabela diária e aplicar formatação riscada/esmaecida na tabela geral
+- [ ] Adicionar segmented control na tabela diária para alternar entre "Todos os Usuários" e "Usuário Ativo"
+- [ ] Exibir informações de valor vendido, camisetas e outras peças na tabela diária, integradas ao segmented control de usuário

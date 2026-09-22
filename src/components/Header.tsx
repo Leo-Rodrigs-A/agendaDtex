@@ -31,7 +31,7 @@ export function Header() {
   }
 
   return (
-    <header className="flex h-16 shrink-0 items-center border-b border-border bg-background px-6 transition-all">
+    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b border-border bg-background px-6 transition-all">
       <div className="flex w-full items-center justify-between">
         <h1 className="text-lg font-semibold text-foreground">
           {getPageTitle(pathname)}

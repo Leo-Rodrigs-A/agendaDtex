@@ -127,14 +127,18 @@ function DashboardPage() {
           )}
         >
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <p className="text-muted-foreground">Visão diária {dayLabel}.</p>
+            <p className="text-muted-foreground">
+              Visão diária{' '}
+              <span className="font-medium text-primary">{dayLabel}</span>.
+            </p>
             <DaySelector />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="bg-card p-6 rounded-xl border border-border shadow-sm flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">
-                  Pedidos para {dayLabel}
+                  Pedidos para{' '}
+                  <span className="font-medium text-primary">{dayLabel}</span>
                 </p>
                 <h3
                   className={cn(
@@ -158,7 +162,8 @@ function DashboardPage() {
             <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-muted-foreground">
-                  Capacidade em {dayLabel}
+                  Capacidade em{' '}
+                  <span className="font-medium text-primary">{dayLabel}</span>
                 </span>
                 <CalendarDays className="h-5 w-5 text-primary" />
               </div>
