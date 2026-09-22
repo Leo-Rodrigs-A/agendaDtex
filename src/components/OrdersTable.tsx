@@ -1,6 +1,16 @@
+import { useState } from 'react'
+import { ImageOff, Image as ImageIcon } from 'lucide-react'
 import type { Order, User } from '@/types'
 import { formatBRL } from '@/lib/orders'
 import { parseDateKey } from '@/lib/dates'
+import { driveImageSrc } from '@/lib/drive'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -15,6 +25,64 @@ const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
   month: 'short',
   year: 'numeric',
 })
+
+/** Ícone à esquerda do nome do pedido: abre modal com a imagem (Drive).
+ * Sem imagem: botão desabilitado para não enganar o usuário. */
+function OrderImageButton({ order }: { order: Order }) {
+  const [open, setOpen] = useState(false)
+  const [loadFailed, setLoadFailed] = useState(false)
+  const hasImage = Boolean(order.imgurl?.trim())
+
+  if (!hasImage) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        disabled
+        className="h-7 w-7 text-muted-foreground/40"
+      >
+        <ImageOff className="h-4 w-4" />
+      </Button>
+    )
+  }
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7 text-primary"
+        onClick={() => {
+          setLoadFailed(false)
+          setOpen(true)
+        }}
+      >
+        <ImageIcon className="h-4 w-4" />
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{order.order_name}</DialogTitle>
+          </DialogHeader>
+          {loadFailed ? (
+            <div className="flex h-48 items-center justify-center rounded-lg bg-muted text-sm text-muted-foreground">
+              Não foi possível carregar a imagem. Verifique se o link está
+              público.
+            </div>
+          ) : (
+            <img
+              src={driveImageSrc(order.imgurl!)}
+              alt={`Imagem do pedido ${order.order_name}`}
+              loading="lazy"
+              onError={() => setLoadFailed(true)}
+              className="max-h-[70vh] w-full rounded-lg object-contain"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
 
 type OrdersTableProps = {
   orders: Array<Order>
@@ -66,7 +134,12 @@ export function OrdersTable({
         ) : (
           orders.map((order) => (
             <TableRow key={order.id}>
-              <TableCell className="font-medium">{order.order_name}</TableCell>
+              <TableCell className="font-medium">
+                <div className="flex items-center gap-1">
+                  <OrderImageButton order={order} />
+                  <span className="truncate">{order.order_name}</span>
+                </div>
+              </TableCell>
               {showSeller && <TableCell>{sellerName(order.user_id)}</TableCell>}
               <TableCell className="text-right tabular-nums">
                 {order.shirt_count}

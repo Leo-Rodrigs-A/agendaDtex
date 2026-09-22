@@ -65,11 +65,11 @@
 - [x] Destacar o nome do dia selecionado no KPI do dia com a cor primária atual (`dayLabel` envolto em `text-primary` em "Visão diária", "Pedidos para" e "Capacidade em")
 - [x] Rodar `pnpm format` para corrigir estilo de import nos arquivos de registry
 
-## Slice 8: Schema de Dados e Gestão de Imagens (Google Drive)
+## Slice 8: Schema de Dados e Gestão de Imagens (Google Drive) ✅
 
-- [ ] Modificar o schema da planilha /pedidos para adicionar colunas `imgurl` e `is_done`
-- [ ] Adicionar campo opcional de URL de imagem do Google Drive no formulário de novo pedido
-- [ ] Criar botão/ícone de link para imagem à esquerda do nome do pedido e modal de visualização (com placeholder para pedidos sem imagem) nas tabelas diária e geral
+- [x] Modificar o schema da planilha /pedidos para adicionar colunas `imgurl` e `is_done` (backend atualizado e deploy novo na URL do `.env`)
+- [x] Adicionar campo opcional de URL de imagem do Google Drive no formulário de novo pedido (`NewOrderDialog`; envia `imgurl` só se preenchido)
+- [x] Criar botão/ícone de link para imagem à esquerda do nome do pedido e modal de visualização nas tabelas diária e geral (`OrdersTable` + `lib/drive.ts` → `lh3.googleusercontent.com/d/<ID>`; botão **desabilitado** quando o pedido não tem imagem, em vez de placeholder clicável)
 
 ## Slice 9: Evolução das Tabelas, Filtros de Usuário e Ordenação por Colunas
 

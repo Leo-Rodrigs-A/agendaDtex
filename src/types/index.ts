@@ -11,9 +11,11 @@ export interface User {
 }
 
 // planilha `orders`: id, user_id, order_name, shirt_count,
-// others_items_count, total_amount, created_at, delivery_date
+// others_items_count, total_amount, created_at, delivery_date, is_done, imgurl
 // - created_at: string ISO gerada no backend (new Date())
 // - delivery_date: "YYYY-MM-DD" (data de calendário, sem horário/timezone)
+// - is_done: boolean (default false no backend; uso visual no Slice 9)
+// - imgurl: URL de imagem do Google Drive (pode vir vazio/ausente)
 export interface Order {
   id: string
   user_id: string
@@ -23,6 +25,8 @@ export interface Order {
   total_amount: number
   created_at: string
   delivery_date: string
+  imgurl?: string
+  is_done?: boolean
 }
 
 // planilha `holidays`: holiday_date, holiday_description
@@ -32,7 +36,7 @@ export interface Holiday {
   holiday_description: string
 }
 
-// Payloads de criação (POST). id e created_at são gerados no backend.
-export type CreateOrderPayload = Omit<Order, 'id' | 'created_at'>
+// Payloads de criação (POST). id, created_at e is_done são gerados no backend.
+export type CreateOrderPayload = Omit<Order, 'id' | 'created_at' | 'is_done'>
 export type CreateHolidayPayload = Holiday
 export type CreateUserPayload = Omit<User, 'id'>

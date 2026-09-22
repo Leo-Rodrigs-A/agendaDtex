@@ -3,7 +3,9 @@ Estou desenvolvendo uma API simples usando Google Apps Script + Google Sheets, q
 Estrutura das planilhas:
 
 - users: `id`, `name`, `mail`, `role`, `is_active`
-- orders: `id`, `user_id`, `order_name`, `shirt_count`, `others_items_count`, `total_amount`, `created_at`, `delivery_date`
+- orders: `id`, `user_id`, `order_name`, `shirt_count`, `others_items_count`, `total_amount`, `created_at`, `delivery_date`, `is_done`, `imgurl`
+  - `is_done`: boolean; criado como `false` no POST (o front não envia esse campo)
+  - `imgurl`: texto, URL de imagem do Google Drive (opcional; pode ser vazio)
 - holidays: `holiday_date`, `holiday_description`
 
 A API usa uma única URL de Web App, com:

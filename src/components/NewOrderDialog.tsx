@@ -50,6 +50,7 @@ export function NewOrderDialog({ open, onOpenChange }: NewOrderDialogProps) {
   const [shirts, setShirts] = useState('')
   const [others, setOthers] = useState('')
   const [total, setTotal] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
   const [deliveryDate, setDeliveryDate] = useState<Date>(defaultDate)
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -60,6 +61,7 @@ export function NewOrderDialog({ open, onOpenChange }: NewOrderDialogProps) {
     setShirts('')
     setOthers('')
     setTotal('')
+    setImageUrl('')
     setDeliveryDate(defaultDate())
     setError(null)
   }
@@ -81,6 +83,8 @@ export function NewOrderDialog({ open, onOpenChange }: NewOrderDialogProps) {
         others_items_count: Number(others) || 0,
         total_amount: Number(total) || 0,
         delivery_date: toDateKey(deliveryDate),
+        // Campo opcional: só envia se preenchido
+        ...(imageUrl.trim() && { imgurl: imageUrl.trim() }),
       })
       await refreshOrders()
       onOpenChange(false)
@@ -165,6 +169,21 @@ export function NewOrderDialog({ open, onOpenChange }: NewOrderDialogProps) {
                 placeholder="0"
               />
             </div>
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="order-image" className="text-sm font-medium">
+              Imagem do pedido{' '}
+              <span className="font-normal text-muted-foreground">
+                (opcional)
+              </span>
+            </label>
+            <Input
+              id="order-image"
+              type="url"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="Link de compartilhamento do Google Drive"
+            />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">Data de entrega</label>
