@@ -1,7 +1,7 @@
 // Tema vem do ThemeProvider do projeto (não usamos next-themes)
 import { useTheme } from '@/components/ThemeProvider'
-import { Toaster as Sonner  } from 'sonner'
-import type {ToasterProps} from 'sonner';
+import { Toaster as Sonner } from 'sonner'
+import type { ToasterProps } from 'sonner'
 import {
   CircleCheckIcon,
   InfoIcon,

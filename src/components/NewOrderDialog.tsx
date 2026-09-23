@@ -18,7 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { createOrder } from '@/services/api'
+import { createOrder } from '@/services/orders'
 import { useData } from '@/components/DataProvider'
 import { useActiveUser } from '@/components/UserProvider'
 import {

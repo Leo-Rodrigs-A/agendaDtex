@@ -92,18 +92,18 @@ Modelo: sistema interno, todos leem tudo; escrita restrita por role/ownership. *
 - [ ] **holidays:** `SELECT` autenticados ativos; `INSERT/DELETE` só `is_admin()`.
 - [ ] **Matriz de teste de RLS** (2 usuários de teste: 1 admin, 1 vendedor):
 
-  | Operação | Admin | Vendedor |
-  |---|---|---|
-  | Ler pedidos | ✅ | ✅ |
-  | Criar pedido | ✅ | ✅ |
-  | Concluir pedido (RPC) | ✅ | ✅ |
-  | Alterar nome/valor do pedido | SQL direto | ❌ |
-  | Deletar pedido | ✅ | ❌ |
-  | Ler feriados | ✅ | ✅ |
-  | Criar/deletar feriado | ✅ | ❌ |
-  | Editar próprio nome | ✅ | ✅ |
-  | Alterar role (qualquer um) | SQL direto | ❌ |
-  | Criar usuário | convite | ❌ |
+  | Operação                     | Admin      | Vendedor |
+  | ---------------------------- | ---------- | -------- |
+  | Ler pedidos                  | ✅         | ✅       |
+  | Criar pedido                 | ✅         | ✅       |
+  | Concluir pedido (RPC)        | ✅         | ✅       |
+  | Alterar nome/valor do pedido | SQL direto | ❌       |
+  | Deletar pedido               | ✅         | ❌       |
+  | Ler feriados                 | ✅         | ✅       |
+  | Criar/deletar feriado        | ✅         | ❌       |
+  | Editar próprio nome          | ✅         | ✅       |
+  | Alterar role (qualquer um)   | SQL direto | ❌       |
+  | Criar usuário                | convite    | ❌       |
 
 - [ ] **Testes maliciosos** (logado como vendedor, via API direta): `UPDATE orders SET user_id = <id_admin>`; `UPDATE orders SET total_amount = 999999`; `UPDATE profiles SET role = 'admin'`; `DELETE FROM orders`. Se qualquer um passar, a implementação está errada — mais importante que o fluxo feliz.
 - [ ] Testar usuário com `is_active = false`: deve perder acesso aos dados (não só ser deslogado no front).

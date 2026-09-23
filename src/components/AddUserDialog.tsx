@@ -1,8 +1,3 @@
-import { useState } from 'react'
-import type { FormEvent } from 'react'
-import { Loader2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   Dialog,
   DialogContent,
@@ -11,113 +6,49 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { createUser } from '@/services/api'
-import { useData } from '@/components/DataProvider'
+import { Button } from '@/components/ui/button'
 
 type AddUserDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-/** Modal de cadastro de funcionário (vendedor). Após criar, torna-se o usuário ativo. */
+/**
+ * MVP: o convite de usuários é feito manualmente no dashboard do Supabase
+ * (Authentication > Users > Invite). Uma Edge Function `invite-user` fará
+ * isso de dentro do app numa fase posterior. Ver .agent/migracao-supabase.md.
+ */
 export function AddUserDialog({ open, onOpenChange }: AddUserDialogProps) {
-  const { refreshUsers } = useData()
-
-  const [name, setName] = useState('')
-  const [mail, setMail] = useState('')
-  const [role, setRole] = useState('vendedor')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const reset = () => {
-    setName('')
-    setMail('')
-    setRole('vendedor')
-    setError(null)
-  }
-
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault()
-    if (isSubmitting) return
-    setIsSubmitting(true)
-    setError(null)
-    try {
-      await createUser({ name, mail, role, is_active: true })
-      await refreshUsers()
-      onOpenChange(false)
-      reset()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Falha ao criar usuário')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        if (!next) reset()
-        onOpenChange(next)
-      }}
-    >
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Adicionar Funcionário</DialogTitle>
+          <DialogTitle>Convidar usuário</DialogTitle>
           <DialogDescription>
-            Cadastre um novo vendedor para registrar pedidos.
+            Por segurança, novos usuários são convidados por e-mail através do
+            painel do Supabase.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="user-name" className="text-sm font-medium">
-              Nome
-            </label>
-            <Input
-              id="user-name"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Ex.: Maria Silva"
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="user-mail" className="text-sm font-medium">
-              E-mail
-            </label>
-            <Input
-              id="user-mail"
-              type="email"
-              required
-              value={mail}
-              onChange={(e) => setMail(e.target.value)}
-              placeholder="maria@dtex.com"
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="user-role" className="text-sm font-medium">
-              Cargo
-            </label>
-            <Input
-              id="user-role"
-              required
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              placeholder="vendedor"
-            />
-          </div>
-          {error && (
-            <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {error}
-            </p>
-          )}
-          <DialogFooter>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-              {isSubmitting ? 'Salvando…' : 'Cadastrar'}
-            </Button>
-          </DialogFooter>
-        </form>
+        <ol className="list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
+          <li>
+            Abra o dashboard do Supabase →{' '}
+            <strong>Authentication → Users</strong>.
+          </li>
+          <li>
+            Clique em <strong>Invite</strong> e informe o e-mail do vendedor.
+          </li>
+          <li>
+            O usuário recebe o convite, define a senha e confirma o nome no
+            primeiro acesso.
+          </li>
+          <li>
+            Para tornar alguém <strong>admin</strong>, edite o campo{' '}
+            <code>role</code> na tabela <code>profiles</code>.
+          </li>
+        </ol>
+        <DialogFooter>
+          <Button onClick={() => onOpenChange(false)}>Entendi</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

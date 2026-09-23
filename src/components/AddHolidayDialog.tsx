@@ -18,7 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { createHoliday } from '@/services/api'
+import { createHoliday } from '@/services/holidays'
 import { useData } from '@/components/DataProvider'
 import { toDateKey } from '@/lib/dates'
 
