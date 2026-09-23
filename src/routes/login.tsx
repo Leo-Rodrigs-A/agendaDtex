@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/components/AuthProvider'
 import { SplashScreen } from '@/components/SplashScreen'
+import { useSplashGate } from '@/hooks/use-splash-gate'
 
 export const Route = createFileRoute('/login')({
   component: LoginPage,
@@ -14,14 +15,16 @@ export const Route = createFileRoute('/login')({
 
 function LoginPage() {
   const { session, profile, isLoading, signIn } = useAuth()
+  // Mínimo de 3s (1 loop da animação do logo)
+  const showSplash = useSplashGate(isLoading)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  if (isLoading) return <SplashScreen />
-  // Já autenticado: vai para o app (ou completa o onboarding)
-  if (session && profile) return <Navigate to="/" replace />
-  if (session && !profile) return <Navigate to="/onboarding" replace />
+  if (showSplash) return <SplashScreen />
+  if (session && profile?.onboarding_completed)
+    return <Navigate to="/" replace />
+  if (session) return <Navigate to="/onboarding" replace />
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -41,10 +44,7 @@ function LoginPage() {
     <div className="flex min-h-screen w-full items-center justify-center bg-muted/20 p-4">
       <div className="w-full max-w-sm space-y-6 rounded-xl border border-border bg-card p-8 shadow-sm">
         <div className="flex flex-col items-center gap-3 text-center">
-          {/* Placeholder do logo — mesmo do SplashScreen (trocar pelo SVG oficial) */}
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-xl font-bold text-primary-foreground">
-            DT
-          </div>
+          <img src="/logodtex-animar.svg" alt="DTex" className="h-16 w-auto" />
           <div>
             <h1 className="text-lg font-semibold">Agenda DTex</h1>
             <p className="text-sm text-muted-foreground">

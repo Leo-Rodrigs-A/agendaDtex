@@ -7,8 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/components/AuthProvider'
 import { SplashScreen } from '@/components/SplashScreen'
+import { SplashLogo } from '@/components/SplashLogo'
+import { useSplashGate } from '@/hooks/use-splash-gate'
 import { supabase } from '@/lib/supabase'
-import { updateOwnName } from '@/services/profiles'
+import { completeOnboarding } from '@/services/profiles'
 
 export const Route = createFileRoute('/onboarding')({
   component: OnboardingPage,
@@ -20,14 +22,18 @@ export const Route = createFileRoute('/onboarding')({
  */
 function OnboardingPage() {
   const { session, profile, isLoading, refreshProfile } = useAuth()
+  // Mínimo de 3s (1 loop da animação do logo)
+  const showSplash = useSplashGate(isLoading)
   const navigate = useNavigate()
   const [name, setName] = useState<string | null>(null)
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  if (isLoading) return <SplashScreen />
+  if (showSplash) return <SplashScreen />
   if (!session) return <Navigate to="/login" replace />
+  // Onboarding já concluído: essa tela só aparece uma vez
+  if (profile?.onboarding_completed) return <Navigate to="/" replace />
 
   const displayName = name ?? profile?.name ?? ''
 
@@ -46,9 +52,7 @@ function OnboardingPage() {
     try {
       const { error } = await supabase.auth.updateUser({ password })
       if (error) throw error
-      if (displayName.trim() && displayName.trim() !== profile?.name) {
-        await updateOwnName(displayName)
-      }
+      await completeOnboarding(displayName)
       await refreshProfile()
       toast.success('Tudo pronto! Bem-vindo(a).')
       navigate({ to: '/' })
@@ -64,9 +68,7 @@ function OnboardingPage() {
     <div className="flex min-h-screen w-full items-center justify-center bg-muted/20 p-4">
       <div className="w-full max-w-sm space-y-6 rounded-xl border border-border bg-card p-8 shadow-sm">
         <div className="flex flex-col items-center gap-3 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-xl font-bold text-primary-foreground">
-            DT
-          </div>
+          <SplashLogo className="h-16" />
           <div>
             <h1 className="text-lg font-semibold">Complete seu cadastro</h1>
             <p className="text-sm text-muted-foreground">

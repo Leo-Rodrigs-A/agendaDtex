@@ -40,27 +40,25 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="h-16 border-b border-sidebar-border px-6 flex flex-row items-center justify-between group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
         <div className="flex items-center gap-3">
-          {/* Modo recolhido: o logo vira o botão que restaura a sidebar */}
+          {/* Modo recolhido: o ícone vira o botão que restaura a sidebar */}
           <button
             type="button"
             onClick={toggleSidebar}
             title="Expandir sidebar"
-            className="group/logo hidden h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-lg shadow-md group-data-[collapsible=icon]:flex"
+            className="group/logo hidden h-9 w-9 items-center justify-center group-data-[collapsible=icon]:flex"
           >
-            <span className="group-hover/logo:hidden">DT</span>
+            <img
+              src="/dtex192.png"
+              alt="DTex"
+              className="h-9 w-9 rounded-lg shadow-md group-hover/logo:hidden"
+            />
             <PanelLeftOpen className="hidden h-5 w-5 group-hover/logo:block" />
           </button>
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-lg shadow-md group-data-[collapsible=icon]:hidden">
-            DT
-          </div>
-          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <span className="font-semibold text-sidebar-foreground leading-tight">
-              Agenda Dtex
-            </span>
-            <span className="text-xs text-sidebar-foreground/60">
-              Pedidos & Produção
-            </span>
-          </div>
+          <img
+            src="/logodtex-animar.svg"
+            alt="DTex"
+            className="h-8 w-auto group-data-[collapsible=icon]:hidden"
+          />
         </div>
         <SidebarTrigger className="-mr-2 group-data-[collapsible=icon]:hidden" />
       </SidebarHeader>

@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [sessionReady, setSessionReady] = useState(false)
-  const [profileLoading, setProfileLoading] = useState(false)
+  const [profileReady, setProfileReady] = useState(false)
 
   // 1) Sessão: o callback de onAuthStateChange só atualiza estado local.
   //    NUNCA chamar supabase.from()/rpc() aqui dentro — risco de deadlock
@@ -49,14 +49,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   // 2) Profile: carregado em efeito separado, reagindo à sessão.
+  //    Enquanto o profile não for RESOLVIDO (sucesso ou erro), profileReady
+  //    fica false — isso impede que os gates confundam "carregando" com
+  //    "profile inexistente" e redirecionem para /onboarding a cada reload
+  //    (bug de race condition).
   const userId = session?.user.id ?? null
   useEffect(() => {
     if (!userId) {
       setProfile(null)
+      setProfileReady(true)
       return
     }
     let cancelled = false
-    setProfileLoading(true)
+    setProfileReady(false)
     getMyProfile(userId)
       .then((p) => {
         if (!cancelled) setProfile(p)
@@ -66,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!cancelled) setProfile(null)
       })
       .finally(() => {
-        if (!cancelled) setProfileLoading(false)
+        if (!cancelled) setProfileReady(true)
       })
     return () => {
       cancelled = true
@@ -95,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       session,
       profile,
-      isLoading: !sessionReady || (userId != null && profileLoading),
+      isLoading: !sessionReady || (userId != null && !profileReady),
       signIn,
       signOut,
       refreshProfile,
@@ -105,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       profile,
       sessionReady,
       userId,
-      profileLoading,
+      profileReady,
       signIn,
       signOut,
       refreshProfile,

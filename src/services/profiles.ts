@@ -5,7 +5,7 @@ import type { Profile } from '@/types'
 export async function listProfiles(): Promise<Array<Profile>> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, name, role, is_active')
+    .select('id, name, role, is_active, onboarding_completed')
     .order('name', { ascending: true })
   if (error) throw error
   return data
@@ -15,7 +15,7 @@ export async function listProfiles(): Promise<Array<Profile>> {
 export async function getMyProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, name, role, is_active')
+    .select('id, name, role, is_active, onboarding_completed')
     .eq('id', userId)
     .maybeSingle()
   if (error) throw error
@@ -25,5 +25,13 @@ export async function getMyProfile(userId: string): Promise<Profile | null> {
 /** Atualiza o próprio nome via RPC (role/is_active nunca são editáveis). */
 export async function updateOwnName(name: string): Promise<void> {
   const { error } = await supabase.rpc('update_own_name', { new_name: name })
+  if (error) throw error
+}
+
+/** Conclui o onboarding: define o nome e marca a flag (RPC atômica). */
+export async function completeOnboarding(name: string): Promise<void> {
+  const { error } = await supabase.rpc('complete_onboarding', {
+    new_name: name,
+  })
   if (error) throw error
 }

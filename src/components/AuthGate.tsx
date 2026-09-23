@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Navigate } from '@tanstack/react-router'
 import { useAuth } from '@/components/AuthProvider'
 import { SplashScreen } from '@/components/SplashScreen'
+import { useSplashGate } from '@/hooks/use-splash-gate'
 
 /**
  * Protege o shell autenticado da aplicação:
@@ -12,10 +13,15 @@ import { SplashScreen } from '@/components/SplashScreen'
  */
 export function AuthGate({ children }: { children: ReactNode }) {
   const { session, profile, isLoading, signOut } = useAuth()
+  // Mínimo de 3s (1 loop da animação do logo), mesmo se os dados já chegaram
+  const showSplash = useSplashGate(isLoading)
 
-  if (isLoading) return <SplashScreen />
+  if (showSplash) return <SplashScreen />
   if (!session) return <Navigate to="/login" replace />
-  if (!profile) return <Navigate to="/onboarding" replace />
+  // Sessão sem profile (edge: trigger falhou) ou onboarding pendente
+  if (!profile || !profile.onboarding_completed) {
+    return <Navigate to="/onboarding" replace />
+  }
   if (!profile.is_active) {
     // Força logout de usuário desativado (segurança real está no RLS)
     void signOut()

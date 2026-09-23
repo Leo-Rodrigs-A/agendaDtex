@@ -1,13 +1,14 @@
 // Interfaces das tabelas do Supabase (Postgres).
 // Schema de referência: supabase/migrations/0001_schema.sql
 
-// tabela `profiles`: id, legacy_id, name, role, is_active, created_at
+// tabela `profiles`: id, legacy_id, name, role, is_active, onboarding_completed, created_at
 // 1:1 com auth.users — o e-mail fica no Auth, não no profile.
 export interface Profile {
   id: string
   name: string
   role: 'admin' | 'vendedor'
   is_active: boolean
+  onboarding_completed: boolean
 }
 
 // Alias de compatibilidade da era Apps Script (planilha `users`).
