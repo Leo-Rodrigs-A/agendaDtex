@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ptBR } from 'react-day-picker/locale'
 import { CalendarDays, Loader2 } from 'lucide-react'
@@ -18,15 +18,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { createOrder } from '@/services/orders'
+import { createOrder, updateOrder } from '@/services/orders'
 import { useData } from '@/components/DataProvider'
 import { useActiveUser } from '@/components/UserProvider'
+import { useAuth } from '@/components/AuthProvider'
 import {
   WEEKEND_MATCHER,
   holidayDates,
   nextBusinessDays,
+  parseDateKey,
   toDateKey,
 } from '@/lib/dates'
+import type { Order } from '@/types'
 
 const dateLabel = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' })
 
@@ -36,7 +39,7 @@ function cleanText(value: string): string {
 }
 
 // Number() retorna NaN para texto colado com formatação ("R$ 1.500,00");
-// NaN quebraria o JSON.parse do backend — sempre cair em número válido
+// NaN quebraria a persistência — sempre cair em número válido
 function toSafeNumber(value: string): number {
   const n = Number(value)
   return Number.isFinite(n) ? n : 0
@@ -45,15 +48,23 @@ function toSafeNumber(value: string): number {
 type NewOrderDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
+  /** Quando presente, o modal vira "Editar Pedido" (campos preenchidos). */
+  order?: Order | null
 }
 
 /**
- * Modal "Novo Pedido". O vendedor é sempre o usuário ativo.
+ * Modal de pedido (criar ou editar). Na criação, o vendedor é o usuário logado.
  * A data de entrega bloqueia fins de semana e feriados (regra de agendamento).
  */
-export function NewOrderDialog({ open, onOpenChange }: NewOrderDialogProps) {
+export function NewOrderDialog({
+  open,
+  onOpenChange,
+  order = null,
+}: NewOrderDialogProps) {
   const { holidays, refreshOrders } = useData()
   const { activeUser } = useActiveUser()
+  const { profile } = useAuth()
+  const isEdit = order != null
 
   // Default: próximo dia útil a partir de hoje
   const defaultDate = () => nextBusinessDays(new Date(), 1)[0]
@@ -64,9 +75,29 @@ export function NewOrderDialog({ open, onOpenChange }: NewOrderDialogProps) {
   const [total, setTotal] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [deliveryDate, setDeliveryDate] = useState<Date>(defaultDate)
+  const [calendarMonth, setCalendarMonth] = useState<Date>(defaultDate)
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Abre o calendário já no mês da data selecionada (única ou do pedido)
+  useEffect(() => setCalendarMonth(deliveryDate), [deliveryDate])
+
+  // Preenche o form ao abrir em modo edição
+  // (deps intencionalmente limitadas: só repovoar ao abrir/trocar de pedido)
+  useEffect(() => {
+    if (open && order) {
+      setOrderName(order.order_name)
+      setShirts(String(order.shirt_count))
+      setOthers(String(order.others_items_count))
+      setTotal(String(order.total_amount))
+      setImageUrl(order.imgurl ?? '')
+      const d = parseDateKey(order.delivery_date)
+      setDeliveryDate(d)
+      setCalendarMonth(d)
+      setError(null)
+    }
+  }, [open, order?.id])
 
   const reset = () => {
     setOrderName('')
@@ -82,7 +113,7 @@ export function NewOrderDialog({ open, onOpenChange }: NewOrderDialogProps) {
     event.preventDefault()
     if (isSubmitting) return
     if (!activeUser) {
-      setError('Selecione um usuário ativo antes de criar um pedido.')
+      setError('Você precisa estar autenticado para criar um pedido.')
       return
     }
     const cleanName = cleanText(orderName)
@@ -98,25 +129,35 @@ export function NewOrderDialog({ open, onOpenChange }: NewOrderDialogProps) {
 
     setIsSubmitting(true)
     setError(null)
-    const payload = {
-      user_id: activeUser.id,
-      order_name: cleanName,
-      shirt_count: toSafeNumber(shirts),
-      others_items_count: toSafeNumber(others),
-      total_amount: toSafeNumber(total),
-      delivery_date: toDateKey(deliveryDate),
-      // Campo opcional: só envia se preenchido
-      ...(cleanImageUrl && { imgurl: cleanImageUrl }),
-    }
     try {
-      await createOrder(payload)
+      if (isEdit) {
+        await updateOrder({
+          id: order.id,
+          order_name: cleanName,
+          shirt_count: toSafeNumber(shirts),
+          others_items_count: toSafeNumber(others),
+          total_amount: toSafeNumber(total),
+          delivery_date: toDateKey(deliveryDate),
+          imgurl: cleanImageUrl || null,
+        })
+      } else {
+        await createOrder({
+          user_id: activeUser.id,
+          order_name: cleanName,
+          shirt_count: toSafeNumber(shirts),
+          others_items_count: toSafeNumber(others),
+          total_amount: toSafeNumber(total),
+          delivery_date: toDateKey(deliveryDate),
+          // Campo opcional: só envia se preenchido
+          ...(cleanImageUrl && { imgurl: cleanImageUrl }),
+        })
+      }
       await refreshOrders()
       onOpenChange(false)
       reset()
     } catch (err) {
-      // Log completo para diagnóstico (o erro visível ao usuário é genérico)
-      console.error('[Novo Pedido] Falha no POST /orders', { payload, err })
-      setError(err instanceof Error ? err.message : 'Falha ao criar pedido')
+      console.error('[Pedido] Falha ao salvar', { isEdit, err })
+      setError(err instanceof Error ? err.message : 'Falha ao salvar pedido')
     } finally {
       setIsSubmitting(false)
     }
@@ -132,10 +173,11 @@ export function NewOrderDialog({ open, onOpenChange }: NewOrderDialogProps) {
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Novo Pedido</DialogTitle>
+          <DialogTitle>{isEdit ? 'Editar Pedido' : 'Novo Pedido'}</DialogTitle>
           <DialogDescription>
-            O pedido será registrado em nome de{' '}
-            <strong>{activeUser?.name ?? '—'}</strong>.
+            {isEdit
+              ? 'Atualize os dados do pedido.'
+              : `O pedido será registrado em nome de ${profile?.name ?? '—'}.`}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
@@ -230,6 +272,8 @@ export function NewOrderDialog({ open, onOpenChange }: NewOrderDialogProps) {
                 <Calendar
                   mode="single"
                   locale={ptBR}
+                  month={calendarMonth}
+                  onMonthChange={setCalendarMonth}
                   selected={deliveryDate}
                   onSelect={(date) => {
                     if (date) {
@@ -254,7 +298,11 @@ export function NewOrderDialog({ open, onOpenChange }: NewOrderDialogProps) {
           <DialogFooter>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-              {isSubmitting ? 'Salvando…' : 'Criar pedido'}
+              {isSubmitting
+                ? 'Salvando…'
+                : isEdit
+                  ? 'Salvar alterações'
+                  : 'Criar pedido'}
             </Button>
           </DialogFooter>
         </form>

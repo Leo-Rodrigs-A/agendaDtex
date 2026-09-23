@@ -15,7 +15,7 @@ export const Route = createFileRoute('/login')({
 
 function LoginPage() {
   const { session, profile, isLoading, signIn } = useAuth()
-  // Mínimo de 3s (1 loop da animação do logo)
+  // Mínimo de 2s (1 loop da animação do logo)
   const showSplash = useSplashGate(isLoading)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

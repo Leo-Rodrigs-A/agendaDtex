@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { LogOut, Settings, UserPlus } from 'lucide-react'
+import { LogOut, Settings, UserPlus, Users } from 'lucide-react'
 import { toast } from 'sonner'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/popover'
 import { useAuth } from '@/components/AuthProvider'
 import { AddUserDialog } from '@/components/AddUserDialog'
+import { UsersManagerDialog } from '@/components/UsersManagerDialog'
 
 function initials(name: string | undefined): string {
   if (!name) return '?'
@@ -26,6 +27,7 @@ export function UserMenu() {
   const { profile, signOut } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
   const [addUserOpen, setAddUserOpen] = useState(false)
+  const [managerOpen, setManagerOpen] = useState(false)
 
   const handleSignOut = async () => {
     try {
@@ -75,16 +77,28 @@ export function UserMenu() {
           </div>
 
           {profile?.role === 'admin' && (
-            <Button
-              variant="ghost"
-              className="mt-1 w-full justify-start gap-2"
-              onClick={() => {
-                setMenuOpen(false)
-                setAddUserOpen(true)
-              }}
-            >
-              <UserPlus className="h-4 w-4" /> Convidar usuário
-            </Button>
+            <>
+              <Button
+                variant="ghost"
+                className="mt-1 w-full justify-start gap-2"
+                onClick={() => {
+                  setMenuOpen(false)
+                  setAddUserOpen(true)
+                }}
+              >
+                <UserPlus className="h-4 w-4" /> Convidar usuário
+              </Button>
+              <Button
+                variant="ghost"
+                className="mt-1 w-full justify-start gap-2"
+                onClick={() => {
+                  setMenuOpen(false)
+                  setManagerOpen(true)
+                }}
+              >
+                <Users className="h-4 w-4" /> Gerenciar usuários
+              </Button>
+            </>
           )}
 
           <Button
@@ -107,6 +121,7 @@ export function UserMenu() {
       </Popover>
 
       <AddUserDialog open={addUserOpen} onOpenChange={setAddUserOpen} />
+      <UsersManagerDialog open={managerOpen} onOpenChange={setManagerOpen} />
     </>
   )
 }

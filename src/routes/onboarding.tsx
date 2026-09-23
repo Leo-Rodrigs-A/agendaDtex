@@ -22,7 +22,7 @@ export const Route = createFileRoute('/onboarding')({
  */
 function OnboardingPage() {
   const { session, profile, isLoading, refreshProfile } = useAuth()
-  // Mínimo de 3s (1 loop da animação do logo)
+  // Mínimo de 2s (1 loop da animação do logo)
   const showSplash = useSplashGate(isLoading)
   const navigate = useNavigate()
   const [name, setName] = useState<string | null>(null)

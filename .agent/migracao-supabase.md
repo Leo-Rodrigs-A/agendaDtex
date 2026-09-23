@@ -134,7 +134,9 @@ Modelo: sistema interno, todos leem tudo; escrita restrita por role/ownership. *
 - [ ] Seed descartável (pedidos/feriados fake) para exercitar UI completa com Supabase real.
 - [ ] Validar: KPIs, OrdersTable, toggle is_done (RPC), NovoPedido, AddFeriado (só admin), filtros globais.
 
-## Fase 6 — Migração real de dados (one-off)
+## Fase 6 — Migração real de dados
+
+> **ATUALIZADO (Slice 10):** migração passa a ser **manual** — os ids da planilha serão substituídos manualmente pelos uuids gerados no Supabase (mantendo o vínculo pedido→vendedor). O `legacy_id` será removido (migration 0004). O trecho abaixo fica como referência histórica da abordagem via script.
 
 Script `scripts/migrate-data.mts` (Node + `supabase-js` com **service_role**, roda fora do front), contra **staging primeiro**:
 
@@ -181,3 +183,23 @@ Script `scripts/migrate-data.mts` (Node + `supabase-js` com **service_role**, ro
 7. Fase 6 — migração real (staging → produção)
 8. Fase 7 — aceite
 9. Fase 8 — desligar Apps Script
+
+---
+
+## Slice 10 — Backlog pós-fundação (adicionado em 23/09)
+
+Escopo novo definido após auth/splash funcionarem. Itens em ordem de implementação:
+
+- [ ] **Remover `legacy_id`:** migração manual dos dados — o id da planilha será substituído manualmente pelo uuid do Supabase, mantendo o vínculo com o vendedor. Drop da coluna via migration 0004. *(Substitui a Fase 6: a migração deixa de ser script one-off e vira processo manual assistido.)*
+- [ ] **Splash mais rápida:** acelerar a queda da bolinha; duração mínima da splash = **2s** (logo loop ≈ 2s).
+- [ ] **Admin vê KPIs mensais somando todos os usuários** (vendedor continua vendo só os próprios).
+- [ ] **Role `designer`:** só consome dados (SELECT); não cria/edita nada. Ajuste de check constraint + policies/RPCs.
+- [ ] **Convite com role:** admin escolhe `vendedor` ou `designer` ao convidar (Edge Function `invite-user` com service key; ajusta `profiles.role` logo após o convite).
+- [ ] **Gerenciador de usuários (admin):** listar usuários, ativar/desativar (`is_active`) e alterar `role`. Via RPC `admin_update_user` (security definer, só admin).
+- [ ] **Editar/excluir pedido:** botões por linha; RPCs `update_order`/`delete_order` (admin ou dono do pedido).
+- [ ] **Imagem do pedido:** linha inteira da tabela abre o link/modal da imagem (não só o ícone).
+- [ ] **Fetch escalonado:** primeiro fetch traz pedidos do mês atual + futuros; o histórico chega em background ou sob demanda (ex.: ao ameaçar trocar o mês no seletor).
+- [ ] **Calendários contextuais:** se uma data de outro mês está selecionada, o calendário abre naquele mês; bloquear fds/feriados em ambos os seletores (home + form de pedido).
+- [ ] **Botão "Dia de agendamento":** navega para a data mais alta com pelo menos um pedido (ex.: hoje 23/09 → pula para 14/10).
+- [ ] **Hotkeys** (react-hotkeys-hook ou similar): `ctrl+k` paleta de comando estilo Notion/Linear (busca de pedidos + ações), `n` novo pedido, `s` toggle sidebar, `h`/`p`/`f` navegação.
+- [ ] **Atualizar documentação** `.agent/*.md` ao final do slice.

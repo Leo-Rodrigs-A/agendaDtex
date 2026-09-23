@@ -80,3 +80,28 @@
 - [x] Adicionar segmented control na tabela diária para alternar entre "Todos os Usuários" e "Usuário Ativo"
 - [x] Exibir informações de valor vendido, camisetas e outras peças na tabela diária, integradas ao segmented control de usuário (linha de totais: pedidos · peças · R$)
 - [x] Fix: rolagem horizontal da tabela em telas estreitas (`overflow-x-auto` no `OrdersTable`)
+
+## Slice 10: Migração Supabase + Identidade Visual + Produtividade ✅
+
+- [x] Setup Supabase: schema (profiles/orders/holidays), trigger handle_new_user, RLS + RPCs (complete_order, update_order, delete_order, admin_update_user, complete_onboarding), migrations 0001-0004
+- [x] Auth no front: `AuthProvider` (sem race condition), `AuthGate`, rotas `/login` e `/onboarding` fora do shell, `SplashScreen`
+- [x] Identidade visual: splash com `logodtex-animar.svg` animado (queda → squash → wordmark, loop 2s, mínimo 2s via `useSplashGate`), logo SVG no header da sidebar, PNGs novos para favicon/PWA, theme-color `#FF781F`
+- [x] Roles: `designer` (somente leitura) adicionada; RLS/RPCs ajustados; UI esconde ações de escrita para designer
+- [x] Admin: convite com escolha de role (Edge Function `invite-user`), gerenciador de usuários (role/is_active), KPIs mensais com segmented Todos/Somente eu
+- [x] Pedidos: editar (mesmo modal) e excluir (com confirmação) por linha; linha inteira clicável abre imagem; datas de entrega com calendário abrindo no mês selecionado
+- [x] Fetch escalonado: boot com pedidos do mês atual + futuros, histórico em background (listOrdersFrom + listOrders)
+- [x] Calendários bloqueiam fds/feriados (home + form); botões "hoje" (CalendarArrowDown) e "dia de agendamento mais distante" (CalendarClock)
+- [x] Hotkeys via react-hotkeys-hook: Ctrl/Cmd+K paleta de comandos (busca de pedidos com imagem clicável + ações), N novo pedido, S sidebar, H/P/F navegação; botão "Encontrar" no footer da sidebar
+- [x] Remoção do legacy_id (migração de dados agora manual) e de `src/services/api.ts`/`VITE_API_URL`
+- [x] Documentação atualizada (.agent/architecture.md, project-context.md, contexto da api.md marcado como legado)
+
+## Pendências pós-migração
+
+- [ ] Deploy/validação da Edge Function `invite-user` em produção
+- [ ] Matriz de testes de RLS maliciosos (API direta como vendedor: alterar role, total_amount, user_id, delete)
+- [ ] RPC `create_order` com validação de prazo no banco (dívida consciente do MVP)
+- [ ] Migração manual dos dados históricos (substituir ids da planilha pelos uuids do Supabase)
+- [ ] Merge da branch e desligamento final do Apps Script
+- [x] Chevrons do DaySelector navegam apenas por dias úteis (pula fds/feriados via shiftBusinessDay)
+- [x] Lembrete de produção na home: junto de todo dayLabel aparece (2 dias úteis antes) — businessDaysBack em lib/dates; menor, entre parênteses, sem primary
+- [x] Feriados: visão padrão em grade; tsconfig restrito a src + configs (tsc --noEmit limpo)

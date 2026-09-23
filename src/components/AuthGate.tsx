@@ -13,7 +13,7 @@ import { useSplashGate } from '@/hooks/use-splash-gate'
  */
 export function AuthGate({ children }: { children: ReactNode }) {
   const { session, profile, isLoading, signOut } = useAuth()
-  // Mínimo de 3s (1 loop da animação do logo), mesmo se os dados já chegaram
+  // Mínimo de 2s (1 loop da animação do logo), mesmo se os dados já chegaram
   const showSplash = useSplashGate(isLoading)
 
   if (showSplash) return <SplashScreen />

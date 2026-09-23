@@ -10,10 +10,12 @@ import type { ReactNode } from 'react'
 import type { Order, Holiday, Profile } from '@/types'
 import {
   listOrders,
+  listOrdersFrom,
   toggleOrderDone as rpcToggleOrderDone,
 } from '@/services/orders'
 import { listHolidays } from '@/services/holidays'
 import { listProfiles } from '@/services/profiles'
+import { toDateKey } from '@/lib/dates'
 import { useAuth } from '@/components/AuthProvider'
 import { toast } from 'sonner'
 
@@ -96,16 +98,24 @@ export function DataProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    let cancelled = false
+    const lifecycle: { cancelled: boolean } = { cancelled: false }
+    const isCancelled = () => lifecycle.cancelled
     setIsLoading(true)
 
+    // Fetch escalonado: primeiro pedidos do mês atual + futuros (rápido),
+    // depois o histórico completo chega em background e substitui.
     async function loadInitial() {
+      const now = new Date()
+      const monthStart = toDateKey(
+        new Date(now.getFullYear(), now.getMonth(), 1),
+      )
+
       const [ordersRes, holidaysRes, usersRes] = await Promise.allSettled([
-        listOrders(),
+        listOrdersFrom(monthStart),
         listHolidays(),
         listProfiles(),
       ])
-      if (cancelled) return
+      if (isCancelled()) return
 
       if (ordersRes.status === 'fulfilled') setOrders(ordersRes.value)
       if (holidaysRes.status === 'fulfilled') setHolidays(holidaysRes.value)
@@ -124,11 +134,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
       }
 
       setIsLoading(false)
+
+      // Histórico completo em background (silencioso, sem loading visual)
+      try {
+        const allOrders = await listOrders()
+        if (!isCancelled()) setOrders(allOrders)
+      } catch (err) {
+        console.error('[DataProvider] Falha ao carregar histórico', err)
+      }
     }
 
     loadInitial()
     return () => {
-      cancelled = true
+      lifecycle.cancelled = true
     }
   }, [session])
 

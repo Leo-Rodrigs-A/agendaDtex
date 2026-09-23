@@ -10,13 +10,21 @@ import {
   SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar'
-import { CalendarDays, Home, PanelLeftOpen, SquareMenu } from 'lucide-react'
+import {
+  CalendarDays,
+  Home,
+  PanelLeftOpen,
+  Search,
+  SquareMenu,
+} from 'lucide-react'
 import { Link, useLocation } from '@tanstack/react-router'
 import { UserMenu } from '@/components/UserMenu'
+import { useCommandPalette } from '@/components/CommandPaletteProvider'
 
 export function AppSidebar() {
   const pathname = useLocation({ select: (loc) => loc.pathname })
   const { toggleSidebar } = useSidebar()
+  const { openPalette } = useCommandPalette()
 
   const navigationItems = [
     {
@@ -82,6 +90,24 @@ export function AppSidebar() {
           })}
         </SidebarMenu>
       </SidebarContent>
+
+      {/* Botão da paleta de comandos (Ctrl+K) — acima da linha divisória */}
+      <div className="px-2 pb-1">
+        <button
+          type="button"
+          onClick={openPalette}
+          title="Encontrar (Ctrl+K)"
+          className="flex w-full cursor-pointer items-center gap-3 rounded-lg p-2 text-sm text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground group-data-[collapsible=icon]:justify-center"
+        >
+          <Search className="h-4 w-4 shrink-0" />
+          <span className="group-data-[collapsible=icon]:hidden">
+            Encontrar
+          </span>
+          <kbd className="ml-auto rounded border border-sidebar-border bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground group-data-[collapsible=icon]:hidden">
+            Ctrl K
+          </kbd>
+        </button>
+      </div>
 
       <SidebarFooter className="border-t border-sidebar-border p-2">
         <UserMenu />

@@ -7,6 +7,7 @@ import { AuthProvider } from '@/components/AuthProvider'
 import { FilterProvider } from '@/components/FilterProvider'
 import { DataProvider } from '@/components/DataProvider'
 import { UserProvider } from '@/components/UserProvider'
+import { CommandPaletteProvider } from '@/components/CommandPaletteProvider'
 
 /**
  * Ponto único de composição dos providers da aplicação.
@@ -18,6 +19,7 @@ import { UserProvider } from '@/components/UserProvider'
  * - FilterProvider: estado de filtros, independente dos dados.
  * - DataProvider: busca os dados do Supabase (depende da sessão).
  * - UserProvider: shim de compatibilidade — activeUser = profile da sessão.
+ * - CommandPaletteProvider: estado global da paleta Ctrl+K (depende de Auth e Data).
  */
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
@@ -28,8 +30,10 @@ export function AppProviders({ children }: { children: ReactNode }) {
             <FilterProvider>
               <DataProvider>
                 <UserProvider>
-                  {children}
-                  <Toaster position="bottom-right" />
+                  <CommandPaletteProvider>
+                    {children}
+                    <Toaster position="bottom-right" />
+                  </CommandPaletteProvider>
                 </UserProvider>
               </DataProvider>
             </FilterProvider>

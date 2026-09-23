@@ -3,6 +3,7 @@ import { SidebarInset } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/AppSidebar'
 import { Header } from '@/components/Header'
 import { AuthGate } from '@/components/AuthGate'
+import { GlobalHotkeys } from '@/components/GlobalHotkeys'
 import { AppProviders } from '@/contexts'
 import '@/styles.css'
 
@@ -38,6 +39,7 @@ function RootContent() {
             <Outlet />
           </main>
         </SidebarInset>
+        <GlobalHotkeys />
       </div>
     </AuthGate>
   )

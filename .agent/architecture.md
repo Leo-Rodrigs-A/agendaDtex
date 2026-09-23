@@ -1,46 +1,58 @@
-# Architecture & API Contract
+# Architecture & Data Flow
 
-## Fluxo de Comunicação
+## Fluxo de Comunicação (atual)
 
 ```text
-React Frontend ──(HTTP)──▶ Google Apps Script Web App ──(LockService)──▶ Google Sheets
+React Frontend (SPA) ──supabase-js──▶ Supabase (Auth + Postgres + RLS + RPCs + Edge Functions)
 ```
 
 ## Arquitetura de Camadas
 
-- **Frontend (React):** UI, estado local/global, formulários, tabelas, dashboard, consumo de API.
+- **Frontend (React):** UI, estado local/global, formulários, tabelas, dashboard, consumo do Supabase.
 - **Gerenciador de pacotes:** pnpm
-- **Backend (Apps Script):** gateway de acesso a planilha, inicialmente sem autenticação, repositório de planilhas, permite gravar/ler o conteúdo da planilha linkada.
-- **Persistência (Google Sheets):** Armazenamento em tabela.
+- **Backend (Supabase):** Postgres + Auth (e-mail/senha + convite) + RLS + RPCs (security definer) + Edge Function `invite-user`.
+- **Persistência:** Postgres (tabelas `profiles`, `orders`, `holidays`).
 
-## Contrato de Endpoints (Apps Script)
+## Autenticação e Autorização
 
-- `GET /pedidos` - Retorna todos os ultimos 500 pedidos. **Ponto único de leitura inicial.**
-- `GET /allpedidos` - Retorna todos os pedidos do sistema.
-- `GET /feriados` - Retorna a lista completa de feriados cadastrados.
-- `GET /users` - Retorna a lista de usuários cadastrados no sistema.
-- `POST /pedidos` - Cria novo pedido, com os dados enviados pelo form do frontend.
-- `POST /feriados` - Cria novo feriado.
-- `POST /users` - adiciona um novo usuário no sistema.
+- **Auth real:** Supabase Auth; sessão persistida no localStorage pelo `supabase-js` (auto-refresh).
+- **`AuthProvider`** (`src/components/AuthProvider.tsx`): `session`/`profile`/`isLoading`/`signIn`/`signOut`/`refreshProfile`. **Nunca** chamar Supabase dentro do callback `onAuthStateChange` (deadlock) — profile carrega em `useEffect` separado; `profileReady` evita race condition no boot.
+- **`AuthGate`** (`src/components/AuthGate.tsx`): sem sessão → `/login`; sessão com `onboarding_completed = false` → `/onboarding`; usuário `is_active = false` → logout. Splash com `useSplashGate` (mínimo 2s = 1 loop da animação do logo).
+- **Roles:** `profiles.role` é a única fonte (`admin` | `vendedor` | `designer`). `admin` gerencia usuários/feriados; `vendedor` cria/edita próprios pedidos; `designer` **somente leitura**. Helpers SQL: `is_admin()`, `is_staff()`, `is_active_user()`.
+- **RLS controla linhas, não colunas** — mutações específicas expostas via RPCs (security definer): `complete_order`, `update_order`, `delete_order`, `complete_onboarding`, `update_own_name`, `admin_update_user`.
+
+## Dados (camada de serviços)
+
+- `src/lib/supabase.ts` — client singleton (`VITE_SUPABASE_URL` + `VITE_SUPABASE_PUBLISHABLE_KEY`).
+- `src/services/orders.ts` — `listOrders`, `listOrdersFrom` (fetch escalonado), `createOrder`, `toggleOrderDone` (RPC), `updateOrder`, `deleteOrder` (RPCs).
+- `src/services/holidays.ts`, `src/services/profiles.ts` (+ `inviteUser` via Edge Function, `adminUpdateUser` RPC).
+- **`DataProvider`** mantém a API `useData()` (`orders`/`holidays`/`users` + `refresh*` + `toggleOrderDone` otimista) — consumidores (`OrdersTable`, KPIs, `lib/orders.ts`) inalterados. Fetch inicial: mês atual + futuros; histórico em background. Dados limpos no logout.
+- **`UserProvider`** virou shim: `activeUser` = profile da sessão (não há mais "trocar de usuário").
 
 ## Decisões de Frontend (estado atual)
 
-- **Stack real:** TanStack **Router** + Vite (SPA pura). Não usamos features do TanStack Start (server functions, SSR) — ignorar essa parte do README padrão do template.
-- **Rotas file-based atuais:** `/` (dashboard), `/pedidos`, `/feriados`. A rota `/agenda` foi removida; `/feriados` ainda é placeholder (conteúdo copiado da antiga agenda — pendente de reescrita).
-- **Roteamento gerado:** `src/routeTree.gen.ts` é gerado por `pnpm generate-routes` / plugin do Vite — nunca editar manualmente.
+- **Stack real:** TanStack **Router** + Vite (SPA pura). Rotas: `/` (dashboard), `/pedidos`, `/feriados`, `/login`, `/onboarding` (essas duas fora do shell — `__root.tsx` decide pelo pathname).
+- **Seletores de data:** chevrons do `DaySelector` navegam só por dias úteis e o calendário bloqueia fds/feriados (mesma regra do form de pedido); calendário sempre abre no mês da data selecionada. Botões extras: "voltar para hoje" (CalendarArrowDown) e "dia de agendamento mais distante" (CalendarClock — altera só o dia, sem tocar o mês dos KPIs).
+- **Lembrete de produção (home):** junto de todo `dayLabel` aparece a data de 2 dias úteis antes (`businessDaysBack` em `lib/dates.ts`) — em parênteses, menor e sem cor primária, para apressar a produção.
 
 ### Sistema de UI
 
-- shadcn com registry **`base-vega` (Base UI)** — **não existe Radix no projeto**.
-- Convenção crítica: composição via prop **`render`**, não `asChild` (API do Base UI `useRender`). Ex.: `<SidebarMenuButton render={<Link to="/x" />}>texto</SidebarMenuButton>`. Erro comum: misturar `render` com um `<Link>` filho aninhado (gera `<a>` dentro de `<a>`).
-- Componentes de overlay disponíveis: `ui/popover.tsx` (Base UI Popover), `ui/sheet.tsx`, `ui/dropdown-menu.tsx`, `ui/tooltip.tsx`.
-- `ui/calendar.tsx`: shadcn Calendar sobre **react-day-picker** (locale pt-BR via `react-day-picker/locale` → `ptBR`). Suporta `disabled` (matchers) — ponto de encaixe para bloquear fins de semana e feriados.
+- shadcn com registry **`base-vega` (Base UI)** — sem Radix. Composição via prop **`render`** (não `asChild`).
+- Componentes novos: `ui/dialog` (confirm de exclusão), selects nativos no gerenciador de usuários.
 
-### Estratégia de dados e estado
+### Funcionalidades globais
 
-- **Fetch único na inicialização:** `GET /pedidos` + `GET /feriados` + `GET /users` em paralelo. **Todos os filtros, validações e cálculos são client-side** — não há re-fetch por filtro.
-- **Filtros globais de período:** `FilterProvider` (React Context) montado em `src/routes/__root.tsx` acima do `<Outlet />`, expondo `{ day, month, year, setDay, setMonthYear }` via hook `useFilters()`. Sobrevive à navegação entre rotas (decisão deliberada — operador alterna telas com frequência). **Não** usamos search params para isso.
-- **Componentes consumidores:** `DaySelector` (popover + Calendar) e `MonthSelector` (popover com stepper de ano + grid 3x4 de meses abreviados), usados no header da rota `/`.
-- **Datas:** formatação via `Intl.DateTimeFormat('pt-BR', ...)` nativo — sem date-fns no front.
-- **Dados vindos da API:** `DataProvider` (`src/components/DataProvider.tsx`) montado no `__root` dentro do `FilterProvider`, expondo `orders`/`holidays`/`users` + `isLoading`/`error` + `refresh*` via hook `useData()`. Cliente HTTP em `src/services/api.ts` (URL em `VITE_API_URL`).
-- **Pós-POST (definido):** a API não retorna o objeto criado — após um POST bem-sucedido, o front chama o `refresh*` correspondente (re-fetch do recurso; o backend invalida o cache do GET no POST).
+- **Hotkeys** (`GlobalHotkeys` + `react-hotkeys-hook`): `Ctrl/Cmd+K` paleta de comandos (`CommandPaletteProvider` + `CommandPalette`, abre também pelo botão "Encontrar" na sidebar; pedido com `imgurl` é clicável e abre a imagem), `N` novo pedido, `S` toggle sidebar, `H`/`P`/`F` navegação. Não disparam dentro de inputs.
+- **Splash screen:** `SplashLogo` (SVG inline animado — queda → squash → transformação no wordmark, loop 2s) + `useSplashGate` (mínimo 2s).
+- **Identidade visual:** `public/logodtex.svg`/`logodtex-animar.svg` (sidebar/login), `dtex192/512.png` (favicon/PWA, theme-color `#FF781F`).
+
+## Contrato do banco (Supabase)
+
+- **profiles:** `id` (1:1 auth.users), `name`, `role`, `is_active`, `onboarding_completed`, `created_at`. Trigger `handle_new_user` cria profile lendo só `name` de metadata (role inicial fixa `'vendedor'`).
+- **orders:** `id`, `user_id`, `order_name`, `shirt_count`, `others_items_count`, `total_amount`, `created_at`, `delivery_date` (date puro), `is_done`, `imgurl`. Constraints: valores ≥ 0, peças > 0, `delivery_date >= created_at::date` (NOT VALID — só novos).
+- **holidays:** `id`, `holiday_date` (date, unique), `holiday_description`.
+- Migrations versionadas em `supabase/migrations/` (0001 schema, 0002 RLS, 0003 onboarding, 0004 designer/admin/pedidos). Edge Function em `supabase/functions/invite-user/`.
+
+## Legado
+
+- Apps Script + Google Sheets (`contexto da api.md`): desligado do front em produção nesta branch; `src/services/api.ts` e `VITE_API_URL` removidos. Planilha permanece como backup read-only até o fim da migração de dados (agora manual).

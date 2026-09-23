@@ -12,9 +12,12 @@ import {
   ThemeToggleButton,
 } from '@/components/ThemeControls'
 import { NewOrderDialog } from '@/components/NewOrderDialog'
+import { useAuth } from '@/components/AuthProvider'
 
 export function Header() {
   const pathname = useLocation({ select: (loc) => loc.pathname })
+  const { profile } = useAuth()
+  const canWrite = profile?.role !== 'designer'
   const [newOrderOpen, setNewOrderOpen] = useState(false)
 
   const getPageTitle = (path: string) => {
@@ -39,20 +42,22 @@ export function Header() {
         <div className="flex items-center gap-2">
           <ColorPickerButton />
           <ThemeToggleButton />
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setNewOrderOpen(true)}
-                />
-              }
-            >
-              <Plus className="h-4 w-4" />
-            </TooltipTrigger>
-            <TooltipContent>Novo pedido</TooltipContent>
-          </Tooltip>
+          {canWrite && (
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setNewOrderOpen(true)}
+                  />
+                }
+              >
+                <Plus className="h-4 w-4" />
+              </TooltipTrigger>
+              <TooltipContent>Novo pedido (N)</TooltipContent>
+            </Tooltip>
+          )}
         </div>
       </div>
       <NewOrderDialog open={newOrderOpen} onOpenChange={setNewOrderOpen} />

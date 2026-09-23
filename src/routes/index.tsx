@@ -14,6 +14,7 @@ import { OrdersTable } from '@/components/OrdersTable'
 import { ProductionChart } from '@/components/ProductionChart'
 import { useFilters } from '@/components/FilterProvider'
 import { useData } from '@/components/DataProvider'
+import { businessDaysBack } from '@/lib/dates'
 import { useActiveUser } from '@/components/UserProvider'
 import {
   DAILY_PIECE_QUOTA,
@@ -32,7 +33,7 @@ export const Route = createFileRoute('/')({
 
 function DashboardPage() {
   const { day, month, year } = useFilters()
-  const { orders, users, isLoading, error } = useData()
+  const { orders, users, holidays, isLoading, error } = useData()
   const { activeUser } = useActiveUser()
 
   // Só relevante abaixo de lg: qual grupo (dia/mês) está visível.
@@ -43,6 +44,14 @@ function DashboardPage() {
     day: '2-digit',
     month: 'short',
   }).format(day)
+
+  // Lembrete de produção: 2 dias úteis ANTES do dia selecionado.
+  // Sempre exibido junto do dayLabel (menor, entre parênteses, sem primary).
+  const productionDay = businessDaysBack(day, 2, holidays)
+  const prodDayLabel = new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+  }).format(productionDay)
 
   const rawMonthLabel = new Intl.DateTimeFormat('pt-BR', {
     month: 'long',
@@ -66,9 +75,14 @@ function DashboardPage() {
   const overPieceQuota = dayPieces > DAILY_PIECE_QUOTA
   const capacityPct = Math.min((dayPieces / DAILY_PIECE_QUOTA) * 100, 100)
 
-  // ---- Grupo Mês (KPIs do usuário ativo, por data de encomenda) ----
+  // ---- Grupo Mês (por data de encomenda) ----
+  // Admin pode alternar entre soma de todos os usuários e somente os próprios
+  // (segmented control ao lado do MonthSelector — visível só para admin).
+  const isAdmin = activeUser?.role === 'admin'
+  const [monthScope, setMonthScope] = useState<'all' | 'mine'>('all')
+  const showAllUsers = isAdmin && monthScope === 'all'
   const monthOrders = ordersCreatedInMonth(orders, month, year).filter(
-    (o) => o.user_id === activeUser?.id,
+    (o) => showAllUsers || o.user_id === activeUser?.id,
   )
   const monthCount = monthOrders.length
   const monthPieces = sumPieces(monthOrders)
@@ -80,7 +94,7 @@ function DashboardPage() {
     orders,
     prevDate.getMonth(),
     prevDate.getFullYear(),
-  ).filter((o) => o.user_id === activeUser?.id)
+  ).filter((o) => showAllUsers || o.user_id === activeUser?.id)
   const growthPct =
     prevMonthOrders.length > 0
       ? Math.round(
@@ -137,7 +151,11 @@ function DashboardPage() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <p className="text-muted-foreground">
               Visão diária{' '}
-              <span className="font-medium text-primary">{dayLabel}</span>.
+              <span className="font-medium text-primary">{dayLabel}</span>{' '}
+              <span className="text-xs font-normal text-muted-foreground">
+                ({prodDayLabel})
+              </span>
+              .
             </p>
             <DaySelector />
           </div>
@@ -146,7 +164,10 @@ function DashboardPage() {
               <div>
                 <p className="text-sm font-medium text-muted-foreground">
                   Pedidos para{' '}
-                  <span className="font-medium text-primary">{dayLabel}</span>
+                  <span className="font-medium text-primary">{dayLabel}</span>{' '}
+                  <span className="text-xs font-normal text-muted-foreground">
+                    ({prodDayLabel})
+                  </span>
                 </p>
                 <h3
                   className={cn(
@@ -171,7 +192,10 @@ function DashboardPage() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-muted-foreground">
                   Capacidade em{' '}
-                  <span className="font-medium text-primary">{dayLabel}</span>
+                  <span className="font-medium text-primary">{dayLabel}</span>{' '}
+                  <span className="text-xs font-normal text-muted-foreground">
+                    ({prodDayLabel})
+                  </span>
                 </span>
                 <CalendarDays className="h-5 w-5 text-primary" />
               </div>
@@ -214,7 +238,38 @@ function DashboardPage() {
             <p className="text-muted-foreground">
               Acompanhamento mensal {monthLabel}.
             </p>
-            <MonthSelector />
+            <div className="flex items-center gap-2">
+              {/* Segmented control de escopo mensal — só para admin */}
+              {isAdmin && (
+                <div className="inline-flex items-center gap-1 rounded-lg bg-muted p-1">
+                  <button
+                    type="button"
+                    onClick={() => setMonthScope('all')}
+                    className={cn(
+                      'rounded-md px-3 py-1 text-sm font-medium transition-colors',
+                      monthScope === 'all'
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground',
+                    )}
+                  >
+                    Todos
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMonthScope('mine')}
+                    className={cn(
+                      'rounded-md px-3 py-1 text-sm font-medium transition-colors',
+                      monthScope === 'mine'
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground',
+                    )}
+                  >
+                    Somente eu
+                  </button>
+                </div>
+              )}
+              <MonthSelector />
+            </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="bg-card p-6 rounded-xl border border-border shadow-sm flex items-center justify-between">
@@ -266,7 +321,10 @@ function DashboardPage() {
           <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
             <h3 className="text-lg font-semibold">
               Pedidos para{' '}
-              <span className="font-medium text-primary">{dayLabel}</span>
+              <span className="font-medium text-primary">{dayLabel}</span>{' '}
+              <span className="text-xs font-normal text-muted-foreground">
+                ({prodDayLabel})
+              </span>
             </h3>
             <div className="inline-flex items-center gap-1 rounded-lg bg-muted p-1">
               <button

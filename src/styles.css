@@ -223,38 +223,38 @@ body {
 }
 
 /* Splash screen (ver src/components/SplashScreen.tsx e SplashLogo.tsx)
-   Loop de 3s: queda (0-38%) → squash no impacto (38-58%) →
-   transformação círculo→wordmark (58-84%) → respiro (84-100%). */
+   Loop de 2s: queda acelerada (0-32%) → squash (32-46%) → wordmark emerge
+   (50-72%) → bolinha volta ao lugar e o logo completo respira (72-100%). */
 @keyframes splash-circle {
   0% {
     transform: translateY(-260%);
     opacity: 1;
-    animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.36); /* acelera */
+    animation-timing-function: cubic-bezier(0.7, 0, 0.9, 0.4); /* cai rápido */
   }
-  38% {
+  32% {
     transform: translateY(0);
     animation-timing-function: cubic-bezier(0.17, 0.84, 0.44, 1); /* squash */
   }
-  44% {
+  38% {
     transform: scale(1.28, 0.62);
   }
-  52% {
+  44% {
     transform: scale(0.92, 1.12); /* rebound */
     animation-timing-function: ease-in-out;
   }
-  58% {
+  50% {
     transform: scale(1, 1);
     animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.36);
   }
   /* Pulso de squash enquanto o wordmark emerge, depois a bolinha
      volta à posição/escala original e permanece no logo final */
-  66% {
+  58% {
     transform: scale(1.18, 0.8);
   }
-  76% {
+  66% {
     transform: scale(0.96, 1.05);
   }
-  84% {
+  72% {
     transform: scale(1, 1);
   }
   100% {
@@ -264,7 +264,7 @@ body {
 }
 @keyframes splash-word {
   0%,
-  60% {
+  52% {
     transform: scale(0.65, 0.25);
     opacity: 0;
     animation-timing-function: cubic-bezier(
@@ -274,12 +274,12 @@ body {
       1
     ); /* emerge com overshoot */
   }
-  78% {
+  70% {
     transform: scale(1.04, 1);
     opacity: 1;
     animation-timing-function: ease-out;
   }
-  86% {
+  78% {
     transform: scale(1, 1);
   }
   100% {
@@ -290,12 +290,12 @@ body {
 .animate-splash-circle {
   transform-box: fill-box;
   transform-origin: 50% 100%;
-  animation: splash-circle 3s infinite;
+  animation: splash-circle 2s infinite;
 }
 .animate-splash-word {
   transform-box: fill-box;
   transform-origin: 50% 100%;
-  animation: splash-word 3s infinite;
+  animation: splash-word 2s infinite;
 }
 /* squash ultrapassa a viewBox — sem isso a bolinha "corta" ao amassar */
 .splash-svg {
