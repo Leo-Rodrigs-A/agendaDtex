@@ -36,6 +36,39 @@ function isWeekend(date: Date): boolean {
 }
 
 /**
+ * Avança/volta `delta` dias ignorando fins de semana e feriados
+ * (delta positivo = próximo dia útil; negativo = anterior).
+ */
+export function shiftBusinessDay(
+  day: Date,
+  delta: 1 | -1,
+  holidays: Array<Holiday>,
+): Date {
+  const holidayKeys = new Set(holidays.map((h) => h.holiday_date.slice(0, 10)))
+  const cursor = new Date(day.getFullYear(), day.getMonth(), day.getDate())
+  do {
+    cursor.setDate(cursor.getDate() + delta)
+  } while (isWeekend(cursor) || holidayKeys.has(toDateKey(cursor)))
+  return cursor
+}
+
+/**
+ * Retrocede `count` dias úteis a partir de `day` (excluindo fds e feriados).
+ * Usado no lembrete de produção da home (2 dias úteis antes da entrega).
+ */
+export function businessDaysBack(
+  day: Date,
+  count: number,
+  holidays: Array<Holiday>,
+): Date {
+  let cursor = new Date(day.getFullYear(), day.getMonth(), day.getDate())
+  for (let i = 0; i < count; i++) {
+    cursor = shiftBusinessDay(cursor, -1, holidays)
+  }
+  return cursor
+}
+
+/**
  * Próximos `count` dias úteis a partir de `startDate` (inclusive),
  * excluindo sábados e domingos.
  */

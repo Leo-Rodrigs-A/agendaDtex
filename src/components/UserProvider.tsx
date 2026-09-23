@@ -1,49 +1,38 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from 'react'
+import { useContext, createContext, useMemo } from 'react'
 import type { ReactNode } from 'react'
-import type { User } from '@/types'
-import { useData } from '@/components/DataProvider'
+import { useAuth } from '@/components/AuthProvider'
+import type { Profile } from '@/types'
 
 type UserState = {
-  /** Usuário ativo: o selecionado, ou o primeiro da lista como fallback. */
-  activeUser: User | null
+  /** Usuário ativo = profile do usuário autenticado. */
+  activeUser: Profile | null
+  /**
+   * @deprecated Com autenticação real não existe mais "trocar de usuário".
+   * Mantido só para compatibilidade durante a migração — é um no-op.
+   */
   setActiveUser: (userId: string) => void
 }
 
 const ActiveUserContext = createContext<UserState | null>(null)
 
-const STORAGE_KEY = 'dtex-active-user'
-
 /**
- * Gerencia o usuário ativo (vendedor logado, sem auth).
- * Persiste o id no localStorage; precisa estar dentro de <DataProvider>.
+ * Shim de compatibilidade da era "usuário ativo em localStorage".
+ * Agora o usuário ativo é simplesmente o profile da sessão autenticada.
+ * TODO (pós-migração): trocar os usos de useActiveUser por useAuth direto.
  */
 export function UserProvider({ children }: { children: ReactNode }) {
-  const { users } = useData()
-  const [activeUserId, setActiveUserId] = useState<string | null>(() =>
-    localStorage.getItem(STORAGE_KEY),
-  )
-
-  const activeUser = useMemo<User | null>(() => {
-    const selected = users.find((u) => u.id === activeUserId)
-    if (selected) return selected
-    const firstActive = users.find((u) => u.is_active)
-    return firstActive ?? null
-  }, [users, activeUserId])
-
-  const setActiveUser = useCallback((userId: string) => {
-    setActiveUserId(userId)
-    localStorage.setItem(STORAGE_KEY, userId)
-  }, [])
+  const { profile } = useAuth()
 
   const value = useMemo<UserState>(
-    () => ({ activeUser, setActiveUser }),
-    [activeUser, setActiveUser],
+    () => ({
+      activeUser: profile,
+      setActiveUser: () => {
+        console.warn(
+          '[UserProvider] setActiveUser foi descontinuado: o usuário ativo é o da sessão.',
+        )
+      },
+    }),
+    [profile],
   )
 
   return (

@@ -7,29 +7,31 @@ import {
   useState,
 } from 'react'
 import type { ReactNode } from 'react'
-import type { Order, Holiday, User } from '@/types'
+import type { Order, Holiday, Profile } from '@/types'
 import {
-  getOrders,
-  getHolidays,
-  getUsers,
-  updateOrderDone,
-} from '@/services/api'
+  listOrders,
+  listOrdersFrom,
+  toggleOrderDone as rpcToggleOrderDone,
+} from '@/services/orders'
+import { listHolidays } from '@/services/holidays'
+import { listProfiles } from '@/services/profiles'
+import { toDateKey } from '@/lib/dates'
+import { useAuth } from '@/components/AuthProvider'
 import { toast } from 'sonner'
 
 type DataState = {
   orders: Array<Order>
   holidays: Array<Holiday>
-  users: Array<User>
+  users: Array<Profile>
   isLoading: boolean
   error: string | null
-  /** Re-busca o recurso na API. Chamar após POST bem-sucedido. */
+  /** Re-busca o recurso no Supabase. */
   refreshOrders: () => Promise<void>
   refreshHolidays: () => Promise<void>
   refreshUsers: () => Promise<void>
   /**
-   * Alterna `is_done` com update otimista: a UI reage na hora (o pedido some
-   * da tabela diária / risca na geral), o POST vai em background e, em caso
-   * de erro, o valor é revertido e um toast de erro é exibido.
+   * Alterna `is_done` com update otimista (RPC complete_order). Em caso de
+   * erro, o valor é revertido e um toast de erro é exibido.
    */
   toggleOrderDone: (id: string, isDone: boolean) => Promise<void>
 }
@@ -37,22 +39,23 @@ type DataState = {
 const DataContext = createContext<DataState | null>(null)
 
 export function DataProvider({ children }: { children: ReactNode }) {
+  const { session } = useAuth()
   const [orders, setOrders] = useState<Array<Order>>([])
   const [holidays, setHolidays] = useState<Array<Holiday>>([])
-  const [users, setUsers] = useState<Array<User>>([])
+  const [users, setUsers] = useState<Array<Profile>>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const refreshOrders = useCallback(async () => {
-    setOrders(await getOrders())
+    setOrders(await listOrders())
   }, [])
 
   const refreshHolidays = useCallback(async () => {
-    setHolidays(await getHolidays())
+    setHolidays(await listHolidays())
   }, [])
 
   const refreshUsers = useCallback(async () => {
-    setUsers(await getUsers())
+    setUsers(await listProfiles())
   }, [])
 
   const toggleOrderDone = useCallback(
@@ -62,8 +65,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         current.map((o) => (o.id === id ? { ...o, is_done: isDone } : o)),
       )
       try {
-        // 2) Background: persiste na API
-        await updateOrderDone({ id, is_done: isDone })
+        // 2) Background: persiste via RPC complete_order
+        await rpcToggleOrderDone(id, isDone)
         toast.success(isDone ? 'Pedido concluído!' : 'Pedido reaberto!')
         // 3) Silencioso: sincroniza com o servidor sem loading visual
         await refreshOrders()
@@ -72,7 +75,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setOrders((current) =>
           current.map((o) => (o.id === id ? { ...o, is_done: !isDone } : o)),
         )
-        console.error('[toggleOrderDone] Falha no POST update_order', {
+        console.error('[toggleOrderDone] Falha na RPC complete_order', {
           id,
           is_done: isDone,
           err,
@@ -83,18 +86,36 @@ export function DataProvider({ children }: { children: ReactNode }) {
     [refreshOrders],
   )
 
-  // Fetch inicial: todos os recursos em paralelo. allSettled garante que a
-  // falha de um recurso não impeça o carregamento dos demais.
+  // Fetch inicial (por autenticação): todos os recursos em paralelo.
+  // allSettled garante que a falha de um recurso não impeça os demais.
+  // Ao deslogar (session → null), os dados são limpos.
   useEffect(() => {
-    let cancelled = false
+    if (!session) {
+      setOrders([])
+      setHolidays([])
+      setUsers([])
+      setIsLoading(false)
+      return
+    }
 
+    const lifecycle: { cancelled: boolean } = { cancelled: false }
+    const isCancelled = () => lifecycle.cancelled
+    setIsLoading(true)
+
+    // Fetch escalonado: primeiro pedidos do mês atual + futuros (rápido),
+    // depois o histórico completo chega em background e substitui.
     async function loadInitial() {
+      const now = new Date()
+      const monthStart = toDateKey(
+        new Date(now.getFullYear(), now.getMonth(), 1),
+      )
+
       const [ordersRes, holidaysRes, usersRes] = await Promise.allSettled([
-        getOrders(),
-        getHolidays(),
-        getUsers(),
+        listOrdersFrom(monthStart),
+        listHolidays(),
+        listProfiles(),
       ])
-      if (cancelled) return
+      if (isCancelled()) return
 
       if (ordersRes.status === 'fulfilled') setOrders(ordersRes.value)
       if (holidaysRes.status === 'fulfilled') setHolidays(holidaysRes.value)
@@ -113,13 +134,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
       }
 
       setIsLoading(false)
+
+      // Histórico completo em background (silencioso, sem loading visual)
+      try {
+        const allOrders = await listOrders()
+        if (!isCancelled()) setOrders(allOrders)
+      } catch (err) {
+        console.error('[DataProvider] Falha ao carregar histórico', err)
+      }
     }
 
     loadInitial()
     return () => {
-      cancelled = true
+      lifecycle.cancelled = true
     }
-  }, [])
+  }, [session])
 
   const value = useMemo<DataState>(
     () => ({

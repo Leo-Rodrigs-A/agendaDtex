@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { OrdersTable } from '@/components/OrdersTable'
 import { NewOrderDialog } from '@/components/NewOrderDialog'
 import { useData } from '@/components/DataProvider'
+import { useAuth } from '@/components/AuthProvider'
 import type { OrderSortDir, OrderSortKey } from '@/lib/orders'
 import { countPieces, formatBRL, sortOrders } from '@/lib/orders'
 import { parseDateKey } from '@/lib/dates'
@@ -28,6 +29,8 @@ const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
 
 function PedidosPage() {
   const { orders, users, isLoading, error } = useData()
+  const { profile } = useAuth()
+  const canWrite = profile?.role !== 'designer'
 
   const [search, setSearch] = useState('')
   // Default: pedido vendido mais recentemente no topo
@@ -125,9 +128,11 @@ function PedidosPage() {
             </button>
           </div>
 
-          <Button className="gap-2" onClick={() => setNewOrderOpen(true)}>
-            <Plus className="h-4 w-4" /> Novo Pedido
-          </Button>
+          {canWrite && (
+            <Button className="gap-2" onClick={() => setNewOrderOpen(true)}>
+              <Plus className="h-4 w-4" /> Novo Pedido
+            </Button>
+          )}
         </div>
       </div>
 

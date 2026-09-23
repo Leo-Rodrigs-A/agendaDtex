@@ -1,21 +1,26 @@
-// Interfaces baseadas nas planilhas da API (Google Apps Script + Google Sheets)
-// Ver .agent/contexto da api.md para a referência das colunas
+// Interfaces das tabelas do Supabase (Postgres).
+// Schema de referência: supabase/migrations/0001_schema.sql
 
-// planilha `users`: id, name, mail, role, is_active
-export interface User {
+// tabela `profiles`: id, name, role, is_active, onboarding_completed, created_at
+// 1:1 com auth.users — o e-mail fica no Auth, não no profile.
+// designer: somente leitura (não cria nem edita nada).
+export type Role = 'admin' | 'vendedor' | 'designer'
+
+export interface Profile {
   id: string
   name: string
-  mail: string
-  role: string
+  role: Role
   is_active: boolean
+  onboarding_completed: boolean
 }
 
-// planilha `orders`: id, user_id, order_name, shirt_count,
-// others_items_count, total_amount, created_at, delivery_date, is_done, imgurl
-// - created_at: string ISO gerada no backend (new Date())
-// - delivery_date: "YYYY-MM-DD" (data de calendário, sem horário/timezone)
-// - is_done: boolean (default false no backend; uso visual no Slice 9)
-// - imgurl: URL de imagem do Google Drive (pode vir vazio/ausente)
+// Alias de compatibilidade da era Apps Script (planilha `users`).
+// Novos códigos devem usar `Profile`.
+export type User = Profile
+
+// tabela `orders`
+// - created_at: string ISO gerada no banco (now())
+// - delivery_date: "YYYY-MM-DD" (coluna date, sem horário/timezone)
 export interface Order {
   id: string
   user_id: string
@@ -25,18 +30,17 @@ export interface Order {
   total_amount: number
   created_at: string
   delivery_date: string
-  imgurl?: string
+  imgurl?: string | null
   is_done?: boolean
 }
 
-// planilha `holidays`: holiday_date, holiday_description
-// - holiday_date: "YYYY-MM-DD" (data de calendário, sem horário/timezone)
+// tabela `holidays`: id, holiday_date, holiday_description
 export interface Holiday {
+  id: string
   holiday_date: string
   holiday_description: string
 }
 
-// Payloads de criação (POST). id, created_at e is_done são gerados no backend.
+// Payloads de criação. id/created_at/is_done são gerados no banco.
 export type CreateOrderPayload = Omit<Order, 'id' | 'created_at' | 'is_done'>
-export type CreateHolidayPayload = Holiday
-export type CreateUserPayload = Omit<User, 'id'>
+export type CreateHolidayPayload = Omit<Holiday, 'id'>

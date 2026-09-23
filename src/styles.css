@@ -221,3 +221,83 @@ body {
     @apply font-sans;
   }
 }
+
+/* Splash screen (ver src/components/SplashScreen.tsx e SplashLogo.tsx)
+   Loop de 2s: queda acelerada (0-32%) → squash (32-46%) → wordmark emerge
+   (50-72%) → bolinha volta ao lugar e o logo completo respira (72-100%). */
+@keyframes splash-circle {
+  0% {
+    transform: translateY(-260%);
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.7, 0, 0.9, 0.4); /* cai rápido */
+  }
+  32% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.17, 0.84, 0.44, 1); /* squash */
+  }
+  38% {
+    transform: scale(1.28, 0.62);
+  }
+  44% {
+    transform: scale(0.92, 1.12); /* rebound */
+    animation-timing-function: ease-in-out;
+  }
+  50% {
+    transform: scale(1, 1);
+    animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.36);
+  }
+  /* Pulso de squash enquanto o wordmark emerge, depois a bolinha
+     volta à posição/escala original e permanece no logo final */
+  58% {
+    transform: scale(1.18, 0.8);
+  }
+  66% {
+    transform: scale(0.96, 1.05);
+  }
+  72% {
+    transform: scale(1, 1);
+  }
+  100% {
+    transform: scale(1, 1);
+    opacity: 1;
+  }
+}
+@keyframes splash-word {
+  0%,
+  52% {
+    transform: scale(0.65, 0.25);
+    opacity: 0;
+    animation-timing-function: cubic-bezier(
+      0.34,
+      1.56,
+      0.64,
+      1
+    ); /* emerge com overshoot */
+  }
+  70% {
+    transform: scale(1.04, 1);
+    opacity: 1;
+    animation-timing-function: ease-out;
+  }
+  78% {
+    transform: scale(1, 1);
+  }
+  100% {
+    transform: scale(1, 1);
+    opacity: 1;
+  }
+}
+.animate-splash-circle {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: splash-circle 2s infinite;
+}
+.animate-splash-word {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: splash-word 2s infinite;
+}
+/* squash ultrapassa a viewBox — sem isso a bolinha "corta" ao amassar */
+.splash-svg {
+  overflow: visible;
+}

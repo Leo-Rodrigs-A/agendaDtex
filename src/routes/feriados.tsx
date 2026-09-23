@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/table'
 import { AddHolidayDialog } from '@/components/AddHolidayDialog'
 import { useData } from '@/components/DataProvider'
+import { useAuth } from '@/components/AuthProvider'
 import { parseDateKey, toDateKey } from '@/lib/dates'
 import type { Holiday } from '@/types'
 
@@ -32,10 +33,11 @@ const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
 
 function FeriadosPage() {
   const { holidays, isLoading, error } = useData()
+  const { profile } = useAuth()
 
   const [search, setSearch] = useState('')
   const [view, setView] = useState<ViewMode>(() =>
-    localStorage.getItem(VIEW_KEY) === 'grid' ? 'grid' : 'list',
+    localStorage.getItem(VIEW_KEY) === 'list' ? 'list' : 'grid',
   )
   const [dialogOpen, setDialogOpen] = useState(false)
 
@@ -113,7 +115,16 @@ function FeriadosPage() {
             </button>
           </div>
 
-          <Button className="gap-2" onClick={() => setDialogOpen(true)}>
+          <Button
+            className="gap-2"
+            disabled={profile?.role !== 'admin'}
+            title={
+              profile?.role === 'admin'
+                ? undefined
+                : 'Somente admin pode gerenciar feriados'
+            }
+            onClick={() => setDialogOpen(true)}
+          >
             <Plus className="h-4 w-4" /> Adicionar Feriado
           </Button>
         </div>
