@@ -150,6 +150,48 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   }, [session])
 
+  // Polling silencioso a cada 5 min (sem loading visual/toasts).
+  // Pula o ciclo quando a aba está oculta e, ao voltar à aba,
+  // atualiza imediatamente — a tela fica sempre fresca.
+  useEffect(() => {
+    if (!session) return
+    let cancelled = false
+
+    async function silentRefresh() {
+      try {
+        const [allOrders, allHolidays, allUsers] = await Promise.all([
+          listOrders(),
+          listHolidays(),
+          listProfiles(),
+        ])
+        if (cancelled) return
+        setOrders(allOrders)
+        setHolidays(allHolidays)
+        setUsers(allUsers)
+      } catch (err) {
+        console.error('[DataProvider] Falha no polling de dados', err)
+      }
+    }
+
+    const intervalId = setInterval(
+      () => {
+        if (!document.hidden) silentRefresh()
+      },
+      5 * 60 * 1000,
+    )
+
+    const onVisibilityChange = () => {
+      if (!document.hidden) silentRefresh()
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+
+    return () => {
+      cancelled = true
+      clearInterval(intervalId)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
+  }, [session])
+
   const value = useMemo<DataState>(
     () => ({
       orders,

@@ -33,9 +33,10 @@ function RootContent() {
     <AuthGate>
       <div className="flex min-h-screen w-full bg-muted/20">
         <AppSidebar />
-        <SidebarInset className="flex flex-col flex-1">
+        {/* min-w-0: permite o conteúdo encolher — scroll horizontal fica só dentro das tabelas */}
+        <SidebarInset className="flex min-w-0 flex-1 flex-col">
           <Header />
-          <main className="flex-1 p-8">
+          <main className="min-w-0 flex-1 p-8">
             <Outlet />
           </main>
         </SidebarInset>

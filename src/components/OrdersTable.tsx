@@ -293,7 +293,7 @@ export function OrdersTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-10 sticky left-0 z-10 bg-card" />
+            <TableHead className="w-10 sticky left-0 z-30 bg-card" />
             <SortableHead
               label="Nome do pedido"
               column="order_name"
@@ -334,7 +334,7 @@ export function OrdersTable({
               {...headProps}
             />
             {canWrite && (
-              <TableHead className="w-20 sticky right-0 z-10 bg-card" />
+              <TableHead className="w-20 sticky right-0 z-30 bg-card" />
             )}
           </TableRow>
         </TableHeader>
@@ -368,7 +368,8 @@ export function OrdersTable({
                   <TableCell className="w-10 sticky left-0 bg-card">
                     <OrderDoneCheckbox order={order} />
                   </TableCell>
-                  <TableCell className="font-medium">
+                  {/* Nome: teto de 30ch — truncate + "..."; hover mostra o nome completo */}
+                  <TableCell className="max-w-[30ch] pr-6 font-medium">
                     <div className="flex items-center gap-1">
                       {hasImage ? (
                         <ImageIcon className="h-4 w-4 shrink-0 text-primary" />
@@ -376,6 +377,7 @@ export function OrdersTable({
                         <ImageOff className="h-4 w-4 shrink-0 text-muted-foreground/40" />
                       )}
                       <span
+                        title={order.order_name}
                         className={cn(
                           'truncate',
                           variant === 'full' &&
@@ -387,7 +389,13 @@ export function OrdersTable({
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell>{sellerName(order.user_id)}</TableCell>
+                  {/* Vendedor: teto de 14ch, mesmo padrão de truncate + hint */}
+                  <TableCell
+                    className="max-w-[14ch] truncate"
+                    title={sellerName(order.user_id)}
+                  >
+                    {sellerName(order.user_id)}
+                  </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {order.shirt_count}
                   </TableCell>

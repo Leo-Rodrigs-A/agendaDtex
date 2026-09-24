@@ -120,3 +120,12 @@
 - [x] Botão "dia de agendamento mais distante" agora calcula por `production_date` e só aparece na home (`DaySelector showLatestJump`; oculto em `/producao`)
 - [x] DateMaskInput com autocomplete: digitar só o dia completa mês/ano da data do campo; dia+mês completa o ano; foco seleciona o texto todo (qualquer tecla recomeça o input)
 - [x] Form de pedido: campo de data único — DateMaskInput como trigger do calendário (clique abre o calendário com o texto selecionado; digitação limpa e mascara)
+
+## Slice 12: Responsividade, Tabelas Consistentes e Polling
+
+- [x] Teto de largura nas colunas de texto (não largura fixa): nome do pedido `max-w-[30ch]` + truncate + `title` com nome completo no hover; vendedor cap ~14ch; feriado com cap; respiro à direita da coluna de nome; datas/números `whitespace-nowrap`. Tabela continua elástica (layout automático — estica quando há espaço)
+- [x] Zero scroll horizontal de página: `min-w-0` na coluna de conteúdo, toolbars ok com flex responsivo; scroll lateral só dentro do wrapper da tabela (`overflow-x-auto`) em telas pequenas
+- [x] Colunas sempre visíveis no scroll horizontal da tabela: is_done sticky à esquerda, ações (editar/excluir) sticky à direita (`bg-card`, z-index nos cantos)
+- [x] Cabeçalhos de tabela sticky em `top-16` (colados abaixo do header do app) em todas as tabelas — base em `ui/table.tsx`
+- [x] Polling silencioso de dados a cada 5 min no DataProvider (pedidos + feriados + usuários), pausado em aba oculta, refresh imediato ao voltar à aba, erros só no console
+- [x] Atualizar documentação `.agent` ao final do slice

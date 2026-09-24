@@ -237,6 +237,7 @@ function OrderGrid({
           )}
         >
           <p
+            title={order.order_name}
             className={cn(
               'truncate font-medium',
               order.is_done === true && 'line-through',

@@ -26,7 +26,7 @@ React Frontend (SPA) ──supabase-js──▶ Supabase (Auth + Postgres + RLS 
 - `src/lib/supabase.ts` — client singleton (`VITE_SUPABASE_URL` + `VITE_SUPABASE_PUBLISHABLE_KEY`).
 - `src/services/orders.ts` — `listOrders`, `listOrdersFrom` (fetch escalonado), `createOrder`, `toggleOrderDone` (RPC), `updateOrder`, `deleteOrder` (RPCs).
 - `src/services/holidays.ts`, `src/services/profiles.ts` (+ `inviteUser` via Edge Function, `adminUpdateUser` RPC).
-- **`DataProvider`** mantém a API `useData()` (`orders`/`holidays`/`users` + `refresh*` + `toggleOrderDone` otimista) — consumidores (`OrdersTable`, KPIs, `lib/orders.ts`) inalterados. Fetch inicial: mês atual + futuros; histórico em background. Dados limpos no logout.
+- **`DataProvider`** mantém a API `useData()` (`orders`/`holidays`/`users` + `refresh*` + `toggleOrderDone` otimista) — consumidores (`OrdersTable`, KPIs, `lib/orders.ts`) inalterados. Fetch inicial: mês atual + futuros; histórico em background. **Polling silencioso a cada 5 min** (pedidos + feriados + usuários, sem loading/toast) — pausa com a aba oculta e atualiza na hora ao voltar (`visibilitychange`). Dados limpos no logout.
 - **`UserProvider`** virou shim: `activeUser` = profile da sessão (não há mais "trocar de usuário").
 
 ## Decisões de Frontend (estado atual)
@@ -36,7 +36,7 @@ React Frontend (SPA) ──supabase-js──▶ Supabase (Auth + Postgres + RLS 
 - **`production_date`:** calculado só no front (`productionDateOf`/`ordersForProductionDay` em `lib/orders.ts` = 2 dias úteis antes de `delivery_date`). Home: KPIs e lista do dia seguem `production_date`; o hint entre parênteses mostra o `delivery_date` (`businessDaysForward`). Coluna "Produção" nas duas variants do `OrdersTable`. `/producao`: olha `created_at` (encomendas), KPIs = pedidos fechados + valor vendido, escopo por usuário (admin alterna via dropdown; default = sessão atual).
 - **Viewer de imagem:** `OrderImageViewer` (portal) compartilhado — overlay limpo, ~70vh, fecha em clique fora/Esc, zoom por clique na imagem (1x ↔ 2.5x).
 - **Home dia/mês:** segmented control em todos os breakpoints; visão dia = KPIs de dia + tabela (largura total), visão mês = KPIs de mês + `ProductionChart`.
-- **Tabelas:** colunas sticky — `is_done` à esquerda e ações (edit/delete) à direita (`bg-card`).
+- **Tabelas:** layout elástico com teto nas colunas de texto — nome do pedido `max-w-[30ch]` + truncate + `title` com o nome completo no hover (vendedor `max-w-[14ch]`, feriado `max-w-[40ch]`); datas/números `whitespace-nowrap`. Cabeçalhos sticky em `top-16` (abaixo do Header de 64px) via base em `ui/table.tsx`. Colunas sticky no scroll horizontal da tabela: `is_done` à esquerda e ações (edit/delete) à direita (`bg-card`, cantos com `z-30`). Scroll vertical é da página; scroll horizontal existe **só dentro do wrapper da tabela** (`overflow-x-auto`) — a página nunca rola pro lado (`min-w-0` na cadeia do shell).
 
 ### Sistema de UI
 

@@ -155,13 +155,20 @@ function FeriadosPage() {
                   <TableCell className="w-48 tabular-nums">
                     {dateFormatter.format(parseDateKey(holiday.holiday_date))}
                   </TableCell>
-                  <TableCell className="font-medium">
-                    {holiday.holiday_description}
-                    {holiday.holiday_date === todayKey && (
-                      <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                        hoje
+                  <TableCell className="max-w-[40ch] font-medium">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="truncate"
+                        title={holiday.holiday_description}
+                      >
+                        {holiday.holiday_description}
                       </span>
-                    )}
+                      {holiday.holiday_date === todayKey && (
+                        <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                          hoje
+                        </span>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

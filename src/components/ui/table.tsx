@@ -67,7 +67,8 @@ function TableHead({ className, ...props }: React.ComponentProps<'th'>) {
     <th
       data-slot="table-head"
       className={cn(
-        'h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground [&:has([role=checkbox])]:pr-0',
+        // sticky: cabeçalho cola abaixo do Header do app (h-16 = 64px) ao rolar a página
+        'sticky top-16 z-10 h-10 px-2 text-left align-middle font-medium whitespace-nowrap bg-card text-foreground shadow-[inset_0_-1px_0_0_var(--border)] [&:has([role=checkbox])]:pr-0',
         className,
       )}
       {...props}

@@ -109,12 +109,12 @@ function ProducaoPage() {
                 render={
                   <Button
                     variant="outline"
-                    className="gap-2 font-normal"
-                    title="Escopo de usuário"
+                    className="max-w-[16ch] gap-2 font-normal"
+                    title={scopeName}
                   />
                 }
               >
-                {scopeName}
+                <span className="truncate">{scopeName}</span>
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-44">
