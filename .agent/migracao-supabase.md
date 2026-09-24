@@ -190,7 +190,7 @@ Script `scripts/migrate-data.mts` (Node + `supabase-js` com **service_role**, ro
 
 Escopo novo definido após auth/splash funcionarem. Itens em ordem de implementação:
 
-- [ ] **Remover `legacy_id`:** migração manual dos dados — o id da planilha será substituído manualmente pelo uuid do Supabase, mantendo o vínculo com o vendedor. Drop da coluna via migration 0004. *(Substitui a Fase 6: a migração deixa de ser script one-off e vira processo manual assistido.)*
+- [ ] **Remover `legacy_id`:** migração manual dos dados — o id da planilha será substituído manualmente pelo uuid do Supabase, mantendo o vínculo com o vendedor. Drop da coluna via migration 0004. _(Substitui a Fase 6: a migração deixa de ser script one-off e vira processo manual assistido.)_
 - [ ] **Splash mais rápida:** acelerar a queda da bolinha; duração mínima da splash = **2s** (logo loop ≈ 2s).
 - [ ] **Admin vê KPIs mensais somando todos os usuários** (vendedor continua vendo só os próprios).
 - [ ] **Role `designer`:** só consome dados (SELECT); não cria/edita nada. Ajuste de check constraint + policies/RPCs.

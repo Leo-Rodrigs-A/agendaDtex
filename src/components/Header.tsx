@@ -26,6 +26,8 @@ export function Header() {
         return 'Dashboard Geral'
       case '/pedidos':
         return 'Acompanhamento de Pedidos'
+      case '/producao':
+        return 'Produção'
       case '/feriados':
         return 'Lista de Feriados'
       default:

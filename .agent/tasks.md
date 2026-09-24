@@ -95,13 +95,28 @@
 - [x] Remoção do legacy_id (migração de dados agora manual) e de `src/services/api.ts`/`VITE_API_URL`
 - [x] Documentação atualizada (.agent/architecture.md, project-context.md, contexto da api.md marcado como legado)
 
-## Pendências pós-migração
+## Pendências pós-migração ✅ (sistema em produção na branch main)
 
-- [ ] Deploy/validação da Edge Function `invite-user` em produção
-- [ ] Matriz de testes de RLS maliciosos (API direta como vendedor: alterar role, total_amount, user_id, delete)
-- [ ] RPC `create_order` com validação de prazo no banco (dívida consciente do MVP)
-- [ ] Migração manual dos dados históricos (substituir ids da planilha pelos uuids do Supabase)
-- [ ] Merge da branch e desligamento final do Apps Script
+- [x] Deploy/validação da Edge Function `invite-user` em produção
+- [x] Matriz de testes de RLS maliciosos (API direta como vendedor: alterar role, total_amount, user_id, delete)
+- [x] RPC `create_order` com validação de prazo no banco
+- [x] Migração manual dos dados históricos (substituir ids da planilha pelos uuids do Supabase)
+- [x] Merge da branch e desligamento final do Apps Script
 - [x] Chevrons do DaySelector navegam apenas por dias úteis (pula fds/feriados via shiftBusinessDay)
 - [x] Lembrete de produção na home: junto de todo dayLabel aparece (2 dias úteis antes) — businessDaysBack em lib/dates; menor, entre parênteses, sem primary
 - [x] Feriados: visão padrão em grade; tsconfig restrito a src + configs (tsc --noEmit limpo)
+
+## Slice 11: Rota de Produção, production_date e UX ✅
+
+- [x] Rota `/producao` + sidebar em dois blocos: "Acompanhamento" (Home + Produção) e "Cadastros" (Pedidos + Feriados) (`SidebarGroup` + `SidebarGroupLabel`)
+- [x] `production_date` calculado no front (`productionDateOf`/`ordersForProductionDay` em `lib/orders.ts` = 2 dias úteis antes de `delivery_date`): coluna "Produção" nas tabelas; KPIs/lista do dia na home olham `production_date` e o hint exibe o `delivery_date` (`businessDaysForward` em `lib/dates.ts`)
+- [x] `/producao`: base `created_at` (`ordersCreatedOnDay`), segmented Dia/Mês, DaySelector/MonthSelector globais; KPIs = **pedidos fechados** + valor vendido; vendedor/designer veem só a si mesmos; admin tem dropdown (DropdownMenu shadcn) de usuário; escopo default = usuário da sessão; tabela de pedidos do período abaixo dos KPIs
+- [x] Segmented control dia/mês da home visível em todos os tamanhos de tela; ProductionChart só na visão mês; tabela do dia ocupa a largura toda na visão dia
+- [x] `DateMaskInput` (DD/MM/AAAA, máscara automática, valida data real + fds/feriados) no DaySelector (dentro do popover) e no NewOrderDialog (ao lado do botão do calendário)
+- [x] Colunas sticky: is_done (`left-0`) e ações edit/delete (`right-0`) no OrdersTable, com `bg-card`
+- [x] Hotkey `D` → `/producao` + ação "Ir para Produção" na paleta
+- [x] `OrderImageViewer` compartilhado: overlay limpo sem moldura/título, imagem ~70vh, fecha em clique fora/Esc, zoom por **clique na imagem** (1x ↔ 2.5x; ctrl+scroll descartado por conflitar com zoom da página); usado por OrdersTable e CommandPalette
+- [x] Paleta de comandos: checkbox is_done (toggle otimista, readOnly p/ designer), vendedor antes do valor, botão follow (`ArrowUpRight`) → `/pedidos?focus=<id>` com scroll ao topo da linha + highlight 2s (`highlightId` no OrdersTable; limpa busca se o pedido estiver fora do filtro)
+- [x] Botão "dia de agendamento mais distante" agora calcula por `production_date` e só aparece na home (`DaySelector showLatestJump`; oculto em `/producao`)
+- [x] DateMaskInput com autocomplete: digitar só o dia completa mês/ano da data do campo; dia+mês completa o ano; foco seleciona o texto todo (qualquer tecla recomeça o input)
+- [x] Form de pedido: campo de data único — DateMaskInput como trigger do calendário (clique abre o calendário com o texto selecionado; digitação limpa e mascara)

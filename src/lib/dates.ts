@@ -69,6 +69,22 @@ export function businessDaysBack(
 }
 
 /**
+ * Avança `count` dias úteis a partir de `day` (excluindo fds e feriados).
+ * Usado no hint de entrega da home (2 dias úteis depois da produção).
+ */
+export function businessDaysForward(
+  day: Date,
+  count: number,
+  holidays: Array<Holiday>,
+): Date {
+  let cursor = new Date(day.getFullYear(), day.getMonth(), day.getDate())
+  for (let i = 0; i < count; i++) {
+    cursor = shiftBusinessDay(cursor, 1, holidays)
+  }
+  return cursor
+}
+
+/**
  * Próximos `count` dias úteis a partir de `startDate` (inclusive),
  * excluindo sábados e domingos.
  */

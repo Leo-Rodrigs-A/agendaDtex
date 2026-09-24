@@ -10,6 +10,7 @@ import {
 import { toast } from 'sonner'
 import { Calendar } from '@/components/ui/calendar'
 import { Button } from '@/components/ui/button'
+import { DateMaskInput } from '@/components/DateMaskInput'
 import {
   Popover,
   PopoverContent,
@@ -22,15 +23,20 @@ import {
 } from '@/components/ui/tooltip'
 import { useFilters } from '@/components/FilterProvider'
 import { useData } from '@/components/DataProvider'
+import { productionDateOf } from '@/lib/orders'
 import {
   WEEKEND_MATCHER,
   holidayDates,
-  parseDateKey,
   shiftBusinessDay,
   toDateKey,
 } from '@/lib/dates'
 
-export function DaySelector() {
+export function DaySelector({
+  showLatestJump = true,
+}: {
+  /** Botão "dia de agendamento mais distante" — só faz sentido na home. */
+  showLatestJump?: boolean
+} = {}) {
   const { day, setDay } = useFilters()
   const { holidays, orders } = useData()
   const [open, setOpen] = useState(false)
@@ -47,16 +53,20 @@ export function DaySelector() {
     year: 'numeric',
   }).format(day)
 
-  /** "Dia de agendamento": pula para a data mais alta com pedido registrado.
-   *  Não altera o mês dos KPIs (MonthSelector segue independente). */
+  /** "Dia de agendamento": pula para a data de produção mais distante com
+   *  pedido registrado. Não altera o mês dos KPIs (MonthSelector segue
+   *  independente). */
   const jumpToLatestScheduledDay = () => {
-    const dates = orders.map((o) => o.delivery_date).filter(Boolean)
-    if (dates.length === 0) {
+    if (orders.length === 0) {
       toast.info('Nenhum pedido agendado ainda.')
       return
     }
-    const latest = dates.reduce((a, b) => (a > b ? a : b))
-    setDay(parseDateKey(latest))
+    let latest = productionDateOf(orders[0], holidays)
+    for (const order of orders) {
+      const prod = productionDateOf(order, holidays)
+      if (prod.getTime() > latest.getTime()) latest = prod
+    }
+    setDay(latest)
   }
 
   return (
@@ -97,6 +107,16 @@ export function DaySelector() {
           {label}
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="end">
+          <div className="border-b border-border p-3">
+            <DateMaskInput
+              date={day}
+              holidays={holidays}
+              onSelect={(nextDay) => {
+                setDay(nextDay)
+                setCalendarMonth(nextDay)
+              }}
+            />
+          </div>
           <Calendar
             mode="single"
             selected={day}
@@ -122,20 +142,22 @@ export function DaySelector() {
       >
         <ChevronRight className="h-4 w-4" />
       </Button>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={jumpToLatestScheduledDay}
-            />
-          }
-        >
-          <CalendarClock className="h-4 w-4" />
-        </TooltipTrigger>
-        <TooltipContent>Dia de agendamento mais distante</TooltipContent>
-      </Tooltip>
+      {showLatestJump && (
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={jumpToLatestScheduledDay}
+              />
+            }
+          >
+            <CalendarClock className="h-4 w-4" />
+          </TooltipTrigger>
+          <TooltipContent>Dia de agendamento mais distante</TooltipContent>
+        </Tooltip>
+      )}
     </div>
   )
 }

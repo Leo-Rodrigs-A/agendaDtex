@@ -1,5 +1,11 @@
-import type { Order } from '@/types'
-import { dateKeyOf, nextBusinessDays, toDateKey } from '@/lib/dates'
+import type { Holiday, Order } from '@/types'
+import {
+  businessDaysBack,
+  dateKeyOf,
+  nextBusinessDays,
+  parseDateKey,
+  toDateKey,
+} from '@/lib/dates'
 
 /** Capacidade diária recomendada (não é bloqueio — só alerta visual). */
 export const DAILY_PIECE_QUOTA = 100
@@ -20,6 +26,36 @@ export function countPieces(order: Order): number {
 export function ordersForDay(orders: Array<Order>, day: Date): Array<Order> {
   const key = toDateKey(day)
   return orders.filter((o) => dateKeyOf(o.delivery_date) === key)
+}
+
+/**
+ * Data de produção de um pedido (calculada só no front):
+ * 2 dias úteis antes do `delivery_date` — mesma regra do lembrete da home.
+ */
+export function productionDateOf(order: Order, holidays: Array<Holiday>): Date {
+  return businessDaysBack(parseDateKey(order.delivery_date), 2, holidays)
+}
+
+/** Pedidos cuja produção cai no dia informado. */
+export function ordersForProductionDay(
+  orders: Array<Order>,
+  day: Date,
+  holidays: Array<Holiday>,
+): Array<Order> {
+  const key = toDateKey(day)
+  return orders.filter((o) => toDateKey(productionDateOf(o, holidays)) === key)
+}
+
+/** Pedidos encomendados (criados) no dia informado, com base em `created_at`. */
+export function ordersCreatedOnDay(
+  orders: Array<Order>,
+  day: Date,
+): Array<Order> {
+  const key = toDateKey(day)
+  return orders.filter((o) => {
+    const created = new Date(o.created_at)
+    return !Number.isNaN(created.getTime()) && toDateKey(created) === key
+  })
 }
 
 /** Pedidos cujo mês de entrega é o informado (month: 0-11). */

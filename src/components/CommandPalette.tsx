@@ -1,24 +1,23 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { cn } from 'cn'
 import {
+  ArrowUpRight,
   CalendarDays,
+  Factory,
   FileText,
   Home,
   Plus,
   Search,
   SquareMenu,
 } from 'lucide-react'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
 import { useData } from '@/components/DataProvider'
 import { useAuth } from '@/components/AuthProvider'
+import { OrderImageViewer } from '@/components/OrderImageViewer'
 import { formatBRL } from '@/lib/orders'
-import { driveImageSrc } from '@/lib/drive'
 import type { Order } from '@/types'
 
 type CommandPaletteProps = {
@@ -38,6 +37,8 @@ type Command = {
 /**
  * Paleta de comandos (Ctrl+K): busca pedidos por nome e ações rápidas,
  * estilo Notion/Linear. Cmd+K (macOS) também funciona.
+ * Pedidos: checkbox is_done, vendedor antes do valor e botão "follow"
+ * (vai para /pedidos com o pedido destacado no topo).
  */
 export function CommandPalette({
   open,
@@ -45,14 +46,18 @@ export function CommandPalette({
   onNewOrder,
 }: CommandPaletteProps) {
   const navigate = useNavigate()
-  const { orders } = useData()
+  const { orders, users, toggleOrderDone } = useData()
   const { profile } = useAuth()
   const [query, setQuery] = useState('')
   const [imageOrder, setImageOrder] = useState<Order | null>(null)
-  const [imageFailed, setImageFailed] = useState(false)
 
   const canWrite = profile?.role !== 'designer'
   const q = query.trim().toLowerCase()
+
+  const sellerName = useMemo(() => {
+    const map = new Map(users.map((u) => [u.id, u.name]))
+    return (userId: string) => map.get(userId) ?? '—'
+  }, [users])
 
   const actions = useMemo<Array<Command>>(() => {
     const list: Array<Command> = [
@@ -64,11 +69,18 @@ export function CommandPalette({
         run: () => navigate({ to: '/' }),
       },
       {
+        id: 'nav-producao',
+        label: 'Ir para Produção',
+        hint: 'D',
+        icon: Factory,
+        run: () => navigate({ to: '/producao' }),
+      },
+      {
         id: 'nav-pedidos',
         label: 'Ir para Pedidos',
         hint: 'P',
         icon: SquareMenu,
-        run: () => navigate({ to: '/pedidos' }),
+        run: () => navigate({ to: '/pedidos', search: { focus: undefined } }),
       },
       {
         id: 'nav-feriados',
@@ -113,6 +125,12 @@ export function CommandPalette({
     close()
   }
 
+  /** Follow: abre /pedidos com o pedido focado (scroll ao topo + highlight). */
+  const followOrder = (order: Order) => {
+    navigate({ to: '/pedidos', search: { focus: order.id } })
+    close()
+  }
+
   return (
     <Dialog open={open} onOpenChange={close}>
       <DialogContent
@@ -138,31 +156,78 @@ export function CommandPalette({
           )}
           {orderResults.map((order) => {
             const hasImage = Boolean(order.imgurl?.trim())
+            const done = order.is_done === true
             return (
-              <button
+              <div
                 key={order.id}
-                type="button"
-                disabled={!hasImage}
-                title={hasImage ? 'Ver imagem do pedido' : 'Pedido sem imagem'}
-                onClick={() => {
-                  if (!hasImage) return
-                  setImageFailed(false)
-                  setImageOrder(order)
-                }}
-                className={
-                  hasImage
-                    ? 'flex w-full items-center justify-between gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent cursor-pointer'
-                    : 'flex w-full items-center justify-between gap-2 rounded-md px-2 py-2 text-left text-sm opacity-50 cursor-not-allowed'
-                }
+                className="group flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-accent"
               >
-                <span className="flex min-w-0 items-center gap-2">
+                <Checkbox
+                  checked={done}
+                  disabled={!canWrite}
+                  title={
+                    canWrite
+                      ? done
+                        ? 'Marcar como pendente'
+                        : 'Marcar como concluído'
+                      : 'Designers apenas visualizam'
+                  }
+                  className="cursor-pointer"
+                  onClick={(e) => e.stopPropagation()}
+                  onCheckedChange={(checked) => {
+                    void toggleOrderDone(order.id, checked === true)
+                  }}
+                />
+                <button
+                  type="button"
+                  disabled={!hasImage}
+                  title={
+                    hasImage ? 'Ver imagem do pedido' : 'Pedido sem imagem'
+                  }
+                  onClick={() => {
+                    if (!hasImage) return
+                    setImageOrder(order)
+                  }}
+                  className={cn(
+                    'flex min-w-0 flex-1 items-center gap-2 text-left',
+                    hasImage ? 'cursor-pointer' : 'cursor-default',
+                  )}
+                >
                   <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  <span className="truncate">{order.order_name}</span>
+                  <span
+                    className={cn(
+                      'truncate',
+                      done && 'line-through opacity-60',
+                    )}
+                  >
+                    {order.order_name}
+                  </span>
+                </button>
+                <span
+                  className={cn(
+                    'shrink-0 text-xs text-muted-foreground',
+                    done && 'opacity-60',
+                  )}
+                >
+                  {sellerName(order.user_id)}
                 </span>
-                <span className="text-xs text-muted-foreground tabular-nums">
+                <span
+                  className={cn(
+                    'shrink-0 text-xs text-muted-foreground tabular-nums',
+                    done && 'opacity-60',
+                  )}
+                >
                   {formatBRL(Number(order.total_amount) || 0)}
                 </span>
-              </button>
+                <button
+                  type="button"
+                  title="Ir para o pedido em /pedidos"
+                  onClick={() => followOrder(order)}
+                  className="shrink-0 cursor-pointer rounded-md p-1 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+                >
+                  <ArrowUpRight className="h-4 w-4" />
+                </button>
+              </div>
             )
           })}
 
@@ -198,32 +263,11 @@ export function CommandPalette({
         </div>
       </DialogContent>
 
-      {/* Imagem do pedido (aberta ao clicar num pedido com imgurl) */}
-      <Dialog
-        open={imageOrder !== null}
-        onOpenChange={(isOpen) => !isOpen && setImageOrder(null)}
-      >
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{imageOrder?.order_name}</DialogTitle>
-          </DialogHeader>
-          {imageOrder &&
-            (imageFailed ? (
-              <div className="flex h-48 items-center justify-center rounded-lg bg-muted text-sm text-muted-foreground">
-                Não foi possível carregar a imagem. Verifique se o link está
-                público.
-              </div>
-            ) : (
-              <img
-                src={driveImageSrc(imageOrder.imgurl!)}
-                alt={`Imagem do pedido ${imageOrder.order_name}`}
-                loading="lazy"
-                onError={() => setImageFailed(true)}
-                className="max-h-[70vh] w-full rounded-lg object-contain"
-              />
-            ))}
-        </DialogContent>
-      </Dialog>
+      {/* Viewer de imagem em tela cheia (clique fora / Esc fecha; clique na imagem = zoom) */}
+      <OrderImageViewer
+        order={imageOrder}
+        onClose={() => setImageOrder(null)}
+      />
     </Dialog>
   )
 }

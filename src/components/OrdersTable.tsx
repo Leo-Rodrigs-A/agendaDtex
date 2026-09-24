@@ -12,13 +12,13 @@ import { cn } from 'cn'
 import { toast } from 'sonner'
 import type { Order, User } from '@/types'
 import type { OrderSortDir, OrderSortKey } from '@/lib/orders'
-import { formatBRL, sortOrders } from '@/lib/orders'
+import { formatBRL, productionDateOf, sortOrders } from '@/lib/orders'
 import { parseDateKey } from '@/lib/dates'
-import { driveImageSrc } from '@/lib/drive'
 import { deleteOrder } from '@/services/orders'
 import { useData } from '@/components/DataProvider'
 import { useAuth } from '@/components/AuthProvider'
 import { NewOrderDialog } from '@/components/NewOrderDialog'
+import { OrderImageViewer } from '@/components/OrderImageViewer'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -228,6 +228,8 @@ type OrdersTableProps = {
   sortKey?: OrderSortKey
   sortDir?: OrderSortDir
   onSortChange?: (key: OrderSortKey, dir: OrderSortDir) => void
+  /** Linha destacada (ex.: "follow" vindo da paleta de comandos). */
+  highlightId?: string
 }
 
 export function OrdersTable({
@@ -238,12 +240,12 @@ export function OrdersTable({
   sortKey: controlledKey,
   sortDir: controlledDir,
   onSortChange,
+  highlightId,
 }: OrdersTableProps) {
   const { profile } = useAuth()
-  const { refreshOrders } = useData()
-  // Modal de imagem no nível da linha (linha inteira clicável)
+  const { holidays, refreshOrders } = useData()
+  // Viewer de imagem no nível da linha (linha inteira clicável)
   const [imageOrder, setImageOrder] = useState<Order | null>(null)
-  const [imageFailed, setImageFailed] = useState(false)
   // Modal de edição (NewOrderDialog em modo edição)
   const [editingOrder, setEditingOrder] = useState<Order | null>(null)
 
@@ -268,7 +270,6 @@ export function OrdersTable({
 
   const openImage = (order: Order) => {
     if (!order.imgurl?.trim()) return
-    setImageFailed(false)
     setImageOrder(order)
   }
 
@@ -277,7 +278,8 @@ export function OrdersTable({
   const sortedOrders = sortOrders(visibleOrders, sortKey, sortDir, sellerName)
   const showDeliveryDate = variant === 'full'
   const canWrite = profile?.role !== 'designer'
-  const columnCount = 7 + (showDeliveryDate ? 1 : 0) + (canWrite ? 1 : 0)
+  // +1 = coluna "Produção" (calculada no front: 2 dias úteis antes da entrega)
+  const columnCount = 8 + (showDeliveryDate ? 1 : 0) + (canWrite ? 1 : 0)
 
   const formatCreatedAt = (value: string) => {
     const date = new Date(value)
@@ -291,7 +293,7 @@ export function OrdersTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-10" />
+            <TableHead className="w-10 sticky left-0 z-10 bg-card" />
             <SortableHead
               label="Nome do pedido"
               column="order_name"
@@ -315,6 +317,9 @@ export function OrdersTable({
               column="created_at"
               {...headProps}
             />
+            <TableHead title="2 dias úteis antes da entrega">
+              Produção
+            </TableHead>
             {showDeliveryDate && (
               <SortableHead
                 label="Entrega"
@@ -328,7 +333,9 @@ export function OrdersTable({
               alignRight
               {...headProps}
             />
-            {canWrite && <TableHead className="w-20" />}
+            {canWrite && (
+              <TableHead className="w-20 sticky right-0 z-10 bg-card" />
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -347,6 +354,7 @@ export function OrdersTable({
               return (
                 <TableRow
                   key={order.id}
+                  data-order-id={order.id}
                   onClick={() => openImage(order)}
                   title={hasImage ? 'Ver imagem do pedido' : undefined}
                   className={cn(
@@ -354,9 +362,10 @@ export function OrdersTable({
                       order.is_done === true &&
                       'opacity-60',
                     hasImage && 'cursor-pointer',
+                    highlightId === order.id && 'bg-primary/10',
                   )}
                 >
-                  <TableCell className="w-10">
+                  <TableCell className="w-10 sticky left-0 bg-card">
                     <OrderDoneCheckbox order={order} />
                   </TableCell>
                   <TableCell className="font-medium">
@@ -386,6 +395,9 @@ export function OrdersTable({
                     {order.others_items_count}
                   </TableCell>
                   <TableCell>{formatCreatedAt(order.created_at)}</TableCell>
+                  <TableCell title="2 dias úteis antes da entrega">
+                    {dateFormatter.format(productionDateOf(order, holidays))}
+                  </TableCell>
                   {showDeliveryDate && (
                     <TableCell>
                       {dateFormatter.format(parseDateKey(order.delivery_date))}
@@ -395,7 +407,7 @@ export function OrdersTable({
                     {formatBRL(Number(order.total_amount) || 0)}
                   </TableCell>
                   {canWrite && (
-                    <TableCell className="w-20">
+                    <TableCell className="w-20 sticky right-0 bg-card">
                       <OrderActions
                         order={order}
                         onEdit={() => setEditingOrder(order)}
@@ -410,32 +422,11 @@ export function OrdersTable({
         </TableBody>
       </Table>
 
-      {/* Modal de imagem (aberto pelo clique em qualquer ponto da linha) */}
-      <Dialog
-        open={imageOrder !== null}
-        onOpenChange={(open) => !open && setImageOrder(null)}
-      >
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{imageOrder?.order_name}</DialogTitle>
-          </DialogHeader>
-          {imageOrder &&
-            (imageFailed ? (
-              <div className="flex h-48 items-center justify-center rounded-lg bg-muted text-sm text-muted-foreground">
-                Não foi possível carregar a imagem. Verifique se o link está
-                público.
-              </div>
-            ) : (
-              <img
-                src={driveImageSrc(imageOrder.imgurl!)}
-                alt={`Imagem do pedido ${imageOrder.order_name}`}
-                loading="lazy"
-                onError={() => setImageFailed(true)}
-                className="max-h-[70vh] w-full rounded-lg object-contain"
-              />
-            ))}
-        </DialogContent>
-      </Dialog>
+      {/* Viewer de imagem em tela cheia (clique fora / Esc fecha, Ctrl+scroll = zoom) */}
+      <OrderImageViewer
+        order={imageOrder}
+        onClose={() => setImageOrder(null)}
+      />
 
       {/* Modal de edição */}
       <NewOrderDialog

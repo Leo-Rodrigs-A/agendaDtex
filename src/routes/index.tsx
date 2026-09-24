@@ -14,7 +14,7 @@ import { OrdersTable } from '@/components/OrdersTable'
 import { ProductionChart } from '@/components/ProductionChart'
 import { useFilters } from '@/components/FilterProvider'
 import { useData } from '@/components/DataProvider'
-import { businessDaysBack } from '@/lib/dates'
+import { businessDaysForward } from '@/lib/dates'
 import { useActiveUser } from '@/components/UserProvider'
 import {
   DAILY_PIECE_QUOTA,
@@ -22,7 +22,7 @@ import {
   averageTicket,
   formatBRL,
   ordersCreatedInMonth,
-  ordersForDay,
+  ordersForProductionDay,
   sumPieces,
   sumRevenue,
 } from '@/lib/orders'
@@ -45,13 +45,13 @@ function DashboardPage() {
     month: 'short',
   }).format(day)
 
-  // Lembrete de produção: 2 dias úteis ANTES do dia selecionado.
-  // Sempre exibido junto do dayLabel (menor, entre parênteses, sem primary).
-  const productionDay = businessDaysBack(day, 2, holidays)
-  const prodDayLabel = new Intl.DateTimeFormat('pt-BR', {
+  // O dia selecionado representa a data de PRODUÇÃO; o hint entre parênteses
+  // é a data de entrega correspondente (2 dias úteis à frente).
+  const deliveryDay = businessDaysForward(day, 2, holidays)
+  const deliveryDayLabel = new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: 'short',
-  }).format(productionDay)
+  }).format(deliveryDay)
 
   const rawMonthLabel = new Intl.DateTimeFormat('pt-BR', {
     month: 'long',
@@ -59,8 +59,8 @@ function DashboardPage() {
   const monthLabel =
     rawMonthLabel.charAt(0).toUpperCase() + rawMonthLabel.slice(1)
 
-  // ---- Grupo Dia ----
-  const dayOrders = ordersForDay(orders, day)
+  // ---- Grupo Dia (por data de produção = 2 dias úteis antes da entrega) ----
+  const dayOrders = ordersForProductionDay(orders, day, holidays)
   // Segmented control da tabela diária: todos os usuários x usuário ativo
   const [dayScope, setDayScope] = useState<'all' | 'mine'>('all')
   const dayScoped =
@@ -111,8 +111,8 @@ function DashboardPage() {
         </p>
       )}
 
-      {/* Segmented control mobile: alterna entre o grupo do dia e o do mês (oculto em lg+) */}
-      <div className="flex justify-center lg:hidden">
+      {/* Segmented control: alterna entre o grupo do dia e o do mês (todos os tamanhos) */}
+      <div className="flex justify-center">
         <div className="inline-flex items-center gap-1 rounded-lg bg-muted p-1">
           <button
             type="button"
@@ -141,19 +141,16 @@ function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6">
         <section
-          className={cn(
-            'space-y-4',
-            activeTab === 'day' ? 'block' : 'hidden lg:block',
-          )}
+          className={cn('space-y-4', activeTab === 'day' ? 'block' : 'hidden')}
         >
           <div className="flex flex-wrap items-center justify-between gap-4">
             <p className="text-muted-foreground">
               Visão diária{' '}
               <span className="font-medium text-primary">{dayLabel}</span>{' '}
               <span className="text-xs font-normal text-muted-foreground">
-                ({prodDayLabel})
+                ({deliveryDayLabel})
               </span>
               .
             </p>
@@ -166,7 +163,7 @@ function DashboardPage() {
                   Pedidos para{' '}
                   <span className="font-medium text-primary">{dayLabel}</span>{' '}
                   <span className="text-xs font-normal text-muted-foreground">
-                    ({prodDayLabel})
+                    ({deliveryDayLabel})
                   </span>
                 </p>
                 <h3
@@ -194,7 +191,7 @@ function DashboardPage() {
                   Capacidade em{' '}
                   <span className="font-medium text-primary">{dayLabel}</span>{' '}
                   <span className="text-xs font-normal text-muted-foreground">
-                    ({prodDayLabel})
+                    ({deliveryDayLabel})
                   </span>
                 </span>
                 <CalendarDays className="h-5 w-5 text-primary" />
@@ -231,7 +228,7 @@ function DashboardPage() {
         <section
           className={cn(
             'space-y-4',
-            activeTab === 'month' ? 'block' : 'hidden lg:block',
+            activeTab === 'month' ? 'block' : 'hidden',
           )}
         >
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -316,14 +313,14 @@ function DashboardPage() {
         </section>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      {activeTab === 'day' ? (
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
             <h3 className="text-lg font-semibold">
               Pedidos para{' '}
               <span className="font-medium text-primary">{dayLabel}</span>{' '}
               <span className="text-xs font-normal text-muted-foreground">
-                ({prodDayLabel})
+                ({deliveryDayLabel})
               </span>
             </h3>
             <div className="inline-flex items-center gap-1 rounded-lg bg-muted p-1">
@@ -371,8 +368,9 @@ function DashboardPage() {
             />
           )}
         </div>
+      ) : (
         <ProductionChart orders={orders} />
-      </div>
+      )}
     </div>
   )
 }

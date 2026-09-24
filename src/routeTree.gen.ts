@@ -14,6 +14,7 @@ import { Route as FeriadosRouteImport } from './routes/feriados'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PedidosRouteImport } from './routes/pedidos'
+import { Route as ProducaoRouteImport } from './routes/producao'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +41,11 @@ const PedidosRoute = PedidosRouteImport.update({
   path: '/pedidos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProducaoRoute = ProducaoRouteImport.update({
+  id: '/producao',
+  path: '/producao',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/pedidos': typeof PedidosRoute
+  '/producao': typeof ProducaoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/pedidos': typeof PedidosRoute
+  '/producao': typeof ProducaoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +70,22 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/pedidos': typeof PedidosRoute
+  '/producao': typeof ProducaoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/feriados' | '/login' | '/onboarding' | '/pedidos'
+  fullPaths:
+    '/' | '/feriados' | '/login' | '/onboarding' | '/pedidos' | '/producao'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/feriados' | '/login' | '/onboarding' | '/pedidos'
-  id: '__root__' | '/' | '/feriados' | '/login' | '/onboarding' | '/pedidos'
+  to: '/' | '/feriados' | '/login' | '/onboarding' | '/pedidos' | '/producao'
+  id:
+    | '__root__'
+    | '/'
+    | '/feriados'
+    | '/login'
+    | '/onboarding'
+    | '/pedidos'
+    | '/producao'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +94,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   PedidosRoute: typeof PedidosRoute
+  ProducaoRoute: typeof ProducaoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,6 +134,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PedidosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/producao': {
+      id: '/producao'
+      path: '/producao'
+      fullPath: '/producao'
+      preLoaderRoute: typeof ProducaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -125,6 +150,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   PedidosRoute: PedidosRoute,
+  ProducaoRoute: ProducaoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

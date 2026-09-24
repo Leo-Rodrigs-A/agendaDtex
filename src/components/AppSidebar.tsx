@@ -2,6 +2,9 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -12,6 +15,7 @@ import {
 } from '@/components/ui/sidebar'
 import {
   CalendarDays,
+  Factory,
   Home,
   PanelLeftOpen,
   Search,
@@ -26,21 +30,20 @@ export function AppSidebar() {
   const { toggleSidebar } = useSidebar()
   const { openPalette } = useCommandPalette()
 
-  const navigationItems = [
+  const navigationGroups = [
     {
-      title: 'Home',
-      url: '/',
-      icon: Home,
+      label: 'Acompanhamento',
+      items: [
+        { title: 'Home', url: '/', icon: Home },
+        { title: 'Produção', url: '/producao', icon: Factory },
+      ],
     },
     {
-      title: 'Pedidos',
-      url: '/pedidos',
-      icon: SquareMenu,
-    },
-    {
-      title: 'Feriados',
-      url: '/feriados',
-      icon: CalendarDays,
+      label: 'Cadastros',
+      items: [
+        { title: 'Pedidos', url: '/pedidos', icon: SquareMenu },
+        { title: 'Feriados', url: '/feriados', icon: CalendarDays },
+      ],
     },
   ]
 
@@ -72,23 +75,30 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-3 py-4">
-        <SidebarMenu>
-          {navigationItems.map((item) => {
-            const isActive = pathname === item.url
-            return (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton
-                  render={<Link to={item.url} />}
-                  isActive={isActive}
-                  tooltip={item.title}
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span className="font-medium">{item.title}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )
-          })}
-        </SidebarMenu>
+        {navigationGroups.map((group) => (
+          <SidebarGroup key={group.label} className="p-0">
+            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => {
+                  const isActive = pathname === item.url
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        render={<Link to={item.url} />}
+                        isActive={isActive}
+                        tooltip={item.title}
+                      >
+                        <item.icon className="h-5 w-5" />
+                        <span className="font-medium">{item.title}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
       {/* Botão da paleta de comandos (Ctrl+K) — acima da linha divisória */}

@@ -15,8 +15,9 @@ Sistema interno para registrar pedidos, atribuir a vendedores autenticados, calc
 
 - **Auth completo:** login, onboarding (primeiro acesso define senha + nome, uma vez via `onboarding_completed`), splash animada com logo DTex (loop 2s, mínimo 2s), logout, guarda de rotas.
 - **Shell global:** sidebar (logo DTex, nav, botão "Encontrar" Ctrl+K, menu do usuário com Sair + ações admin) + header com título dinâmico, tema e criação rápida de pedido.
-- **Dashboard (`/`):** KPIs por dia (pedidos, capacidade) e por mês (pedidos, valor). Admin tem segmented "Todos / Somente eu" no grupo mensal. Dia: KPIs globais + segmented todos/usuário.
-- **Pedidos (`/pedidos`):** busca, sort por colunas, lista/grade, "carregar mais" (50 em 50), checkbox de conclusão otimista (RPC), editar/excluir por linha (dono ou admin), linha clicável abre imagem (Drive).
+- **Dashboard (`/`):** segmented Dia/Mês em todos os tamanhos. Dia: KPIs (pedidos, capacidade) e lista filtrados por **`production_date`** (delivery − 2 dias úteis, calculado no front; hint entre parênteses mostra o `delivery_date`) + segmented todos/usuário. Mês: KPIs por `created_at` + gráfico de produção prevista. Admin tem "Todos / Somente eu" no grupo mensal.
+- **Produção (`/producao`):** KPIs por `created_at` (encomendas): pedidos fechados + valor vendido, com segmented Dia/Mês e seletores globais (mesmo FilterProvider). Vendedor/designer veem só os próprios números; admin tem dropdown de usuário (default = sessão) + visão geral. Tabela de pedidos do período abaixo dos KPIs.
+- **Pedidos (`/pedidos`):** busca, sort por colunas, lista/grade, "carregar mais" (50 em 50), checkbox de conclusão otimista (RPC), editar/excluir por linha (dono ou admin), linha clicável abre viewer de imagem em tela cheia (sem moldura, zoom por clique). Coluna "Produção" (`production_date`); colunas is_done/ações fixas (sticky). Suporta `?focus=<id>` (follow da paleta: scroll + highlight).
 - **Feriados (`/feriados`):** lista/grade, adicionar só admin.
 - **Usuários (admin):** convite por e-mail com escolha de role (vendedor/designer) e gerenciador (trocar role, ativar/desativar).
 - **Hotkeys:** Ctrl+K paleta (busca pedidos + ações), N/S/H/P/F.

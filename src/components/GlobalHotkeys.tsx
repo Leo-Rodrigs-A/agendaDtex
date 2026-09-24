@@ -8,7 +8,7 @@ import { useCommandPalette } from '@/components/CommandPaletteProvider'
  *  - Ctrl/Cmd+K → paleta de comandos (estilo Notion/Linear)
  *  - N → novo pedido (staff)
  *  - S → retrair/expandir sidebar
- *  - H / P / F → Home / Pedidos / Feriados
+ *  - H / P / F / D → Home / Pedidos / Feriados / Produção
  */
 export function GlobalHotkeys() {
   const navigate = useNavigate()
@@ -22,8 +22,13 @@ export function GlobalHotkeys() {
   useHotkeys('n', () => openNewOrder(), opts)
   useHotkeys('s', () => toggleSidebar(), opts)
   useHotkeys('h', () => navigate({ to: '/' }), opts)
-  useHotkeys('p', () => navigate({ to: '/pedidos' }), opts)
+  useHotkeys(
+    'p',
+    () => navigate({ to: '/pedidos', search: { focus: undefined } }),
+    opts,
+  )
   useHotkeys('f', () => navigate({ to: '/feriados' }), opts)
+  useHotkeys('d', () => navigate({ to: '/producao' }), opts)
 
   return null
 }

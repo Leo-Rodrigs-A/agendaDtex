@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ptBR } from 'react-day-picker/locale'
-import { CalendarDays, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Calendar } from '@/components/ui/calendar'
+import { DateMaskInput } from '@/components/DateMaskInput'
 import {
   Dialog,
   DialogContent,
@@ -13,11 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
 import { createOrder, updateOrder } from '@/services/orders'
 import { useData } from '@/components/DataProvider'
 import { useActiveUser } from '@/components/UserProvider'
@@ -30,8 +26,6 @@ import {
   toDateKey,
 } from '@/lib/dates'
 import type { Order } from '@/types'
-
-const dateLabel = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' })
 
 // Texto colado pode trazer quebras de linha/espaços extras — limpa antes de enviar
 function cleanText(value: string): string {
@@ -255,37 +249,56 @@ export function NewOrderDialog({
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">Data de entrega</label>
-            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-              <PopoverTrigger
-                render={
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full justify-start gap-2 font-normal"
+            {/* Campo único: input mascarado + calendário que abre no foco/clique
+                (não rouba o foco — dá pra digitar com o calendário aberto).
+                O painel é ancorado ao input e o texto fica alinhado à esquerda. */}
+            <div
+              className="relative"
+              onFocus={() => setCalendarOpen(true)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') setCalendarOpen(false)
+              }}
+            >
+              <DateMaskInput
+                date={deliveryDate}
+                holidays={holidays}
+                onSelect={(date) => {
+                  setDeliveryDate(date)
+                  setCalendarMonth(date)
+                }}
+              />
+              {calendarOpen && (
+                <>
+                  {/* Backdrop transparente: clique fora fecha o calendário */}
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setCalendarOpen(false)}
                   />
-                }
-              >
-                <CalendarDays className="h-4 w-4" />
-                {dateLabel.format(deliveryDate)}
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  locale={ptBR}
-                  month={calendarMonth}
-                  onMonthChange={setCalendarMonth}
-                  selected={deliveryDate}
-                  onSelect={(date) => {
-                    if (date) {
-                      setDeliveryDate(date)
-                      setCalendarOpen(false)
-                    }
-                  }}
-                  // Regra de agendamento: fds e feriados bloqueados aqui
-                  disabled={[WEEKEND_MATCHER, ...holidayDates(holidays)]}
-                />
-              </PopoverContent>
-            </Popover>
+                  {/* mousedown preventDefault: não rouba o foco do input
+                      antes de registrar o clique no dia */}
+                  <div
+                    className="absolute z-50 mt-1 w-auto rounded-md bg-popover p-0 shadow-md ring-1 ring-foreground/10"
+                    onMouseDown={(e) => e.preventDefault()}
+                  >
+                    <Calendar
+                      mode="single"
+                      locale={ptBR}
+                      month={calendarMonth}
+                      onMonthChange={setCalendarMonth}
+                      selected={deliveryDate}
+                      onSelect={(date) => {
+                        if (date) {
+                          setDeliveryDate(date)
+                          setCalendarOpen(false)
+                        }
+                      }}
+                      // Regra de agendamento: fds e feriados bloqueados aqui
+                      disabled={[WEEKEND_MATCHER, ...holidayDates(holidays)]}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">
               Fins de semana e feriados não podem ser selecionados.
             </p>

@@ -31,9 +31,12 @@ React Frontend (SPA) ──supabase-js──▶ Supabase (Auth + Postgres + RLS 
 
 ## Decisões de Frontend (estado atual)
 
-- **Stack real:** TanStack **Router** + Vite (SPA pura). Rotas: `/` (dashboard), `/pedidos`, `/feriados`, `/login`, `/onboarding` (essas duas fora do shell — `__root.tsx` decide pelo pathname).
-- **Seletores de data:** chevrons do `DaySelector` navegam só por dias úteis e o calendário bloqueia fds/feriados (mesma regra do form de pedido); calendário sempre abre no mês da data selecionada. Botões extras: "voltar para hoje" (CalendarArrowDown) e "dia de agendamento mais distante" (CalendarClock — altera só o dia, sem tocar o mês dos KPIs).
-- **Lembrete de produção (home):** junto de todo `dayLabel` aparece a data de 2 dias úteis antes (`businessDaysBack` em `lib/dates.ts`) — em parênteses, menor e sem cor primária, para apressar a produção.
+- **Stack real:** TanStack **Router** + Vite (SPA pura). Rotas: `/` (dashboard), `/producao`, `/pedidos` (aceita `?focus=<id>` — "follow" da paleta), `/feriados`, `/login`, `/onboarding` (essas duas fora do shell — `__root.tsx` decide pelo pathname).
+- **Seletores de data:** chevrons do `DaySelector` navegam só por dias úteis e o calendário bloqueia fds/feriados (mesma regra do form de pedido); calendário sempre abre no mês da data selecionada; **`DateMaskInput`** (DD/MM/AAAA, máscara automática, valida data real + fds/feriados; dia só → completa mês/ano da data do campo, dia+mês → completa o ano; foco seleciona tudo). No `DaySelector` vive dentro do popover; no form de pedido é o próprio trigger do calendário (campo único). Botões extras: "voltar para hoje" (CalendarArrowDown) e "dia de agendamento mais distante" (CalendarClock — só na home, calcula por `production_date`).
+- **`production_date`:** calculado só no front (`productionDateOf`/`ordersForProductionDay` em `lib/orders.ts` = 2 dias úteis antes de `delivery_date`). Home: KPIs e lista do dia seguem `production_date`; o hint entre parênteses mostra o `delivery_date` (`businessDaysForward`). Coluna "Produção" nas duas variants do `OrdersTable`. `/producao`: olha `created_at` (encomendas), KPIs = pedidos fechados + valor vendido, escopo por usuário (admin alterna via dropdown; default = sessão atual).
+- **Viewer de imagem:** `OrderImageViewer` (portal) compartilhado — overlay limpo, ~70vh, fecha em clique fora/Esc, zoom por clique na imagem (1x ↔ 2.5x).
+- **Home dia/mês:** segmented control em todos os breakpoints; visão dia = KPIs de dia + tabela (largura total), visão mês = KPIs de mês + `ProductionChart`.
+- **Tabelas:** colunas sticky — `is_done` à esquerda e ações (edit/delete) à direita (`bg-card`).
 
 ### Sistema de UI
 
@@ -42,7 +45,8 @@ React Frontend (SPA) ──supabase-js──▶ Supabase (Auth + Postgres + RLS 
 
 ### Funcionalidades globais
 
-- **Hotkeys** (`GlobalHotkeys` + `react-hotkeys-hook`): `Ctrl/Cmd+K` paleta de comandos (`CommandPaletteProvider` + `CommandPalette`, abre também pelo botão "Encontrar" na sidebar; pedido com `imgurl` é clicável e abre a imagem), `N` novo pedido, `S` toggle sidebar, `H`/`P`/`F` navegação. Não disparam dentro de inputs.
+- **Hotkeys** (`GlobalHotkeys` + `react-hotkeys-hook`): `Ctrl/Cmd+K` paleta de comandos (`CommandPaletteProvider` + `CommandPalette`; pedidos com checkbox is_done, vendedor + valor, botão follow → `/pedidos?focus=<id>`; pedido com `imgurl` clicável abre o viewer), `N` novo pedido, `S` toggle sidebar, `H`/`P`/`F`/`D` navegação (Home/Pedidos/Feriados/Produção). Não disparam dentro de inputs.
+- **Sidebar:** dois grupos com título — "Acompanhamento" (Home, Produção) e "Cadastros" (Pedidos, Feriados).
 - **Splash screen:** `SplashLogo` (SVG inline animado — queda → squash → transformação no wordmark, loop 2s) + `useSplashGate` (mínimo 2s).
 - **Identidade visual:** `public/logodtex.svg`/`logodtex-animar.svg` (sidebar/login), `dtex192/512.png` (favicon/PWA, theme-color `#FF781F`).
 
