@@ -3,6 +3,7 @@ import type { ComponentProps, Ref } from 'react'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { toDateKey } from '@/lib/dates'
+import { useIsTouch } from '@/hooks/use-is-touch'
 import type { Holiday } from '@/types'
 
 /** Formata Date para "DD/MM/AAAA". */
@@ -59,6 +60,9 @@ export function DateMaskInput({
   'ref' | 'value' | 'onChange' | 'onBlur' | 'onKeyDown' | 'onFocus' | 'onSelect'
 >) {
   const [text, setText] = useState(() => toMask(date))
+  // Touch (celular/tablet): readOnly impede o teclado virtual — a data é
+  // escolhida somente por toque no calendário; o campo fica só de exibição.
+  const isTouch = useIsTouch()
 
   // Sincroniza o texto quando a data externa muda (chevrons, calendário…)
   useEffect(() => setText(toMask(date)), [date])
@@ -113,8 +117,12 @@ export function DateMaskInput({
       placeholder="DD/MM/AAAA"
       maxLength={10}
       className={className}
-      // Texto já vem selecionado: qualquer tecla limpa e começa do zero
-      onFocus={(e) => e.currentTarget.select()}
+      readOnly={isTouch}
+      // Texto já vem selecionado: qualquer tecla limpa e começa do zero.
+      // No touch não faz sentido selecionar texto (não há digitação).
+      onFocus={(e) => {
+        if (!isTouch) e.currentTarget.select()
+      }}
       onChange={(e) => setText(applyMask(e.target.value))}
       onBlur={commit}
       onKeyDown={(e) => {

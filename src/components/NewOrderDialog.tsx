@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { createOrder, updateOrder } from '@/services/orders'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { useData } from '@/components/DataProvider'
 import { useActiveUser } from '@/components/UserProvider'
 import { useAuth } from '@/components/AuthProvider'
@@ -74,6 +75,9 @@ export function NewOrderDialog({
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // No mobile o calendário abre ACIMA do input para não cortar na borda
+  // inferior da tela; no desktop ele abre abaixo (âncora CSS, sem medição).
+  const isMobile = useIsMobile()
 
   // Abre o calendário já no mês da data selecionada (única ou do pedido)
   useEffect(() => setCalendarMonth(deliveryDate), [deliveryDate])
@@ -252,7 +256,9 @@ export function NewOrderDialog({
             <label className="text-sm font-medium">Data de entrega</label>
             {/* Campo único: input mascarado + calendário que abre no foco/clique
                 (não rouba o foco — dá pra digitar com o calendário aberto).
-                O painel é ancorado ao input e o texto fica alinhado à esquerda. */}
+                Âncora CSS no wrapper relative: abaixo do input no desktop
+                (pode ultrapassar a borda do modal — DialogContent não tem
+                overflow), acima do input no mobile para não cortar na tela. */}
             <div
               className="relative"
               onFocus={() => setCalendarOpen(true)}
@@ -270,7 +276,8 @@ export function NewOrderDialog({
               />
               {calendarOpen && (
                 <>
-                  {/* Backdrop transparente: clique fora fecha o calendário */}
+                  {/* Backdrop transparente: clique fora fecha o calendário
+                      (abaixo do modal — digitar no form segue possível) */}
                   <div
                     className="fixed inset-0 z-40"
                     onClick={() => setCalendarOpen(false)}
@@ -278,7 +285,11 @@ export function NewOrderDialog({
                   {/* mousedown preventDefault: não rouba o foco do input
                       antes de registrar o clique no dia */}
                   <div
-                    className="absolute z-50 mt-1 w-auto rounded-md bg-popover p-0 shadow-md ring-1 ring-foreground/10"
+                    className={
+                      isMobile
+                        ? 'absolute bottom-full left-0 z-50 mb-1 w-auto rounded-md bg-popover p-0 shadow-md ring-1 ring-foreground/10'
+                        : 'absolute left-0 top-full z-50 mt-1 w-auto rounded-md bg-popover p-0 shadow-md ring-1 ring-foreground/10'
+                    }
                     onMouseDown={(e) => e.preventDefault()}
                   >
                     <Calendar

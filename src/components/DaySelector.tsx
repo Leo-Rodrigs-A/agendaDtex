@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/tooltip'
 import { useFilters } from '@/components/FilterProvider'
 import { useData } from '@/components/DataProvider'
+import { useIsTouch } from '@/hooks/use-is-touch'
 import { productionDateOf } from '@/lib/orders'
 import {
   WEEKEND_MATCHER,
@@ -39,6 +40,7 @@ export function DaySelector({
 } = {}) {
   const { day, setDay } = useFilters()
   const { holidays, orders } = useData()
+  const isTouch = useIsTouch()
   const [open, setOpen] = useState(false)
   const [calendarMonth, setCalendarMonth] = useState<Date>(day)
 
@@ -107,16 +109,20 @@ export function DaySelector({
           {label}
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="end">
-          <div className="border-b border-border p-3">
-            <DateMaskInput
-              date={day}
-              holidays={holidays}
-              onSelect={(nextDay) => {
-                setDay(nextDay)
-                setCalendarMonth(nextDay)
-              }}
-            />
-          </div>
+          {/* Input mascarado só no desktop — no touch a seleção é feita
+              exclusivamente por toque no calendário (sem teclado virtual) */}
+          {!isTouch && (
+            <div className="border-b border-border p-3">
+              <DateMaskInput
+                date={day}
+                holidays={holidays}
+                onSelect={(nextDay) => {
+                  setDay(nextDay)
+                  setCalendarMonth(nextDay)
+                }}
+              />
+            </div>
+          )}
           <Calendar
             mode="single"
             selected={day}

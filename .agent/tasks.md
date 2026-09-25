@@ -140,5 +140,10 @@
 - [x] Sidebar mobile: clique em rota recolhe a Sheet e navega
 - [x] /producao mobile: linha 1 segmented (esq) + dropdown escopo (dir); linha 2 seletor centralizado
 - [x] Novo Pedido: dica sob a data = "A produção da fábrica será dia {dd/mm}" (businessDaysBack)
-- [x] Todos os Dialogs a ~20% do topo (`top-[20%]` + `max-h-[calc(100dvh-2.5rem)] overflow-y-auto`)
+- [x] Todos os Dialogs a ~20% do topo (`top-[20%]`, sem overflow no DialogContent — overflow clipava conteúdo ancorado)
+- [x] Fix: calendário do Novo Pedido flutua PARA FORA do modal — painel `fixed` ancorado via `getBoundingClientRect` do campo de data (recalcula no resize; z-60 acima do modal; backdrop fecha; mousedown sem roubar foco)
+- [x] Fix mobile: nenhum calendário abre o teclado virtual — hook `useIsTouch` (`pointer: coarse`); `DateMaskInput` vira `readOnly` no touch (seleção só por toque); popover do `DaySelector` esconde o input mascarado no touch
+- [x] Fix: calendário do Novo Pedido ancorado ao input via CSS (`absolute`; abaixo no desktop, acima no mobile via `useIsMobile`) — substitui a âncora fixed/getBoundingClientRect que errava a posição durante a animação do modal
+- [x] Home mobile: top bar em 2 linhas como /producao — linha 1: segmented Dia/Mês (esq) + Todos/Eu (dir, admin); linha 2: seletor centralizado
+- [x] Feriados mobile (grade): cards com cap de caracteres + truncate + title, caixa ajustada ao padding do pai sem estourar (min-w-0/overflow-hidden)
 - [x] Atualizar docs .agent

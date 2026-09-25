@@ -202,10 +202,12 @@ function HolidayGrid({
         const date = parseDateKey(holiday.holiday_date)
         const isToday = holiday.holiday_date === todayKey
         return (
+          // overflow-hidden + min-w-0: a caixa respeita o padding do pai sem
+          // estourar; o nome longo é quem cede (truncate, teto menor no mobile)
           <div
             key={holiday.holiday_date}
             className={cn(
-              'flex items-center gap-4 rounded-lg border border-border bg-background p-4 shadow-sm',
+              'flex min-w-0 items-center gap-4 overflow-hidden rounded-lg border border-border bg-background p-4 shadow-sm',
               isToday && 'border-primary/40',
             )}
           >
@@ -219,11 +221,14 @@ function HolidayGrid({
                   .replace('.', '')}
               </span>
             </div>
-            <div className="min-w-0">
-              <p className="truncate font-medium">
+            <div className="min-w-0 flex-1">
+              <p
+                className="max-w-[18ch] truncate font-medium sm:max-w-none"
+                title={holiday.holiday_description}
+              >
                 {holiday.holiday_description}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="truncate text-xs text-muted-foreground">
                 {dateFormatter.format(date)}
                 {isToday && ' · hoje'}
               </p>

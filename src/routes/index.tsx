@@ -102,6 +102,37 @@ function DashboardPage() {
         )
       : null
 
+  // Escopo global Todos/Somente eu (só admin) — usado nas duas posições
+  // de breakpoint da top bar (mobile na 1ª linha; sm+ ao lado do seletor)
+  const scopeSeg = (
+    <div className="inline-flex items-center gap-1 rounded-lg bg-muted p-1">
+      <button
+        type="button"
+        onClick={() => setScope('all')}
+        className={cn(
+          'rounded-md px-3 py-1 text-sm font-medium transition-colors',
+          scope === 'all'
+            ? 'bg-background text-foreground shadow-sm'
+            : 'text-muted-foreground hover:text-foreground',
+        )}
+      >
+        Todos
+      </button>
+      <button
+        type="button"
+        onClick={() => setScope('mine')}
+        className={cn(
+          'rounded-md px-3 py-1 text-sm font-medium transition-colors',
+          scope === 'mine'
+            ? 'bg-background text-foreground shadow-sm'
+            : 'text-muted-foreground hover:text-foreground',
+        )}
+      >
+        Somente eu
+      </button>
+    </div>
+  )
+
   return (
     <div className="space-y-6 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:gap-6 lg:space-y-0">
       {error && (
@@ -111,66 +142,44 @@ function DashboardPage() {
       )}
 
       {/* Top bar unificada (mesma lógica de /producao):
-          segmented Dia/Mês à esquerda; à direita, escopo global
-          (Todos/Eu — só admin) + seletor do período ativo */}
+          mobile → linha 1: segmented Dia/Mês (esq) + Todos/Eu (dir, admin);
+                   linha 2: seletor do período centralizado.
+          sm+ → linha única: segmented à esquerda; escopo + seletor à direita */}
       <div className="flex shrink-0 flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div className="inline-flex items-center gap-1 self-start rounded-lg bg-muted p-1">
-          <button
-            type="button"
-            onClick={() => setActiveTab('day')}
-            className={cn(
-              'rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
-              activeTab === 'day'
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            Dia
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('month')}
-            className={cn(
-              'rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
-              activeTab === 'month'
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            Mês
-          </button>
+        <div className="flex items-center justify-between gap-2 sm:contents">
+          <div className="inline-flex items-center gap-1 self-start rounded-lg bg-muted p-1">
+            <button
+              type="button"
+              onClick={() => setActiveTab('day')}
+              className={cn(
+                'rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
+                activeTab === 'day'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              Dia
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('month')}
+              className={cn(
+                'rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
+                activeTab === 'month'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              Mês
+            </button>
+          </div>
+          {/* Escopo no mobile (1ª linha, à direita) */}
+          {isAdmin && <div className="sm:hidden">{scopeSeg}</div>}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 self-end sm:self-auto">
-          {/* Escopo global — só para admin */}
-          {isAdmin && (
-            <div className="inline-flex items-center gap-1 rounded-lg bg-muted p-1">
-              <button
-                type="button"
-                onClick={() => setScope('all')}
-                className={cn(
-                  'rounded-md px-3 py-1 text-sm font-medium transition-colors',
-                  scope === 'all'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground',
-                )}
-              >
-                Todos
-              </button>
-              <button
-                type="button"
-                onClick={() => setScope('mine')}
-                className={cn(
-                  'rounded-md px-3 py-1 text-sm font-medium transition-colors',
-                  scope === 'mine'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground',
-                )}
-              >
-                Somente eu
-              </button>
-            </div>
-          )}
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
+          {/* Escopo no desktop (ao lado do seletor) */}
+          {isAdmin && <div className="hidden sm:block">{scopeSeg}</div>}
           {activeTab === 'day' ? <DaySelector /> : <MonthSelector />}
         </div>
       </div>
