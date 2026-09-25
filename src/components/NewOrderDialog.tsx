@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ptBR } from 'react-day-picker/locale'
+import { cn } from 'cn'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -283,13 +284,19 @@ export function NewOrderDialog({
                     onClick={() => setCalendarOpen(false)}
                   />
                   {/* mousedown preventDefault: não rouba o foco do input
-                      antes de registrar o clique no dia */}
+                      antes de registrar o clique no dia.
+                      Mesmas classes do PopoverContent (+ data-slot): o
+                      calendário fica visualmente idêntico ao do DaySelector
+                      (fundo transparente via regra do ui/calendar, ring
+                      suave, animação fade/zoom de entrada) */}
                   <div
-                    className={
+                    data-slot="popover-content"
+                    className={cn(
+                      'animate-in fade-in-0 zoom-in-95 absolute left-0 z-50 w-auto rounded-md bg-popover p-0 text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden duration-100',
                       isMobile
-                        ? 'absolute bottom-full left-0 z-50 mb-1 w-auto rounded-md bg-popover p-0 shadow-md ring-1 ring-foreground/10'
-                        : 'absolute left-0 top-full z-50 mt-1 w-auto rounded-md bg-popover p-0 shadow-md ring-1 ring-foreground/10'
-                    }
+                        ? 'slide-in-from-bottom-2 bottom-full mb-1'
+                        : 'slide-in-from-top-2 top-full mt-1',
+                    )}
                     onMouseDown={(e) => e.preventDefault()}
                   >
                     <Calendar

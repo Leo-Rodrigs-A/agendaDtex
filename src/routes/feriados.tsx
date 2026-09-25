@@ -146,36 +146,38 @@ function FeriadosPage() {
           <div className="min-h-0 flex-1 lg:overflow-y-auto">
             {view === 'list' ? (
               <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Data</TableHead>
-                <TableHead>Feriado</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredHolidays.map((holiday) => (
-                <TableRow key={holiday.holiday_date}>
-                  <TableCell className="w-48 tabular-nums">
-                    {dateFormatter.format(parseDateKey(holiday.holiday_date))}
-                  </TableCell>
-                  <TableCell className="max-w-[40ch] font-medium">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="truncate"
-                        title={holiday.holiday_description}
-                      >
-                        {holiday.holiday_description}
-                      </span>
-                      {holiday.holiday_date === todayKey && (
-                        <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                          hoje
-                        </span>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Feriado</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredHolidays.map((holiday) => (
+                    <TableRow key={holiday.holiday_date}>
+                      <TableCell className="w-48 tabular-nums">
+                        {dateFormatter.format(
+                          parseDateKey(holiday.holiday_date),
+                        )}
+                      </TableCell>
+                      <TableCell className="max-w-[40ch] font-medium">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="truncate"
+                            title={holiday.holiday_description}
+                          >
+                            {holiday.holiday_description}
+                          </span>
+                          {holiday.holiday_date === todayKey && (
+                            <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                              hoje
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
               </Table>
             ) : (
               <HolidayGrid holidays={filteredHolidays} todayKey={todayKey} />

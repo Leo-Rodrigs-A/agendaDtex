@@ -94,7 +94,10 @@ function ProducaoPage() {
       <DropdownMenuContent align="end" className="min-w-44">
         <DropdownMenuItem onClick={() => setScopeUserId('')}>
           <Check
-            className={cn('h-4 w-4', effectiveScope ? 'invisible' : 'text-primary')}
+            className={cn(
+              'h-4 w-4',
+              effectiveScope ? 'invisible' : 'text-primary',
+            )}
           />
           Todos os usuários
         </DropdownMenuItem>

@@ -146,4 +146,6 @@
 - [x] Fix: calendário do Novo Pedido ancorado ao input via CSS (`absolute`; abaixo no desktop, acima no mobile via `useIsMobile`) — substitui a âncora fixed/getBoundingClientRect que errava a posição durante a animação do modal
 - [x] Home mobile: top bar em 2 linhas como /producao — linha 1: segmented Dia/Mês (esq) + Todos/Eu (dir, admin); linha 2: seletor centralizado
 - [x] Feriados mobile (grade): cards com cap de caracteres + truncate + title, caixa ajustada ao padding do pai sem estourar (min-w-0/overflow-hidden)
+- [x] Scrollbars slim temáticas (styles.css): `color-scheme: dark` no bloco `.dark` + `::-webkit-scrollbar` slim com tokens do tema (--border no light quase invisível, --muted no dark, hover --muted-foreground, trilha transparente); Firefox via `scrollbar-width: thin` + `scrollbar-color`
+- [x] Calendário do Novo Pedido com o mesmo visual do popover do DaySelector — painel com as classes do PopoverContent (ring suave, shadow-md, fade/zoom) + `data-slot="popover-content"` (ativa o fundo transparente do ui/calendar); âncora CSS mantida (abaixo no desktop, acima no mobile)
 - [x] Atualizar docs .agent

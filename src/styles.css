@@ -129,6 +129,49 @@ body {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Barras de rolagem nativas (e form controls) seguem o tema escuro */
+  color-scheme: dark;
+}
+
+/* Scrollbars slim harmonizadas com o tema (Slice 13).
+   Light: thumb quase invisível (--border); dark: thumb --muted.
+   Hover revela --muted-foreground; trilha sempre transparente.
+   Cobre os scrolls internos das tabelas (lg+), o scroll horizontal
+   mobile, a paleta de comandos e dropdowns. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+  background-clip: content-box;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  background-clip: content-box;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+  background-clip: content-box;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.dark * {
+  scrollbar-color: var(--muted) transparent;
 }
 
 /* Cor primária selecionável (data-primary no <html>, gerenciado pelo ThemeProvider).
