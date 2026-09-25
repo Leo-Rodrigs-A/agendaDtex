@@ -20,6 +20,7 @@ import { useActiveUser } from '@/components/UserProvider'
 import { useAuth } from '@/components/AuthProvider'
 import {
   WEEKEND_MATCHER,
+  businessDaysBack,
   holidayDates,
   nextBusinessDays,
   parseDateKey,
@@ -300,7 +301,12 @@ export function NewOrderDialog({
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              Fins de semana e feriados não podem ser selecionados.
+              A produção da fábrica será dia{' '}
+              {new Intl.DateTimeFormat('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+              }).format(businessDaysBack(deliveryDate, 2, holidays))}
+              .
             </p>
           </div>
           {error && (

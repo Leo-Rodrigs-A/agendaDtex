@@ -5,7 +5,9 @@ function Table({ className, ...props }: React.ComponentProps<'table'>) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
+      // lg+: sem overflow no wrapper para o header sticky (top-16) funcionar
+      // em relação à PÁGINA. Abaixo de lg: scroll horizontal só na tabela.
+      className="relative w-full overflow-x-auto lg:overflow-x-visible"
     >
       <table
         data-slot="table"
@@ -68,7 +70,7 @@ function TableHead({ className, ...props }: React.ComponentProps<'th'>) {
       data-slot="table-head"
       className={cn(
         // sticky: cabeçalho cola abaixo do Header do app (h-16 = 64px) ao rolar a página
-        'sticky top-16 z-10 h-10 px-2 text-left align-middle font-medium whitespace-nowrap bg-card text-foreground shadow-[inset_0_-1px_0_0_var(--border)] [&:has([role=checkbox])]:pr-0',
+        'sticky z-10 h-10 px-2 text-left align-middle font-medium whitespace-nowrap bg-card text-foreground shadow-[inset_0_-1px_0_0_var(--border)] [&:has([role=checkbox])]:pr-0',
         className,
       )}
       {...props}

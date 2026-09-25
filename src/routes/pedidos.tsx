@@ -105,15 +105,15 @@ function PedidosPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:gap-6 lg:space-y-0">
       {error && (
-        <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+        <p className="shrink-0 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
           {error}
         </p>
       )}
 
       {/* Toolbar: título à esquerda, busca no centro, ações à direita */}
-      <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 shadow-sm lg:flex-row lg:items-center">
+      <div className="flex shrink-0 flex-col gap-4 rounded-xl border border-border bg-card p-4 shadow-sm lg:flex-row lg:items-center">
         <div className="shrink-0">
           <h2 className="text-lg font-semibold">Pedidos</h2>
           <p className="text-sm text-muted-foreground">
@@ -169,7 +169,8 @@ function PedidosPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+      {/* Card da lista: estica (flex-1); conteúdo rola INTERNAMENTE no desktop */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         {isLoading ? (
           <div className="p-12 text-center text-muted-foreground">
             Carregando pedidos…
@@ -178,21 +179,25 @@ function PedidosPage() {
           <div className="p-12 text-center text-muted-foreground">
             Nenhum pedido encontrado.
           </div>
-        ) : view === 'list' ? (
-          <OrdersTable
-            orders={visibleOrders}
-            users={users}
-            variant="full"
-            highlightId={highlightId ?? undefined}
-            sortKey={sortKey}
-            sortDir={sortDir}
-            onSortChange={(key, dir) => {
-              setSortKey(key)
-              setSortDir(dir)
-            }}
-          />
         ) : (
-          <OrderGrid orders={visibleOrders} sellerName={sellerName} />
+          <div className="min-h-0 flex-1 lg:overflow-y-auto">
+            {view === 'list' ? (
+              <OrdersTable
+                orders={visibleOrders}
+                users={users}
+                variant="full"
+                highlightId={highlightId ?? undefined}
+                sortKey={sortKey}
+                sortDir={sortDir}
+                onSortChange={(key, dir) => {
+                  setSortKey(key)
+                  setSortDir(dir)
+                }}
+              />
+            ) : (
+              <OrderGrid orders={visibleOrders} sellerName={sellerName} />
+            )}
+          </div>
         )}
 
         {!isLoading && filteredOrders.length > 0 && (

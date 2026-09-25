@@ -126,6 +126,19 @@
 - [x] Teto de largura nas colunas de texto (não largura fixa): nome do pedido `max-w-[30ch]` + truncate + `title` com nome completo no hover; vendedor cap ~14ch; feriado com cap; respiro à direita da coluna de nome; datas/números `whitespace-nowrap`. Tabela continua elástica (layout automático — estica quando há espaço)
 - [x] Zero scroll horizontal de página: `min-w-0` na coluna de conteúdo, toolbars ok com flex responsivo; scroll lateral só dentro do wrapper da tabela (`overflow-x-auto`) em telas pequenas
 - [x] Colunas sempre visíveis no scroll horizontal da tabela: is_done sticky à esquerda, ações (editar/excluir) sticky à direita (`bg-card`, z-index nos cantos)
-- [x] Cabeçalhos de tabela sticky em `top-16` (colados abaixo do header do app) em todas as tabelas — base em `ui/table.tsx`
+- [x] Cabeçalhos de tabela sticky em `top-16` (colados abaixo do header do app) em todas as tabelas — base em `ui/table.tsx`; fix: wrapper do `Table` usa `overflow-x-auto lg:overflow-x-visible` (overflow no wrapper virava scrollport e o header cobria as primeiras linhas / não fixava na página)
 - [x] Polling silencioso de dados a cada 5 min no DataProvider (pedidos + feriados + usuários), pausado em aba oculta, refresh imediato ao voltar à aba, erros só no console
 - [x] Atualizar documentação `.agent` ao final do slice
+
+## Slice 13: Layout view-height, mobile-first e modais
+
+- [x] Desktop (lg+): sem scroll de página — shell `h-dvh`/`overflow-hidden`, `main` com `min-h-0`; toolbar/KPIs `shrink-0`, card da tabela `flex-1 min-h-0`, tabela rola internamente (header sticky passa a valer dentro do card). Abaixo de lg: scroll de página normal
+- [x] Alturas estáveis nos cards KPI (estratégia híbrida): `invisible` para blocos compostos (ícone + texto), `'&nbsp;'` para linhas simples — card nunca muda de altura
+- [x] Home: top bar unificada (estilo /producao) — segmented Dia/Mês à esquerda; à direita: UM controle global Todos/Eu (só admin) + DaySelector/MonthSelector; remove segmented centralizado e os controles antigos
+- [x] Mobile: `KpiPair` — par de cards vira carrossel com peek (~85%, scroll snap, bolinhas via onScroll) abaixo de sm; sm+ grid 2 colunas. Home (dia/mês) e /producao
+- [x] Header mobile: logo-button = trigger da sidebar, título centralizado, só "+" à direita; cor/tema vão para o UserMenu (só <lg); desktop inalterado
+- [x] Sidebar mobile: clique em rota recolhe a Sheet e navega
+- [x] /producao mobile: linha 1 segmented (esq) + dropdown escopo (dir); linha 2 seletor centralizado
+- [x] Novo Pedido: dica sob a data = "A produção da fábrica será dia {dd/mm}" (businessDaysBack)
+- [x] Todos os Dialogs a ~20% do topo (`top-[20%]` + `max-h-[calc(100dvh-2.5rem)] overflow-y-auto`)
+- [x] Atualizar docs .agent

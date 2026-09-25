@@ -11,6 +11,7 @@ import {
 import { useAuth } from '@/components/AuthProvider'
 import { AddUserDialog } from '@/components/AddUserDialog'
 import { UsersManagerDialog } from '@/components/UsersManagerDialog'
+import { ColorSwatches, ThemeToggleButton } from '@/components/ThemeControls'
 
 function initials(name: string | undefined): string {
   if (!name) return '?'
@@ -73,6 +74,17 @@ export function UserMenu() {
               <p className="truncate text-xs text-muted-foreground capitalize">
                 {profile?.role ?? '—'}
               </p>
+            </div>
+          </div>
+
+          {/* Aparência: só no mobile (no desktop esses controles ficam no Header) */}
+          <div className="mt-1 rounded-lg p-2 lg:hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Aparência</span>
+              <ThemeToggleButton />
+            </div>
+            <div className="mt-3">
+              <ColorSwatches />
             </div>
           </div>
 

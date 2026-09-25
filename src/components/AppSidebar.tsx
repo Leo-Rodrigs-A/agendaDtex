@@ -27,8 +27,13 @@ import { useCommandPalette } from '@/components/CommandPaletteProvider'
 
 export function AppSidebar() {
   const pathname = useLocation({ select: (loc) => loc.pathname })
-  const { toggleSidebar } = useSidebar()
+  const { toggleSidebar, isMobile, setOpenMobile } = useSidebar()
   const { openPalette } = useCommandPalette()
+
+  // No mobile a sidebar é uma Sheet: clicar numa rota recolhe ela após navegar
+  const closeMobileSidebar = () => {
+    if (isMobile) setOpenMobile(false)
+  }
 
   const navigationGroups = [
     {
@@ -88,6 +93,7 @@ export function AppSidebar() {
                         render={<Link to={item.url} />}
                         isActive={isActive}
                         tooltip={item.title}
+                        onClick={closeMobileSidebar}
                       >
                         <item.icon className="h-5 w-5" />
                         <span className="font-medium">{item.title}</span>
@@ -105,7 +111,10 @@ export function AppSidebar() {
       <div className="px-2 pb-1">
         <button
           type="button"
-          onClick={openPalette}
+          onClick={() => {
+            closeMobileSidebar()
+            openPalette()
+          }}
           title="Encontrar (Ctrl+K)"
           className="flex w-full cursor-pointer items-center gap-3 rounded-lg p-2 text-sm text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground group-data-[collapsible=icon]:justify-center"
         >
