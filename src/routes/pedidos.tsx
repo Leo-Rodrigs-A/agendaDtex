@@ -15,9 +15,8 @@ import type { Order } from '@/types'
 
 export const Route = createFileRoute('/pedidos')({
   component: PedidosPage,
-  // "follow" da paleta de comandos: /pedidos?focus=<orderId>
   validateSearch: (search: Record<string, unknown>) => ({
-    focus: typeof search.focus === 'string' ? search.focus : undefined,
+    q: typeof search.q === 'string' ? search.q : undefined,
   }),
 })
 
@@ -36,9 +35,16 @@ function PedidosPage() {
   const { profile } = useAuth()
   const canWrite = profile?.role !== 'designer'
   const navigate = useNavigate()
-  const { focus } = Route.useSearch()
+  const { q } = Route.useSearch()
 
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(q ?? '')
+
+  useEffect(() => {
+    if (q !== undefined) {
+      setSearch(q)
+    }
+  }, [q])
+
   // Default: pedido vendido mais recentemente no topo
   const [sortKey, setSortKey] = useState<OrderSortKey>('created_at')
   const [sortDir, setSortDir] = useState<OrderSortDir>('desc')
@@ -46,7 +52,6 @@ function PedidosPage() {
     localStorage.getItem(VIEW_KEY) === 'grid' ? 'grid' : 'list',
   )
   const [newOrderOpen, setNewOrderOpen] = useState(false)
-  const [highlightId, setHighlightId] = useState<string | null>(null)
 
   const sellerName = useMemo(() => {
     const map = new Map(users.map((u) => [u.id, u.name]))
@@ -72,32 +77,6 @@ function PedidosPage() {
   }, [search, sortKey, sortDir])
   const visibleOrders = filteredOrders.slice(0, visibleCount)
   const hasMore = visibleCount < filteredOrders.length
-
-  // "Follow" da paleta: garante que o pedido esteja visível, rola até ele
-  // no topo da lista e destaca a linha por ~2s.
-  useEffect(() => {
-    if (!focus || isLoading) return
-    const index = filteredOrders.findIndex((o) => o.id === focus)
-    if (index === -1) {
-      // Pedido fora do filtro de busca atual — limpa a busca e tenta de novo
-      if (search) setSearch('')
-      return
-    }
-    if (view !== 'list') changeView('list')
-    if (index >= visibleCount) setVisibleCount(index + 1)
-    const frame = requestAnimationFrame(() => {
-      document
-        .querySelector(`[data-order-id="${focus}"]`)
-        ?.scrollIntoView({ block: 'start' })
-    })
-    setHighlightId(focus)
-    const timer = setTimeout(() => setHighlightId(null), 2000)
-    navigate({ to: '/pedidos', search: { focus: undefined }, replace: true })
-    return () => {
-      cancelAnimationFrame(frame)
-      clearTimeout(timer)
-    }
-  }, [focus, isLoading, filteredOrders])
 
   const changeView = (next: ViewMode) => {
     setView(next)
@@ -186,7 +165,6 @@ function PedidosPage() {
                 orders={visibleOrders}
                 users={users}
                 variant="full"
-                highlightId={highlightId ?? undefined}
                 sortKey={sortKey}
                 sortDir={sortDir}
                 onSortChange={(key, dir) => {

@@ -80,7 +80,7 @@ export function CommandPalette({
         label: 'Ir para Pedidos',
         hint: 'P',
         icon: SquareMenu,
-        run: () => navigate({ to: '/pedidos', search: { focus: undefined } }),
+        run: () => navigate({ to: '/pedidos', search: {} }),
       },
       {
         id: 'nav-feriados',
@@ -125,9 +125,9 @@ export function CommandPalette({
     close()
   }
 
-  /** Follow: abre /pedidos com o pedido focado (scroll ao topo + highlight). */
+  /** Follow: abre /pedidos filtrando pelo nome do pedido. */
   const followOrder = (order: Order) => {
-    navigate({ to: '/pedidos', search: { focus: order.id } })
+    navigate({ to: '/pedidos', search: { q: order.order_name } })
     close()
   }
 

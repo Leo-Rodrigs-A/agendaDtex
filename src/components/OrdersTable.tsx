@@ -273,9 +273,22 @@ export function OrdersTable({
     setImageOrder(order)
   }
 
-  const visibleOrders =
-    variant === 'day' ? orders.filter((o) => o.is_done !== true) : orders
-  const sortedOrders = sortOrders(visibleOrders, sortKey, sortDir, sellerName)
+  const pendingOrders = sortOrders(
+    orders.filter((o) => o.is_done !== true),
+    sortKey,
+    sortDir,
+    sellerName,
+  )
+  const doneOrders = sortOrders(
+    orders.filter((o) => o.is_done === true),
+    sortKey,
+    sortDir,
+    sellerName,
+  )
+  const sortedOrders =
+    variant === 'day'
+      ? [...pendingOrders, ...doneOrders]
+      : sortOrders(orders, sortKey, sortDir, sellerName)
   const showDeliveryDate = variant === 'full'
   const canWrite = profile?.role !== 'designer'
   // +1 = coluna "Produção" (calculada no front: 2 dias úteis antes da entrega)
@@ -357,13 +370,10 @@ export function OrdersTable({
                   data-order-id={order.id}
                   onClick={() => openImage(order)}
                   title={hasImage ? 'Ver imagem do pedido' : undefined}
-                  className={cn(
-                    variant === 'full' &&
-                      order.is_done === true &&
-                      'opacity-60',
-                    hasImage && 'cursor-pointer',
-                    highlightId === order.id && 'bg-primary/10',
-                  )}
+                   className={cn(
+                     order.is_done === true && 'opacity-60',
+                     hasImage && 'cursor-pointer',
+                   )}
                 >
                   <TableCell className="w-10 sticky left-0 bg-card">
                     <OrderDoneCheckbox order={order} />
@@ -376,15 +386,13 @@ export function OrdersTable({
                       ) : (
                         <ImageOff className="h-4 w-4 shrink-0 text-muted-foreground/40" />
                       )}
-                      <span
-                        title={order.order_name}
-                        className={cn(
-                          'truncate',
-                          variant === 'full' &&
-                            order.is_done === true &&
-                            'line-through',
-                        )}
-                      >
+                       <span
+                         title={order.order_name}
+                         className={cn(
+                           'truncate',
+                           order.is_done === true && 'line-through',
+                         )}
+                       >
                         {order.order_name}
                       </span>
                     </div>
