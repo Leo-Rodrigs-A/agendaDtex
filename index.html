@@ -8,6 +8,33 @@
     <link rel="icon" type="image/png" sizes="192x192" href="/dtex192.png" />
     <link rel="apple-touch-icon" href="/dtex192.png" />
     <link rel="manifest" href="/manifest.json" />
+    <style>
+      html,
+      body,
+      #app {
+        height: 100%;
+        margin: 0;
+      }
+
+      html {
+        background: #0a0a0a;
+      }
+
+      body {
+        background: #0a0a0a;
+      }
+    </style>
+    <script>
+      (() => {
+        try {
+          const theme = localStorage.getItem("dtex-theme");
+
+          if (theme === "dark") {
+            document.documentElement.classList.add("dark");
+          }
+        } catch {}
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>

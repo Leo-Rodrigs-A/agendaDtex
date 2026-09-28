@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/components/AuthProvider'
 import { SplashScreen } from '@/components/SplashScreen'
-import { useSplashGate } from '@/hooks/use-splash-gate'
+import { useSplashGate } from '@/components/SplashGateProvider'
 
 export const Route = createFileRoute('/login')({
   component: LoginPage,
@@ -15,8 +15,7 @@ export const Route = createFileRoute('/login')({
 
 function LoginPage() {
   const { session, profile, isLoading, signIn } = useAuth()
-  // Mínimo de 2s (1 loop da animação do logo)
-  const showSplash = useSplashGate(isLoading)
+  const showSplash = useSplashGate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)

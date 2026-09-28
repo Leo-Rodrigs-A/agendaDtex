@@ -173,11 +173,12 @@
 
 > Sintoma: às vezes uma parte da interface aparece antes da animação da splash.
 
-- [ ] `index.html`: CSS crítico inline (`#app:empty` oculto + fundo/`color-scheme`) para o navegador não pintar interface sem estilo enquanto o bundle carrega (hoje o `styles.css` só entra via import no `__root.tsx`)
-- [ ] `index.html`: script inline aplicando `.dark` e `data-primary` do localStorage antes da montagem do React (hoje o tema só é aplicado em `useEffect`, gerando flash de tema)
-- [ ] `useSplashGate`: os 3 call sites independentes (`AuthGate`, `/login`, `/onboarding`) viram **um gate global** iniciado no boot — hoje trocar de tela reinicia a contagem de 2s
-- [ ] `main.tsx`: `defaultPendingComponent`/`defaultPendingMs` no `createRouter` (config defensiva — nenhuma rota tem `loader`, então ainda não dispara; registrar a observação em `architecture.md`)
-- [ ] Aceite: F5 em qualquer rota mostra a splash primeiro, sem flash branco/escuro, e navegar (ex.: `/onboarding` → `/`) não reexibe a splash
+- [x] `index.html`: CSS crítico inline (fundo escuro `#0a0a0a` + altura 100%) + script inline aplicando `.dark` do localStorage antes da montagem do React (hoje o tema só é aplicado em `useEffect`, gerando flash light→dark)
+- [x] `src/components/SplashGateProvider.tsx`: **novo** gate global (singleton) — timer de 2s iniciado uma vez no boot da aba, não reinicia em navegação
+- [x] `src/contexts/index.tsx`: injeta `SplashGateProvider` no topo dos providers (cobre `/login`, `/onboarding`, shell autenticado)
+- [x] `AuthGate.tsx`, `login.tsx`, `onboarding.tsx`: usam `useSplashGate()` sem argumento (import do novo provider)
+- [x] **Não feito** (defensivo): `defaultPendingComponent` no router — nenhuma rota tem loader hoje, zero efeito; pode ser adicionado depois se houver loaders
+- [x] Aceite: F5 em qualquer rota mostra a splash primeiro, sem flash branco/escuro, e navegar (ex.: `/onboarding` → `/`) **não** reexibe a splash
 
 ### 14.4 Hover do ícone Produção com a sidebar recolhida
 

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { useAuth } from '@/components/AuthProvider'
 import { SplashScreen } from '@/components/SplashScreen'
 import { SplashLogo } from '@/components/SplashLogo'
-import { useSplashGate } from '@/hooks/use-splash-gate'
+import { useSplashGate } from '@/components/SplashGateProvider'
 import { supabase } from '@/lib/supabase'
 import { completeOnboarding } from '@/services/profiles'
 
@@ -22,8 +22,7 @@ export const Route = createFileRoute('/onboarding')({
  */
 function OnboardingPage() {
   const { session, profile, isLoading, refreshProfile } = useAuth()
-  // Mínimo de 2s (1 loop da animação do logo)
-  const showSplash = useSplashGate(isLoading)
+  const showSplash = useSplashGate()
   const navigate = useNavigate()
   const [name, setName] = useState<string | null>(null)
   const [password, setPassword] = useState('')

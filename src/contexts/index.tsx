@@ -8,6 +8,7 @@ import { FilterProvider } from '@/components/FilterProvider'
 import { DataProvider } from '@/components/DataProvider'
 import { UserProvider } from '@/components/UserProvider'
 import { CommandPaletteProvider } from '@/components/CommandPaletteProvider'
+import { SplashGateProvider } from '@/components/SplashGateProvider'
 
 /**
  * Ponto único de composição dos providers da aplicação.
@@ -15,6 +16,7 @@ import { CommandPaletteProvider } from '@/components/CommandPaletteProvider'
  * Ordem (dependências):
  * - ThemeProvider: não depende de nada (DOM/localStorage).
  * - TooltipProvider/SidebarProvider: infra de UI dos componentes shadcn.
+ * - SplashGateProvider: gate global da splash (mínimo 2s por aba).
  * - AuthProvider: sessão Supabase + profile (fonte do usuário ativo).
  * - FilterProvider: estado de filtros, independente dos dados.
  * - DataProvider: busca os dados do Supabase (depende da sessão).
@@ -26,18 +28,20 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <ThemeProvider>
       <TooltipProvider>
         <SidebarProvider>
-          <AuthProvider>
-            <FilterProvider>
-              <DataProvider>
-                <UserProvider>
-                  <CommandPaletteProvider>
-                    {children}
-                    <Toaster position="bottom-right" />
-                  </CommandPaletteProvider>
-                </UserProvider>
-              </DataProvider>
-            </FilterProvider>
-          </AuthProvider>
+          <SplashGateProvider>
+            <AuthProvider>
+              <FilterProvider>
+                <DataProvider>
+                  <UserProvider>
+                    <CommandPaletteProvider>
+                      {children}
+                      <Toaster position="bottom-right" />
+                    </CommandPaletteProvider>
+                  </UserProvider>
+                </DataProvider>
+              </FilterProvider>
+            </AuthProvider>
+          </SplashGateProvider>
         </SidebarProvider>
       </TooltipProvider>
     </ThemeProvider>
