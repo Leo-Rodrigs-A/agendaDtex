@@ -16,24 +16,26 @@
         margin: 0;
       }
 
-      html {
-        background: #0a0a0a;
+      html,
+      body {
+        background: #fdfdfd;
       }
 
-      body {
+      html.dark,
+      html.dark body {
         background: #0a0a0a;
       }
     </style>
     <script>
-      (() => {
+      ;(() => {
         try {
-          const theme = localStorage.getItem("dtex-theme");
+          const theme = localStorage.getItem('dtex-theme')
 
-          if (theme === "dark") {
-            document.documentElement.classList.add("dark");
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark')
           }
         } catch {}
-      })();
+      })()
     </script>
   </head>
   <body>
