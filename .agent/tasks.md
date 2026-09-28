@@ -182,5 +182,5 @@
 
 ### 14.4 Hover do ícone Produção com a sidebar recolhida
 
-- [ ] `ui/sidebar.tsx` `SidebarGroupLabel`: `group-data-[collapsible=icon]:pointer-events-none` — no estado recolhido o label fica `opacity-0` + `-mt-8` (invisível, porém ainda no hit-test) e sobrepõe o último item do grupo anterior (Produção), deixando o clique funcionando só em 1 pixel
-- [ ] Aceite: com a sidebar recolhida, hover e clique funcionam na área toda do botão
+- [x] `ui/sidebar.tsx` `SidebarGroupLabel`: `group-data-[collapsible=icon]:pointer-events-none` — no estado recolhido o label ficava `opacity-0` + `-mt-8` (invisível, porém ainda no hit-test) e sobrepunha o último item do grupo anterior (Produção), deixando o clique funcionando só em 1 pixel
+- [x] Aceite: com a sidebar recolhida, hover e clique funcionam na área toda do botão
