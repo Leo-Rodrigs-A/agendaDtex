@@ -24,11 +24,13 @@ import {
 import { useFilters } from '@/components/FilterProvider'
 import { useData } from '@/components/DataProvider'
 import { useIsTouch } from '@/hooks/use-is-touch'
+import { useAllowSaturday } from '@/hooks/use-allow-saturday'
 import { productionDateOf } from '@/lib/orders'
 import {
+  SUNDAY_ONLY_MATCHER,
   WEEKEND_MATCHER,
   holidayDates,
-  shiftBusinessDay,
+  shiftSelectableDay,
   toDateKey,
 } from '@/lib/dates'
 
@@ -38,6 +40,7 @@ export function DaySelector({
   /** Botão "dia de agendamento mais distante" — só faz sentido na home. */
   showLatestJump?: boolean
 } = {}) {
+  const allowSaturday = useAllowSaturday()
   const { day, setDay } = useFilters()
   const { holidays, orders } = useData()
   const isTouch = useIsTouch()
@@ -97,7 +100,9 @@ export function DaySelector({
         variant="outline"
         size="icon"
         title="Dia útil anterior"
-        onClick={() => setDay(shiftBusinessDay(day, -1, holidays))}
+        onClick={() =>
+          setDay(shiftSelectableDay(day, -1, holidays, allowSaturday))
+        }
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
@@ -116,6 +121,7 @@ export function DaySelector({
               <DateMaskInput
                 date={day}
                 holidays={holidays}
+                allowSaturday={allowSaturday}
                 onSelect={(nextDay) => {
                   setDay(nextDay)
                   setCalendarMonth(nextDay)
@@ -135,8 +141,13 @@ export function DaySelector({
               }
             }}
             locale={ptBR}
-            // Fins de semana e feriados bloqueados (igual ao form de pedido)
-            disabled={[WEEKEND_MATCHER, ...holidayDates(holidays)]}
+            // Fins de semana e feriados bloqueados (igual ao form de pedido).
+            // Em /producao permite sábado (created_at), mas domingo/feriado
+            // continuam bloqueados em toda parte.
+            disabled={[
+              allowSaturday ? SUNDAY_ONLY_MATCHER : WEEKEND_MATCHER,
+              ...holidayDates(holidays),
+            ]}
           />
         </PopoverContent>
       </Popover>
@@ -144,7 +155,9 @@ export function DaySelector({
         variant="outline"
         size="icon"
         title="Próximo dia útil"
-        onClick={() => setDay(shiftBusinessDay(day, 1, holidays))}
+        onClick={() =>
+          setDay(shiftSelectableDay(day, 1, holidays, allowSaturday))
+        }
       >
         <ChevronRight className="h-4 w-4" />
       </Button>

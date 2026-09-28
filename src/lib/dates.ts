@@ -25,6 +25,33 @@ export function dateKeyOf(value: string): string {
 /** Matcher do react-day-picker para fins de semana (sábado e domingo). */
 export const WEEKEND_MATCHER = { dayOfWeek: [0, 6] }
 
+/** Matcher só para domingo (usado quando sábado é permitido, ex.: /producao). */
+export const SUNDAY_ONLY_MATCHER = { dayOfWeek: [0] }
+
+/**
+ * Avança/volta `delta` dias ignorando domingos e feriados.
+ * O sábado é opcionalmente incluído (`allowSaturday` = true em /producao,
+ * onde o dia selecionado representa `created_at` e a loja cria pedidos no sábado).
+ * `shiftBusinessDay`, `nextBusinessDays`, `businessDaysBack/Forward` **não mudam**.
+ */
+export function shiftSelectableDay(
+  day: Date,
+  delta: 1 | -1,
+  holidays: Array<Holiday>,
+  allowSaturday = false,
+): Date {
+  const holidayKeys = new Set(holidays.map((h) => h.holiday_date.slice(0, 10)))
+  const cursor = new Date(day.getFullYear(), day.getMonth(), day.getDate())
+  do {
+    cursor.setDate(cursor.getDate() + delta)
+  } while (
+    cursor.getDay() === 0 || // domingo sempre pula
+    (!allowSaturday && cursor.getDay() === 6) || // sábado pula, a menos que liberado
+    holidayKeys.has(toDateKey(cursor))
+  )
+  return cursor
+}
+
 /** Dates locais correspondentes aos feriados cadastrados. */
 export function holidayDates(holidays: Array<Holiday>): Array<Date> {
   return holidays.map((h) => parseDateKey(h.holiday_date))

@@ -46,6 +46,7 @@ export function DateMaskInput({
   date,
   onSelect,
   holidays,
+  allowSaturday = false,
   id,
   className,
   ref,
@@ -54,6 +55,9 @@ export function DateMaskInput({
   date: Date
   onSelect: (date: Date) => void
   holidays: Array<Holiday>
+  /** Se true, permite selecionar sábado (usado em /producao onde o dia
+   *  representa created_at). Domingo e feriados continuam bloqueados. */
+  allowSaturday?: boolean
   ref?: Ref<HTMLInputElement>
 } & Omit<
   ComponentProps<'input'>,
@@ -95,7 +99,8 @@ export function DateMaskInput({
       setText(toMask(date))
       return
     }
-    const isWeekend = parsed.getDay() === 0 || parsed.getDay() === 6
+    const isWeekend =
+      parsed.getDay() === 0 || (!allowSaturday && parsed.getDay() === 6)
     const isHoliday = holidays.some(
       (h) => h.holiday_date.slice(0, 10) === toDateKey(parsed),
     )

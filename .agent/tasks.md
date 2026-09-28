@@ -163,12 +163,11 @@
 
 > Contexto: em `/producao` a base é `created_at` — a loja cria pedido no sábado, mas não agenda entrega nele. Por isso só essa rota pode alcançar sábado; em nenhum outro lugar.
 
-- [ ] `lib/dates.ts`: helper de navegação parametrizado (pula domingo/feriado sempre; sábado só quando liberado). `shiftBusinessDay`, `nextBusinessDays`, `businessDaysBack/Forward` **não mudam**
-- [ ] `DaySelector`: prop `allowSaturday` (default `false`) → matcher de `disabled` do `Calendar` passa a bloquear só domingo
-- [ ] `DateMaskInput`: mesma prop aplicada no `commit()` (hoje rejeita `getDay() === 0 || 6`)
-- [ ] Chevrons do `DaySelector` e hotkeys ←/→ (`GlobalHotkeys`) usarem o mesmo caminho, com fonte única de verdade (rota atual = `/producao`)
-- [ ] **Não tocar**: calendário do `NewOrderDialog` (entrega não pode ser agendada no sábado), `productionDateOf` (`lib/orders.ts`) e o gráfico `businessDaysBreakdown` — evita deslocar a data de produção dos pedidos já cadastrados
-- [ ] Aceite: sábado alcançável em /producao (calendário, input mascarado, chevrons e setas); bloqueado na home, no novo pedido e nas demais telas; domingo e feriado bloqueados em toda parte
+- [x] `lib/dates.ts`: helper de navegação parametrizado (`shiftSelectableDay`) — pula domingo/feriado sempre; sábado só quando liberado. `shiftBusinessDay`, `nextBusinessDays`, `businessDaysBack/Forward` **não mudam**
+- [x] `DaySelector`: `useAllowSaturday()` hook → matcher do `Calendar` bloqueia só domingo; `DateMaskInput`: mesma prop no `commit()` (hoje rejeita `getDay() === 0 || 6`)
+- [x] Chevrons do `DaySelector` e hotkeys ←/→ (`GlobalHotkeys`) usam o mesmo caminho, com fonte única de verdade (`useLocation().pathname === '/producao'`)
+- [x] **Não tocar**: calendário do `NewOrderDialog` (entrega não pode ser agendada no sábado), `productionDateOf` (`lib/orders.ts`) e o gráfico `businessDaysBreakdown` — evita deslocar a data de produção dos pedidos já cadastrados
+- [x] Aceite: sábado alcançável em /producao (calendário, input mascarado, chevrons, setas); bloqueado na home, no novo pedido e nas demais telas; domingo e feriado bloqueados em toda parte
 
 ### 14.3 Precedência do is_loading — splash sempre como primeira pintura
 
