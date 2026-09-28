@@ -149,3 +149,38 @@
 - [x] Scrollbars slim temáticas (styles.css): `color-scheme: dark` no bloco `.dark` + `::-webkit-scrollbar` slim com tokens do tema (--border no light quase invisível, --muted no dark, hover --muted-foreground, trilha transparente); Firefox via `scrollbar-width: thin` + `scrollbar-color`
 - [x] Calendário do Novo Pedido com o mesmo visual do popover do DaySelector — painel com as classes do PopoverContent (ring suave, shadow-md, fade/zoom) + `data-slot="popover-content"` (ativa o fundo transparente do ui/calendar); âncora CSS mantida (abaixo no desktop, acima no mobile)
 - [x] Atualizar docs .agent
+
+## Slice 14: Persistência, calendário, precedência de loading e hover da sidebar
+
+> **Regra de execução:** ao concluir cada item, sugerir a mensagem de commit e **aguardar confirmação** antes de commitar e passar para o próximo item. Ao final do slice, atualizar a documentação `.agent`.
+
+### 14.1 Estado da sidebar em localStorage (desktop)
+
+- [x] `ui/sidebar.tsx`: trocar o cookie `sidebar_state` (gravado em `setOpen` e nunca lido) por `localStorage`, com inicializador preguiçoso no `useState` para o primeiro paint já respeitar o valor (sem flash abrir/fechar); `openMobile` (Sheet no mobile) fica intacto
+- [x] Aceite: recolher → F5 → continua recolhida; mobile inalterado
+
+### 14.2 Sábado selecionável apenas em /producao
+
+> Contexto: em `/producao` a base é `created_at` — a loja cria pedido no sábado, mas não agenda entrega nele. Por isso só essa rota pode alcançar sábado; em nenhum outro lugar.
+
+- [ ] `lib/dates.ts`: helper de navegação parametrizado (pula domingo/feriado sempre; sábado só quando liberado). `shiftBusinessDay`, `nextBusinessDays`, `businessDaysBack/Forward` **não mudam**
+- [ ] `DaySelector`: prop `allowSaturday` (default `false`) → matcher de `disabled` do `Calendar` passa a bloquear só domingo
+- [ ] `DateMaskInput`: mesma prop aplicada no `commit()` (hoje rejeita `getDay() === 0 || 6`)
+- [ ] Chevrons do `DaySelector` e hotkeys ←/→ (`GlobalHotkeys`) usarem o mesmo caminho, com fonte única de verdade (rota atual = `/producao`)
+- [ ] **Não tocar**: calendário do `NewOrderDialog` (entrega não pode ser agendada no sábado), `productionDateOf` (`lib/orders.ts`) e o gráfico `businessDaysBreakdown` — evita deslocar a data de produção dos pedidos já cadastrados
+- [ ] Aceite: sábado alcançável em /producao (calendário, input mascarado, chevrons e setas); bloqueado na home, no novo pedido e nas demais telas; domingo e feriado bloqueados em toda parte
+
+### 14.3 Precedência do is_loading — splash sempre como primeira pintura
+
+> Sintoma: às vezes uma parte da interface aparece antes da animação da splash.
+
+- [ ] `index.html`: CSS crítico inline (`#app:empty` oculto + fundo/`color-scheme`) para o navegador não pintar interface sem estilo enquanto o bundle carrega (hoje o `styles.css` só entra via import no `__root.tsx`)
+- [ ] `index.html`: script inline aplicando `.dark` e `data-primary` do localStorage antes da montagem do React (hoje o tema só é aplicado em `useEffect`, gerando flash de tema)
+- [ ] `useSplashGate`: os 3 call sites independentes (`AuthGate`, `/login`, `/onboarding`) viram **um gate global** iniciado no boot — hoje trocar de tela reinicia a contagem de 2s
+- [ ] `main.tsx`: `defaultPendingComponent`/`defaultPendingMs` no `createRouter` (config defensiva — nenhuma rota tem `loader`, então ainda não dispara; registrar a observação em `architecture.md`)
+- [ ] Aceite: F5 em qualquer rota mostra a splash primeiro, sem flash branco/escuro, e navegar (ex.: `/onboarding` → `/`) não reexibe a splash
+
+### 14.4 Hover do ícone Produção com a sidebar recolhida
+
+- [ ] `ui/sidebar.tsx` `SidebarGroupLabel`: `group-data-[collapsible=icon]:pointer-events-none` — no estado recolhido o label fica `opacity-0` + `-mt-8` (invisível, porém ainda no hit-test) e sobrepõe o último item do grupo anterior (Produção), deixando o clique funcionando só em 1 pixel
+- [ ] Aceite: com a sidebar recolhida, hover e clique funcionam na área toda do botão
