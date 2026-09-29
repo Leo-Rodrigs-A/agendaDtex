@@ -5,10 +5,8 @@ export const Route = createFileRoute('/calendario')({
   component: CalendarioPage,
 })
 
+// Sem wrapper: a raiz do ProductionCalendar já é o container
+// `flex flex-col h-full min-h-0` que herda a altura do <main>.
 function CalendarioPage() {
-  return (
-    <div className="flex flex-col h-full min-h-0">
-      <ProductionCalendar />
-    </div>
-  )
+  return <ProductionCalendar />
 }

@@ -232,9 +232,9 @@
 
 ### 16.6 Altura consistente do calendário
 
-- [ ] **Container** `flex flex-col h-full min-h-0` (herda do `<main>` em `__root.tsx`)
-- [ ] **Toolbar** `shrink-0`, **conteúdo** `flex-1 min-h-0 overflow-auto` interno
-- [ ] Sem overflow vertical da página (scroll interno no grid/colunas)
+- [x] **Container** `flex flex-col h-full min-h-0` (herda o `<main>` em `__root.tsx:41`) — wrapper duplicado removido de `calendario.tsx`; a raiz do `ProductionCalendar` já é o container
+- [x] **Toolbar** `shrink-0` (já existia), **conteúdo** `relative min-h-0 flex-1 overflow-auto` — quem rola é o wrapper, nunca a página
+- [x] Sem overflow vertical da página: grid mensal com `min-h-[360px]` (em janela baixa o card estoura e o wrapper rola, em vez de cortar a última semana), cabeçalho de dias da semana e cabeçalho de cada coluna com `shrink-0`, listas das colunas 3/7 dias com `overflow-y-auto` próprio
 
 ---
 

@@ -44,15 +44,17 @@ export function ProductionCalendarMonth({
           {DAYS_SHORT.map((day, i) => (
             <div
               key={day}
-              className="h-10 flex items-center justify-center text-xs font-medium text-muted-foreground"
+              className="flex h-10 shrink-0 items-center justify-center text-xs font-medium text-muted-foreground"
             >
               {day}
             </div>
           ))}
         </div>
 
-        {/* Células do calendário - flex para preencher altura */}
-        <div className="flex-1 grid grid-cols-7">
+        {/* Células do calendário - flex para preencher altura.
+            min-h evita que as linhas colapsem em janelas muito baixas: aí o
+            card estoura e quem rola é o wrapper (overflow-auto), não a página */}
+        <div className="flex-1 grid min-h-[360px] grid-cols-7">
           {gridDays.map((day, index) => {
             const dayOrders = grouped.get(day.toISOString().split('T')[0]) ?? []
             const today = isToday(day)
@@ -78,7 +80,7 @@ export function ProductionCalendarMonth({
                 {/* Data */}
                 <div
                   className={cn(
-                    'flex items-center justify-between p-1.5',
+                    'flex shrink-0 items-center justify-between p-1.5',
                     !sameMonth && 'bg-muted',
                     weekend && sameMonth && 'bg-muted',
                   )}
