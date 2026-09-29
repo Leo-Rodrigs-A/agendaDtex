@@ -31,6 +31,8 @@ export function ProductionCalendarDays({
   const periodKey = days[0]?.getTime() ?? 0
 
   return (
+    // Um único scrollport: arrastar o contêiner leva os cards juntos.
+    // `flex gap-3` sem wrap — os cards fluem na horizontal, não quebram linha.
     <div className="flex-1 min-h-0 flex gap-3 overflow-x-auto">
       {days.map((day) => {
         const dayOrders = getOrdersForDay(grouped, day)
@@ -41,7 +43,12 @@ export function ProductionCalendarDays({
           <div
             key={toDateKey(day)}
             className={cn(
-              'flex flex-col flex-1 min-w-0 bg-card rounded-xl border border-border overflow-hidden',
+              // `min-w-[300px]` impede o card de encolher abaixo de 300px:
+              // somados ao gap, os 7 dias da semana não cabem num celular,
+              // e o contêiner passa a rolar. `flex-1` (basis 0) deixa o
+              // card crescer para preencher a sobra em telas largas — no
+              // desktop os 3/7 dias continuam dividindo a largura toda.
+              'flex flex-col flex-1 min-w-[300px] bg-card rounded-xl border border-border overflow-hidden',
               today && 'bg-primary/10',
               weekend && 'bg-muted/30',
             )}
