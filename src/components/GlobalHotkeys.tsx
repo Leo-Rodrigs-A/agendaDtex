@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { useNavigate } from '@tanstack/react-router'
 import { useLocation } from '@tanstack/react-router'
@@ -28,6 +29,12 @@ export function GlobalHotkeys() {
   const allowSaturday = useAllowSaturday()
   const calendarNav = useCalendarNavigation()
 
+  // Ref para ler o estado do calendário dinamicamente no handler
+  const calendarNavRef = useRef(calendarNav)
+  useEffect(() => {
+    calendarNavRef.current = calendarNav
+  }, [calendarNav])
+
   // Impede disparo com texto sendo digitado em inputs/textareas
   const opts = { enableOnFormTags: false, preventDefault: true }
 
@@ -44,8 +51,9 @@ export function GlobalHotkeys() {
   useHotkeys(
     'left',
     () => {
-      if (calendarNav?.isCalendarRoute) {
-        calendarNav.goPrev()
+      const nav = calendarNavRef.current
+      if (nav?.isCalendarRoute) {
+        nav.goPrev()
       } else {
         setDay(shiftSelectableDay(day, -1, holidays, allowSaturday))
       }
@@ -55,8 +63,9 @@ export function GlobalHotkeys() {
   useHotkeys(
     'right',
     () => {
-      if (calendarNav?.isCalendarRoute) {
-        calendarNav.goNext()
+      const nav = calendarNavRef.current
+      if (nav?.isCalendarRoute) {
+        nav.goNext()
       } else {
         setDay(shiftSelectableDay(day, 1, holidays, allowSaturday))
       }
