@@ -18,9 +18,9 @@ import { deleteOrder } from '@/services/orders'
 import { useData } from '@/components/DataProvider'
 import { useAuth } from '@/components/AuthProvider'
 import { NewOrderDialog } from '@/components/NewOrderDialog'
+import { OrderDoneCheckbox } from '@/components/OrderDoneCheckbox'
 import { OrderImageViewer } from '@/components/OrderImageViewer'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -43,38 +43,6 @@ const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
   month: 'short',
   year: 'numeric',
 })
-
-/** Checkbox de conclusão: update otimista via DataProvider. */
-function OrderDoneCheckbox({ order }: { order: Order }) {
-  const { toggleOrderDone } = useData()
-  const { profile } = useAuth()
-  const [pending, setPending] = useState(false)
-  const readOnly = profile?.role === 'designer'
-
-  return (
-    <Checkbox
-      checked={order.is_done === true}
-      disabled={pending || readOnly}
-      title={
-        readOnly
-          ? 'Designers apenas visualizam'
-          : order.is_done
-            ? 'Marcar como pendente'
-            : 'Marcar como concluído'
-      }
-      className="cursor-pointer"
-      onClick={(e) => e.stopPropagation()}
-      onCheckedChange={async (checked) => {
-        setPending(true)
-        try {
-          await toggleOrderDone(order.id, checked === true)
-        } finally {
-          setPending(false)
-        }
-      }}
-    />
-  )
-}
 
 /** Ações da linha: editar e excluir (dono ou admin — RPC garante no banco). */
 function OrderActions({
