@@ -30,6 +30,8 @@ export function Header() {
         return 'Acompanhamento de Pedidos'
       case '/producao':
         return 'Produção'
+      case '/calendario':
+        return 'Calendário de Produção'
       case '/feriados':
         return 'Lista de Feriados'
       default:

@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/sidebar'
 import {
   CalendarDays,
+  CalendarX,
   Factory,
   Home,
   PanelLeftOpen,
@@ -41,13 +42,14 @@ export function AppSidebar() {
       items: [
         { title: 'Home', url: '/', icon: Home },
         { title: 'Produção', url: '/producao', icon: Factory },
+        { title: 'Calendário', url: '/calendario', icon: CalendarDays },
       ],
     },
     {
       label: 'Cadastros',
       items: [
         { title: 'Pedidos', url: '/pedidos', icon: SquareMenu },
-        { title: 'Feriados', url: '/feriados', icon: CalendarDays },
+        { title: 'Feriados', url: '/feriados', icon: CalendarX },
       ],
     },
   ]
