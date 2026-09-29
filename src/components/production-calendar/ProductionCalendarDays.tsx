@@ -28,7 +28,7 @@ export function ProductionCalendarDays({
   onFollowClick,
 }: ProductionCalendarDaysProps) {
   return (
-    <div className="flex-1 min-h-0 flex gap-3 overflow-x-auto p-4">
+    <div className="flex-1 min-h-0 flex gap-3 overflow-x-auto">
       {days.map((day) => {
         const dayOrders = grouped.get(day.toISOString().split('T')[0]) ?? []
         const today = isToday(day)

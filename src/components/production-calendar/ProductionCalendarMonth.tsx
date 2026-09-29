@@ -36,7 +36,7 @@ export function ProductionCalendarMonth({
   const weeks = Math.ceil(gridDays.length / 7)
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col">
+    <div className="flex-1 min-h-[360px] flex flex-col">
       {/* Container do calendário com borda e cantos arredondados */}
       <div className="flex-1 flex flex-col rounded-xl border border-border bg-card overflow-hidden">
         {/* Cabeçalho dos dias da semana - com linha divisória inferior */}
@@ -51,10 +51,10 @@ export function ProductionCalendarMonth({
           ))}
         </div>
 
-        {/* Células do calendário - flex para preencher altura.
-            min-h evita que as linhas colapsem em janelas muito baixas: aí o
-            card estoura e quem rola é o wrapper (overflow-auto), não a página */}
-        <div className="flex-1 grid min-h-[360px] grid-cols-7">
+        {/* Células do calendário - o grid cresce junto com o card.
+            O piso de altura fica no wrapper de fora para o card inteiro
+            estourar (e rolar) em vez de a última semana ser cortada */}
+        <div className="flex-1 grid grid-cols-7">
           {gridDays.map((day, index) => {
             const dayOrders = grouped.get(day.toISOString().split('T')[0]) ?? []
             const today = isToday(day)

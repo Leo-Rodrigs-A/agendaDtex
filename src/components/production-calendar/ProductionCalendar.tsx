@@ -72,8 +72,10 @@ export function ProductionCalendar() {
           onMonthChange={jumpToMonth}
         />
 
-        {/* Conteúdo: estica e rola internamente (nunca a página) */}
-        <div className="relative min-h-0 flex-1 overflow-auto">
+        {/* Conteúdo: coluna flex para os filhos esticarem até a base.
+            min-h-[360px] nas visões evita linhas colapsadas em janelas baixas:
+            aí o card estoura e quem rola é este wrapper, não a página */}
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-auto">
           {view === 'month' ? (
             <ProductionCalendarMonth
               grouped={grouped}
