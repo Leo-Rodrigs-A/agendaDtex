@@ -8,7 +8,14 @@ Prioridade sugerida: **1 → 3 → 2 → 4 → 5**. Cada item traz a mensagem de
 
 ---
 
-## 1. 🔴 Bug latente de fuso horário nas chaves de dia do calendário
+## 1. ✅ Resolvido — bug latente de fuso horário nas chaves de dia do calendário
+
+> **Fechado em 29/09/2026**, junto com a Slice 17. As três ocorrências foram
+> trocadas por `toDateKey(day)` e por `getOrdersForDay(grouped, day)`, que já
+> encapsulam a montagem da chave, e a chave React da coluna virou
+> `toDateKey(day)`. O item 2 da lista original (teste com `TZ` não-UTC) foi
+> coberto junto: `src/lib/production-calendar.test.ts` passou a ter casos para
+> `Asia/Tokyo` e `America/Sao_Paulo`.
 
 **Arquivos:** `src/components/production-calendar/ProductionCalendarMonth.tsx:58`, `src/components/production-calendar/ProductionCalendarDays.tsx:28` e `:34`
 
@@ -23,8 +30,8 @@ const dayOrders = grouped.get(day.toISOString().split('T')[0]) ?? []
 
 O resto do projeto já usa o helper certo (`lib/orders.ts` inteiro, `lib/dates.ts`).
 
-- [ ] Trocar as três ocorrências por `toDateKey(day)` (importar de `@/lib/dates`), inclusive a `key={day.toISOString()}` de `ProductionCalendarDays.tsx:34`
-- [ ] Considerar um teste com `TZ` não-UTC para travar o comportamento (vitest aceita `process.env.TZ` no setup)
+- [x] Trocar as três ocorrências por `toDateKey(day)` (importar de `@/lib/dates`), inclusive a `key={day.toISOString()}` de `ProductionCalendarDays.tsx:34`
+- [x] Considerar um teste com `TZ` não-UTC para travar o comportamento (vitest aceita `process.env.TZ` no setup)
 
 ```text
 fix(calendario): usar toDateKey em vez de toISOString nas chaves de dia
