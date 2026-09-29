@@ -21,7 +21,11 @@ type ProductionCalendarMonthProps = {
   onExpandDay: (day: Date) => void
 }
 
-/** Contador de pedidos do dia — abre a visão de 3 dias a partir dele. */
+/**
+ * Contador de pedidos do dia — abre a visão de 3 dias a partir dele.
+ * Todos os pedidos no mapa estão pendentes por construção: quem monta o
+ * `grouped` (`groupOrdersByProductionDate`) já descarta `is_done`.
+ */
 function DayCountButton({
   count,
   onClick,
@@ -29,7 +33,11 @@ function DayCountButton({
   count: number
   onClick: () => void
 }) {
-  const label = `${count} ${count === 1 ? 'pedido' : 'pedidos'}`
+  const label = `${count} ${count === 1 ? 'pedido pendente' : 'pedidos pendentes'}`
+  const actionLabel =
+    count === 1
+      ? 'Ver o pedido pendente'
+      : `Ver todos os ${count} pedidos pendentes`
 
   return (
     <Tooltip>
@@ -39,7 +47,7 @@ function DayCountButton({
             type="button"
             className="w-full cursor-pointer rounded px-2 py-1.5 text-left text-xs transition-colors hover:bg-accent"
             onClick={onClick}
-            aria-label={`Ver todos os ${count} pedidos`}
+            aria-label={actionLabel}
           >
             {label}
           </button>
@@ -48,7 +56,7 @@ function DayCountButton({
         {label}
       </TooltipTrigger>
       <TooltipContent side="top" align="center">
-        Ver todos os {count} pedidos
+        {actionLabel}
       </TooltipContent>
     </Tooltip>
   )
