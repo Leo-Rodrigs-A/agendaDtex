@@ -71,78 +71,87 @@ export function ProductionCalendarMonth({
 
   return (
     <div className="flex-1 min-h-[360px] flex flex-col">
-      {/* Container do calendário com borda e cantos arredondados */}
-      <div className="flex-1 flex flex-col rounded-xl border border-border bg-card overflow-hidden">
-        {/* Cabeçalho dos dias da semana - com linha divisória inferior */}
-        <div className="grid grid-cols-7 border-b border-border bg-muted/50">
-          {DAYS_SHORT.map((day) => (
-            <div
-              key={day}
-              className="flex h-10 shrink-0 items-center justify-center text-xs font-medium text-muted-foreground"
-            >
-              {day}
-            </div>
-          ))}
-        </div>
-
-        {/* Células do calendário - o grid cresce junto com o card.
-            O piso de altura fica no wrapper de fora para o card inteiro
-            estourar (e rolar) em vez de a última semana ser cortada */}
-        <div className="flex-1 grid grid-cols-7">
-          {gridDays.map((day, index) => {
-            const dayOrders = getOrdersForDay(grouped, day)
-            const today = isToday(day)
-            const sameMonth = isSameMonth(day, anchorDate)
-            const weekend = isWeekend(day)
-
-            const isLastCol = index % 7 === 6
-            const isLastRow = index >= gridDays.length - 7
-
-            return (
+      {/* Scrollport horizontal do mês. Cabeçalho e grade ficam no MESMO
+          scrollport, então as colunas não desalinham ao arrastar.
+          O card tem piso de 840px (7 colunas × 120px) — com `grid-cols-7`
+          isso equivale a `repeat(7, minmax(120px, 1fr))` em cada track, e
+          mantém as duas grades com a mesma template.
+          Acima de lg a grade cabe na tela, então o wrapper volta a overflow
+          visível: o estouro vertical (janela baixa) continua rolando no
+          contêiner externo, como antes, em vez de criar um scroll aninhado. */}
+      <div className="flex-1 min-h-0 flex overflow-x-auto lg:overflow-visible">
+        <div className="flex-1 min-w-[840px] lg:min-w-0 flex flex-col rounded-xl border border-border bg-card overflow-hidden">
+          {/* Cabeçalho dos dias da semana - com linha divisória inferior */}
+          <div className="grid grid-cols-7 border-b border-border bg-muted/50">
+            {DAYS_SHORT.map((day) => (
               <div
-                key={index}
-                className={cn(
-                  'relative flex flex-col min-h-0 bg-card',
-                  !sameMonth && 'bg-muted text-muted-foreground/50',
-                  weekend && sameMonth && 'bg-muted',
-                  !isLastCol && 'border-r border-border',
-                  !isLastRow && 'border-b border-border',
-                )}
+                key={day}
+                className="flex h-10 shrink-0 items-center justify-center text-xs font-medium text-muted-foreground"
               >
-                {/* Data */}
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {/* Células do calendário - o grid cresce junto com o card.
+              O piso de altura fica no wrapper de fora para o card inteiro
+              estourar (e rolar) em vez de a última semana ser cortada */}
+          <div className="flex-1 grid grid-cols-7">
+            {gridDays.map((day, index) => {
+              const dayOrders = getOrdersForDay(grouped, day)
+              const today = isToday(day)
+              const sameMonth = isSameMonth(day, anchorDate)
+              const weekend = isWeekend(day)
+
+              const isLastCol = index % 7 === 6
+              const isLastRow = index >= gridDays.length - 7
+
+              return (
                 <div
+                  key={index}
                   className={cn(
-                    'flex shrink-0 items-center justify-between p-1.5',
-                    !sameMonth && 'bg-muted',
+                    'relative flex flex-col min-h-0 bg-card',
+                    !sameMonth && 'bg-muted text-muted-foreground/50',
                     weekend && sameMonth && 'bg-muted',
+                    !isLastCol && 'border-r border-border',
+                    !isLastRow && 'border-b border-border',
                   )}
                 >
-                  <span
+                  {/* Data */}
+                  <div
                     className={cn(
-                      'text-xs font-medium',
-                      today &&
-                        'bg-primary text-primary-foreground rounded px-1.5 py-0.5',
-                      !sameMonth && 'text-muted-foreground/50',
+                      'flex shrink-0 items-center justify-between p-1.5',
+                      !sameMonth && 'bg-muted',
+                      weekend && sameMonth && 'bg-muted',
                     )}
                   >
-                    {day.getDate()}
-                  </span>
-                </div>
+                    <span
+                      className={cn(
+                        'text-xs font-medium',
+                        today &&
+                          'bg-primary text-primary-foreground rounded px-1.5 py-0.5',
+                        !sameMonth && 'text-muted-foreground/50',
+                      )}
+                    >
+                      {day.getDate()}
+                    </span>
+                  </div>
 
-                {/* Contador de pedidos: a célula não lista mais os pedidos
-                    (nome, imagem, conclusão) — só quantos são e um atalho
-                    para a visão de 3 dias, onde o card completo aparece. */}
-                <div className="flex-1 min-h-0 overflow-hidden p-1.5">
-                  {dayOrders.length > 0 && (
-                    <DayCountButton
-                      count={dayOrders.length}
-                      onClick={() => onExpandDay(day)}
-                    />
-                  )}
+                  {/* Contador de pedidos: a célula não lista mais os pedidos
+                      (nome, imagem, conclusão) — só quantos são e um atalho
+                      para a visão de 3 dias, onde o card completo aparece. */}
+                  <div className="flex-1 min-h-0 overflow-hidden p-1.5">
+                    {dayOrders.length > 0 && (
+                      <DayCountButton
+                        count={dayOrders.length}
+                        onClick={() => onExpandDay(day)}
+                      />
+                    )}
+                  </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
       </div>
     </div>
