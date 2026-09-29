@@ -116,7 +116,7 @@
 - [x] Colunas sticky: is_done (`left-0`) e ações edit/delete (`right-0`) no OrdersTable, com `bg-card`
 - [x] Hotkey `D` → `/producao` + ação "Ir para Produção" na paleta
 - [x] `OrderImageViewer` compartilhado: overlay limpo sem moldura/título, imagem ~70vh, fecha em clique fora/Esc, zoom por **clique na imagem** (1x ↔ 2.5x; ctrl+scroll descartado por conflitar com zoom da página); usado por OrdersTable e CommandPalette
-- [x] Paleta de comandos: checkbox is_done (toggle otimista, readOnly p/ designer), vendedor antes do valor, botão follow (`ArrowUpRight`) → `/pedidos?focus=<id>` com scroll ao topo da linha + highlight 2s (`highlightId` no OrdersTable; limpa busca se o pedido estiver fora do filtro)
+- [x] Paleta de comandos: checkbox is_done (toggle otimista, readOnly p/ designer), vendedor antes do valor, botão follow (`ArrowUpRight`) → `/pedidos` com `search: { q: <nome do pedido> }` (busca por nome). **Corrigido em 16.7**: o `?focus=<id>` com scroll ao topo + highlight de 2s nunca foi implementado — o `highlightId` do `OrdersTable` era código morto e foi removido
 - [x] Botão "dia de agendamento mais distante" agora calcula por `production_date` e só aparece na home (`DaySelector showLatestJump`; oculto em `/producao`)
 - [x] DateMaskInput com autocomplete: digitar só o dia completa mês/ano da data do campo; dia+mês completa o ano; foco seleciona o texto todo (qualquer tecla recomeça o input)
 - [x] Form de pedido: campo de data único — DateMaskInput como trigger do calendário (clique abre o calendário com o texto selecionado; digitação limpa e mascara)
@@ -233,8 +233,19 @@
 ### 16.6 Altura consistente do calendário
 
 - [x] **Container** `flex flex-col h-full min-h-0` (herda o `<main>` em `__root.tsx:41`) — wrapper duplicado removido de `calendario.tsx`; a raiz do `ProductionCalendar` já é o container
-- [x] **Toolbar** `shrink-0` (já existia), **conteúdo** `relative min-h-0 flex-1 overflow-auto` — quem rola é o wrapper, nunca a página
-- [x] Sem overflow vertical da página: grid mensal com `min-h-[360px]` (em janela baixa o card estoura e o wrapper rola, em vez de cortar a última semana), cabeçalho de dias da semana e cabeçalho de cada coluna com `shrink-0`, listas das colunas 3/7 dias com `overflow-y-auto` próprio
+- [x] **Toolbar** `shrink-0` (já existia), **conteúdo** `relative flex min-h-0 flex-1 flex-col overflow-auto` — **coluna flex**: é o que permite os filhos esticarem até a base. Antes (block) o `flex-1` dos filhos era inerte e o calendário ficava curto, sem chegar ao rodapé
+- [x] Sem overflow vertical da página: `min-h-[360px]` na **raiz** da grade mensal (no card, o `overflow-hidden` cortaria a última semana; na raiz o card inteiro estoura e o wrapper rola), cabeçalho de dias da semana e cabeçalho de cada coluna com `shrink-0`, listas das colunas 3/7 dias com `overflow-y-auto` próprio
+- [x] Cards das visões 3/7 dias também preenchem até a base: `p-4` removido do container de dias (só o `gap-3` separa as colunas)
+
+### 16.7 Navegação de período e limpeza
+
+- [x] **Toolbar** com o grupo `[hoje] ‹ [período] ›`: botão "hoje" (`CalendarArrowDown` + tooltip, desabilitado quando já está no período atual), chevrons `goPrev`/`goNext` e o `MonthSelector` no meio exibindo o `periodLabel` (nova prop opcional `label`; sem ela o componente se comporta como antes)
+- [x] **Visão 3 dias passou a navegar** (±3 dias) via `navigateDays` em `lib/production-calendar.ts` — sem isso os chevrons ficariam mortos nessa visão. 3 testes novos (34 no total)
+- [x] **Hotkeys `←`/`→` removidos de `/calendario`** (no-op pelo `pathname`); `CalendarNavigationContext.tsx` deletado — nunca funcionou, porque `GlobalHotkeys` é montado no `__root.tsx`, fora do provider, então `useCalendarNavigation()` devolvia `null` e o handler caía no `setDay()` global
+- [x] **Código morto removido**: `users`/`canWrite` no `ProductionCalendar`, `weeks`/`i` no mês, imports `Tooltip*` nos dias, prop `highlightId` do `OrdersTable` (nunca implementada — a paleta busca por nome, `search: { q }`), `isLoading` em `AuthGate`/`login`/`onboarding`, `navigate` em `/pedidos`, `viewLabels` duplicado na toolbar
+- [x] **Tipagem**: `navigate({ to: '/pedidos' })` → `search: { q: undefined }` (o `validateSearch` devolve `q` obrigatório, então `search: {}` não compila)
+- [x] **DRO (deuda técnica) paga**: `tsc --noEmit` de 17 erros → **0**; `pnpm lint` de 3 erros → **0** (restam 7 warnings `no-shadow` preexistentes em `ui/calendar.tsx`/`ui/chart.tsx`); `prettier --check src .agent` limpo
+- [ ] **Validação visual do usuário** em `lg+` e abaixo de `lg` (não há browser headless no ambiente)
 
 ---
 

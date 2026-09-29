@@ -1,11 +1,5 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState
-  
-} from 'react'
-import type {ReactNode} from 'react';
+import { createContext, useContext, useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
 
 type SplashGateState = {
   /** true enquanto o mínimo de 2s (1 loop da animação) não passou */

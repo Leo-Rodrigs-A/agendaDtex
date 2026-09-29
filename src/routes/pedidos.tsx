@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { cn } from 'cn'
 import { LayoutGrid, List, Plus, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -34,7 +34,6 @@ function PedidosPage() {
   const { orders, users, isLoading, error } = useData()
   const { profile } = useAuth()
   const canWrite = profile?.role !== 'designer'
-  const navigate = useNavigate()
   const { q } = Route.useSearch()
 
   const [search, setSearch] = useState(q ?? '')

@@ -33,7 +33,6 @@ export function ProductionCalendarMonth({
   onFollowClick,
 }: ProductionCalendarMonthProps) {
   const gridDays = getMonthGridDays(anchorDate)
-  const weeks = Math.ceil(gridDays.length / 7)
 
   return (
     <div className="flex-1 min-h-[360px] flex flex-col">
@@ -41,7 +40,7 @@ export function ProductionCalendarMonth({
       <div className="flex-1 flex flex-col rounded-xl border border-border bg-card overflow-hidden">
         {/* Cabeçalho dos dias da semana - com linha divisória inferior */}
         <div className="grid grid-cols-7 border-b border-border bg-muted/50">
-          {DAYS_SHORT.map((day, i) => (
+          {DAYS_SHORT.map((day) => (
             <div
               key={day}
               className="flex h-10 shrink-0 items-center justify-center text-xs font-medium text-muted-foreground"

@@ -88,7 +88,7 @@ export function CommandPalette({
         label: 'Ir para Pedidos',
         hint: 'P',
         icon: SquareMenu,
-        run: () => navigate({ to: '/pedidos', search: {} }),
+        run: () => navigate({ to: '/pedidos', search: { q: undefined } }),
       },
       {
         id: 'nav-feriados',

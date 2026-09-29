@@ -21,7 +21,7 @@ export const Route = createFileRoute('/onboarding')({
  * seu nome. Role NUNCA aparece aqui — vem do banco, definida pelo admin.
  */
 function OnboardingPage() {
-  const { session, profile, isLoading, refreshProfile } = useAuth()
+  const { session, profile, refreshProfile } = useAuth()
   const showSplash = useSplashGate()
   const navigate = useNavigate()
   const [name, setName] = useState<string | null>(null)

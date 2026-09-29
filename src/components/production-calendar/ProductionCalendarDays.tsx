@@ -1,9 +1,4 @@
 import { cn } from 'cn'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { isToday, isWeekend } from '@/lib/production-calendar'
 import type { Order } from '@/types'
 import { ProductionCalendarOrder } from './ProductionCalendarOrder'

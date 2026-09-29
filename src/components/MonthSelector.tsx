@@ -93,7 +93,8 @@ export function MonthSelector({
 
         <div className="grid grid-cols-3 gap-2">
           {MONTHS.map((monthLabel, i) => {
-            const isSelected = i === effectiveMonth && viewYear === effectiveYear
+            const isSelected =
+              i === effectiveMonth && viewYear === effectiveYear
             return (
               <Button
                 key={monthLabel}

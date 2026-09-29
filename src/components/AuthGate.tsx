@@ -12,7 +12,7 @@ import { useSplashGate } from '@/components/SplashGateProvider'
  * - profile inativo → signOut (o RLS também bloqueia; aqui é só UX)
  */
 export function AuthGate({ children }: { children: ReactNode }) {
-  const { session, profile, isLoading, signOut } = useAuth()
+  const { session, profile, signOut } = useAuth()
   const showSplash = useSplashGate()
 
   if (showSplash) return <SplashScreen />

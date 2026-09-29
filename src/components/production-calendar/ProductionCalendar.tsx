@@ -11,7 +11,7 @@ import { useNavigate } from '@tanstack/react-router'
 
 export function ProductionCalendar() {
   const navigate = useNavigate()
-  const { orders, holidays, users } = useData()
+  const { orders, holidays } = useData()
   const { profile } = useAuth()
   const {
     view,
@@ -26,8 +26,6 @@ export function ProductionCalendar() {
     goToday,
     jumpToMonth,
   } = useProductionCalendar()
-
-  const canWrite = profile?.role !== 'designer'
 
   // Agrupa pedidos por data de produção
   const grouped = useMemo(

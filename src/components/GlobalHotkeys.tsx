@@ -34,7 +34,11 @@ export function GlobalHotkeys() {
   useHotkeys('n', () => openNewOrder(), opts)
   useHotkeys('s', () => toggleSidebar(), opts)
   useHotkeys('h', () => navigate({ to: '/' }), opts)
-  useHotkeys('p', () => navigate({ to: '/pedidos', search: {} }), opts)
+  useHotkeys(
+    'p',
+    () => navigate({ to: '/pedidos', search: { q: undefined } }),
+    opts,
+  )
   useHotkeys('f', () => navigate({ to: '/feriados' }), opts)
   useHotkeys('d', () => navigate({ to: '/producao' }), opts)
   useHotkeys('c', () => navigate({ to: '/calendario' }), opts)

@@ -14,7 +14,7 @@ export const Route = createFileRoute('/login')({
 })
 
 function LoginPage() {
-  const { session, profile, isLoading, signIn } = useAuth()
+  const { session, profile, signIn } = useAuth()
   const showSplash = useSplashGate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
