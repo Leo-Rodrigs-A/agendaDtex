@@ -1,17 +1,12 @@
 import { cn } from 'cn'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import {
-  isToday,
-  isWeekend,
-  truncateOrderName,
-} from '@/lib/production-calendar'
+import { isToday, isWeekend } from '@/lib/production-calendar'
 import type { Order } from '@/types'
+import { ProductionCalendarOrder } from './ProductionCalendarOrder'
 
 const DAY_FORMATTER = new Intl.DateTimeFormat('pt-BR', {
   weekday: 'short',
@@ -77,11 +72,12 @@ export function ProductionCalendarDays({
                 </div>
               ) : (
                 dayOrders.map((order) => (
-                  <ProductionCalendarOrderCard
+                  <ProductionCalendarOrder
                     key={order.id}
                     order={order}
                     onClick={onOrderClick}
                     onFollowClick={onFollowClick}
+                    variant="card"
                   />
                 ))
               )}
@@ -89,56 +85,6 @@ export function ProductionCalendarDays({
           </div>
         )
       })}
-    </div>
-  )
-}
-
-function ProductionCalendarOrderCard({
-  order,
-  onClick,
-  onFollowClick,
-}: {
-  order: Order
-  onClick: (order: Order) => void
-  onFollowClick: (order: Order, e: React.MouseEvent) => void
-}) {
-  const hasImage = Boolean(order.imgurl?.trim())
-  const shortName = truncateOrderName(order.order_name)
-
-  return (
-    <div
-      className="group relative flex items-center gap-2 rounded-lg px-3 py-2 bg-accent hover:bg-accent/80 cursor-pointer transition-colors"
-      onClick={() => onClick(order)}
-      title={order.order_name}
-    >
-      {hasImage && <span className="text-muted-foreground">📎</span>}
-      <span className="truncate flex-1 text-sm">{shortName}</span>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            className="shrink-0 opacity-0 group-hover:opacity-100 rounded p-1 text-muted-foreground hover:text-primary transition-opacity"
-            onClick={(e) => {
-              e.stopPropagation()
-              onFollowClick(order, e)
-            }}
-            aria-label="Ir para o pedido"
-          >
-            <svg
-              className="h-4 w-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-              <polyline points="15 3 21 3 21 9" />
-              <line x1="10" y1="14" x2="21" y2="3" />
-            </svg>
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side="right">Ir para o pedido</TooltipContent>
-      </Tooltip>
     </div>
   )
 }

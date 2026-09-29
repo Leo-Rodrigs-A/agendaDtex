@@ -10,10 +10,10 @@ import {
   isToday,
   isSameMonth,
   isWeekend,
-  truncateOrderName,
   getMonthGridDays,
 } from '@/lib/production-calendar'
 import type { Order } from '@/types'
+import { ProductionCalendarOrder } from './ProductionCalendarOrder'
 
 const DAYS_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
@@ -104,11 +104,12 @@ export function ProductionCalendarMonth({
               {/* Pedidos */}
               <div className="flex-1 min-h-0 overflow-hidden p-1.5 space-y-1">
                 {visibleOrders.map((order) => (
-                  <ProductionCalendarOrderCell
+                  <ProductionCalendarOrder
                     key={order.id}
                     order={order}
                     onClick={onOrderClick}
                     onFollowClick={onFollowClick}
+                    variant="cell"
                   />
                 ))}
               </div>
@@ -116,56 +117,6 @@ export function ProductionCalendarMonth({
           )
         })}
       </div>
-    </div>
-  )
-}
-
-function ProductionCalendarOrderCell({
-  order,
-  onClick,
-  onFollowClick,
-}: {
-  order: Order
-  onClick: (order: Order) => void
-  onFollowClick: (order: Order, e: React.MouseEvent) => void
-}) {
-  const hasImage = Boolean(order.imgurl?.trim())
-  const shortName = truncateOrderName(order.order_name)
-
-  return (
-    <div
-      className="group relative flex items-center gap-1.5 rounded px-1.5 py-1 text-xs bg-accent hover:bg-accent/80 cursor-pointer transition-colors"
-      onClick={() => onClick(order)}
-      title={order.order_name}
-    >
-      {hasImage && <span className="text-muted-foreground">📎</span>}
-      <span className="truncate flex-1">{shortName}</span>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            className="shrink-0 opacity-0 group-hover:opacity-100 rounded p-0.5 text-muted-foreground hover:text-primary transition-opacity"
-            onClick={(e) => {
-              e.stopPropagation()
-              onFollowClick(order, e)
-            }}
-            aria-label="Ir para o pedido"
-          >
-            <svg
-              className="h-3 w-3"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-              <polyline points="15 3 21 3 21 9" />
-              <line x1="10" y1="14" x2="21" y2="3" />
-            </svg>
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side="right">Ir para o pedido</TooltipContent>
-      </Tooltip>
     </div>
   )
 }

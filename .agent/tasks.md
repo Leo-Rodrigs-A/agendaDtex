@@ -191,6 +191,6 @@
 - [x] **Commit 2:** `feat: add production calendar domain logic` — `lib/production-calendar.ts`, `lib/production-calendar.test.ts` (25 testes)
 - [x] **Commit 3:** `feat: add production calendar hook` — `hooks/use-production-calendar.ts` (estado + localStorage + reset ao entrar)
 - [x] **Commit 4:** `feat: add monthly production calendar view` — `ProductionCalendarMonth`, `ProductionCalendarToolbar`, `ProductionCalendar`, `MonthSelector` controlado
-- [ ] **Commit 5:** `feat: add 3/7 day production calendar views` — `ProductionCalendarDays`, `ProductionCalendarOrder`
+- [x] **Commit 5:** `feat: add 3/7 day production calendar views` — `ProductionCalendarDays`, `ProductionCalendarOrder` (compartilhado)
 - [ ] **Commit 6:** `feat: add calendar interactions + image/follow` — integração `OrderImageViewer`, follow link
 - [ ] **Commit 7:** `feat: add keyboard nav + responsive + polish` — `GlobalHotkeys` rota-aware, mobile, accessibility

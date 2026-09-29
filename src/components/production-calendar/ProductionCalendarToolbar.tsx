@@ -65,7 +65,12 @@ export function ProductionCalendarToolbar({
                 className="gap-2 w-full sm:w-auto"
               >
                 {viewLabels[view]}
-                <ChevronDown className={cn('h-4 w-4 transition-transform', open && 'rotate-180')} />
+                <ChevronDown
+                  className={cn(
+                    'h-4 w-4 transition-transform',
+                    open && 'rotate-180',
+                  )}
+                />
               </Button>
             )}
           />
