@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation } from '@tanstack/react-router'
-import { navigateMonth, navigateWeek } from '@/lib/production-calendar'
+import {
+  navigateMonth,
+  navigateWeek,
+  getMonthGridDays,
+  getDaysForView,
+} from '@/lib/production-calendar'
 
 type CalendarView = 'month' | '7-days' | '3-days'
 type Scope = 'all' | 'mine'
@@ -106,10 +111,8 @@ export function useProductionCalendar() {
   // Dias visíveis conforme a view
   const visibleDays = useMemo(() => {
     if (view === 'month') {
-      const { getMonthGridDays } = require('@/lib/production-calendar')
       return getMonthGridDays(anchorDate)
     }
-    const { getDaysForView } = require('@/lib/production-calendar')
     return getDaysForView(anchorDate, view)
   }, [view, anchorDate])
 

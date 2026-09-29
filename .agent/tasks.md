@@ -184,3 +184,13 @@
 
 - [x] `ui/sidebar.tsx` `SidebarGroupLabel`: `group-data-[collapsible=icon]:pointer-events-none` — no estado recolhido o label ficava `opacity-0` + `-mt-8` (invisível, porém ainda no hit-test) e sobrepunha o último item do grupo anterior (Produção), deixando o clique funcionando só em 1 pixel
 - [x] Aceite: com a sidebar recolhida, hover e clique funcionam na área toda do botão
+
+## Slice 15: Nova rota /calendario — Calendário de Produção
+
+- [x] **Commit 1:** `feat: add production calendar route + nav` — `calendario.tsx`, `AppSidebar.tsx`, `Header.tsx`, `CommandPalette.tsx`, `routeTree.gen.ts`
+- [x] **Commit 2:** `feat: add production calendar domain logic` — `lib/production-calendar.ts`, `lib/production-calendar.test.ts` (25 testes)
+- [x] **Commit 3:** `feat: add production calendar hook` — `hooks/use-production-calendar.ts` (estado + localStorage + reset ao entrar)
+- [x] **Commit 4:** `feat: add monthly production calendar view` — `ProductionCalendarMonth`, `ProductionCalendarToolbar`, `ProductionCalendar`, `MonthSelector` controlado
+- [ ] **Commit 5:** `feat: add 3/7 day production calendar views` — `ProductionCalendarDays`, `ProductionCalendarOrder`
+- [ ] **Commit 6:** `feat: add calendar interactions + image/follow` — integração `OrderImageViewer`, follow link
+- [ ] **Commit 7:** `feat: add keyboard nav + responsive + polish` — `GlobalHotkeys` rota-aware, mobile, accessibility
