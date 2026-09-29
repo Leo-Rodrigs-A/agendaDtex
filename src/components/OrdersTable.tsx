@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
+import type { HTMLMotionProps } from 'framer-motion'
 import {
   ArrowDown,
   ArrowUp,
@@ -43,6 +45,32 @@ const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
   month: 'short',
   year: 'numeric',
 })
+
+/**
+ * Linha da tabela com animação de layout. Só entra no `variant="day"`,
+ * onde marcar um pedido o move da seção de pendentes para a de
+ * concluídos — o `layout="position"` costura a transição de posição
+ * (só posição: a altura da linha não muda, e sem `scale` na distorção).
+ *
+ * Replica as classes do `TableRow` do registry porque o `TableRow` emite
+ * um `<tr>` fixo, que não aceita virar `motion.tr`. O `transform` que o
+ * Framer aplica durante a animação desfaz o `sticky` das células de
+ * checkbox e ações; o efeito volta quando ela termina e o transform é
+ * zerado.
+ */
+function AnimatedTableRow({ className, ...props }: HTMLMotionProps<'tr'>) {
+  return (
+    <motion.tr
+      data-slot="table-row"
+      className={cn(
+        'border-b transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted',
+        className,
+      )}
+      layout="position"
+      {...props}
+    />
+  )
+}
 
 /** Ações da linha: editar e excluir (dono ou admin — RPC garante no banco). */
 function OrderActions({
@@ -256,6 +284,9 @@ export function OrdersTable({
       : sortOrders(orders, sortKey, sortDir, sellerName)
   const showDeliveryDate = variant === 'full'
   const canWrite = profile?.role !== 'designer'
+  // `layout` só no "day": no "full" a lista tem uma ordenação só, então a
+  // posição de uma linha nunca muda e a animação não teria o que animar.
+  const Row = variant === 'day' ? AnimatedTableRow : TableRow
   // +1 = coluna "Produção" (calculada no front: 2 dias úteis antes da entrega)
   const columnCount = 8 + (showDeliveryDate ? 1 : 0) + (canWrite ? 1 : 0)
 
@@ -330,7 +361,7 @@ export function OrdersTable({
             sortedOrders.map((order) => {
               const hasImage = Boolean(order.imgurl?.trim())
               return (
-                <TableRow
+                <Row
                   key={order.id}
                   data-order-id={order.id}
                   onClick={() => openImage(order)}
@@ -396,7 +427,7 @@ export function OrdersTable({
                       />
                     </TableCell>
                   )}
-                </TableRow>
+                </Row>
               )
             })
           )}
