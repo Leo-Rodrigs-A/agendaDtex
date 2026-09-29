@@ -1,14 +1,11 @@
-import { useEffect, useRef } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
-import { useNavigate } from '@tanstack/react-router'
-import { useLocation } from '@tanstack/react-router'
+import { useLocation, useNavigate } from '@tanstack/react-router'
 import { useSidebar } from '@/components/ui/sidebar'
 import { useCommandPalette } from '@/components/CommandPaletteProvider'
 import { useFilters } from '@/components/FilterProvider'
 import { useData } from '@/components/DataProvider'
 import { shiftSelectableDay } from '@/lib/dates'
 import { useAllowSaturday } from '@/hooks/use-allow-saturday'
-import { useCalendarNavigation } from '@/components/CalendarNavigationContext'
 
 /**
  * Atalhos globais de teclado (shell autenticado):
@@ -16,9 +13,9 @@ import { useCalendarNavigation } from '@/components/CalendarNavigationContext'
  *  - N → novo pedido (staff)
  *  - S → retrair/expandir sidebar
  *  - H / P / F / D / C → Home / Pedidos / Feriados / Produção / Calendário
- *  - Seta Esquerda / Seta Direita →
- *      - /calendario: navega mês/semana (conforme view); 3 dias = nada
- *      - demais: dia útil anterior/próximo (em /producao permite sábado)
+ *  - Seta Esquerda / Seta Direita → dia útil anterior/próximo
+ *      (em /producao permite sábado). Em /calendario ficam sem efeito:
+ *      a navegação de período do calendário é pelos botões da toolbar.
  */
 export function GlobalHotkeys() {
   const navigate = useNavigate()
@@ -27,13 +24,8 @@ export function GlobalHotkeys() {
   const { day, setDay } = useFilters()
   const { holidays } = useData()
   const allowSaturday = useAllowSaturday()
-  const calendarNav = useCalendarNavigation()
-
-  // Ref para ler o estado do calendário dinamicamente no handler
-  const calendarNavRef = useRef(calendarNav)
-  useEffect(() => {
-    calendarNavRef.current = calendarNav
-  }, [calendarNav])
+  const isCalendarRoute =
+    useLocation({ select: (loc) => loc.pathname }) === '/calendario'
 
   // Impede disparo com texto sendo digitado em inputs/textareas
   const opts = { enableOnFormTags: false, preventDefault: true }
@@ -47,28 +39,19 @@ export function GlobalHotkeys() {
   useHotkeys('d', () => navigate({ to: '/producao' }), opts)
   useHotkeys('c', () => navigate({ to: '/calendario' }), opts)
 
-  // Navegação ←/→ condicional: calendário vs demais
   useHotkeys(
     'left',
     () => {
-      const nav = calendarNavRef.current
-      if (nav?.isCalendarRoute) {
-        nav.goPrev()
-      } else {
-        setDay(shiftSelectableDay(day, -1, holidays, allowSaturday))
-      }
+      if (isCalendarRoute) return
+      setDay(shiftSelectableDay(day, -1, holidays, allowSaturday))
     },
     opts,
   )
   useHotkeys(
     'right',
     () => {
-      const nav = calendarNavRef.current
-      if (nav?.isCalendarRoute) {
-        nav.goNext()
-      } else {
-        setDay(shiftSelectableDay(day, 1, holidays, allowSaturday))
-      }
+      if (isCalendarRoute) return
+      setDay(shiftSelectableDay(day, 1, holidays, allowSaturday))
     },
     opts,
   )

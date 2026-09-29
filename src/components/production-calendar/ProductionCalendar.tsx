@@ -8,7 +8,6 @@ import { ProductionCalendarMonth } from './ProductionCalendarMonth'
 import { ProductionCalendarDays } from './ProductionCalendarDays'
 import { OrderImageViewer } from '@/components/OrderImageViewer'
 import { useNavigate } from '@tanstack/react-router'
-import { CalendarNavigationProvider } from '@/components/CalendarNavigationContext'
 
 export function ProductionCalendar() {
   const navigate = useNavigate()
@@ -56,54 +55,48 @@ export function ProductionCalendar() {
   if (!profile) return null
 
   return (
-    <CalendarNavigationProvider
-      goPrev={goPrev}
-      goNext={goNext}
-      isCalendarRoute={true}
-    >
-      <div className="flex flex-col h-full min-h-0 gap-6">
-        {/* Toolbar */}
-        <ProductionCalendarToolbar
-          scope={scope}
-          onScopeChange={setScope}
-          view={view}
-          onViewChange={setView}
-          periodLabel={periodLabel}
-          anchorDate={anchorDate}
-          onMonthChange={jumpToMonth}
-          onPrev={goPrev}
-          onNext={goNext}
-          onToday={goToday}
-        />
+    <div className="flex flex-col h-full min-h-0 gap-6">
+      {/* Toolbar */}
+      <ProductionCalendarToolbar
+        scope={scope}
+        onScopeChange={setScope}
+        view={view}
+        onViewChange={setView}
+        periodLabel={periodLabel}
+        anchorDate={anchorDate}
+        onMonthChange={jumpToMonth}
+        onPrev={goPrev}
+        onNext={goNext}
+        onToday={goToday}
+      />
 
-        {/* Conteúdo: coluna flex para os filhos esticarem até a base.
-            min-h-[360px] nas visões evita linhas colapsadas em janelas baixas:
-            aí o card estoura e quem rola é este wrapper, não a página */}
-        <div className="relative flex min-h-0 flex-1 flex-col overflow-auto">
-          {view === 'month' ? (
-            <ProductionCalendarMonth
-              grouped={grouped}
-              anchorDate={anchorDate}
-              onExpandDay={handleExpandDay}
-              onOrderClick={handleOrderClick}
-              onFollowClick={handleFollowClick}
-            />
-          ) : (
-            <ProductionCalendarDays
-              grouped={grouped}
-              days={visibleDays}
-              onOrderClick={handleOrderClick}
-              onFollowClick={handleFollowClick}
-            />
-          )}
-        </div>
-
-        {/* Image Viewer */}
-        <OrderImageViewer
-          order={imageOrder}
-          onClose={() => setImageOrder(null)}
-        />
+      {/* Conteúdo: coluna flex para os filhos esticarem até a base.
+          min-h-[360px] nas visões evita linhas colapsadas em janelas baixas:
+          aí o card estoura e quem rola é este wrapper, não a página */}
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-auto">
+        {view === 'month' ? (
+          <ProductionCalendarMonth
+            grouped={grouped}
+            anchorDate={anchorDate}
+            onExpandDay={handleExpandDay}
+            onOrderClick={handleOrderClick}
+            onFollowClick={handleFollowClick}
+          />
+        ) : (
+          <ProductionCalendarDays
+            grouped={grouped}
+            days={visibleDays}
+            onOrderClick={handleOrderClick}
+            onFollowClick={handleFollowClick}
+          />
+        )}
       </div>
-    </CalendarNavigationProvider>
+
+      {/* Image Viewer */}
+      <OrderImageViewer
+        order={imageOrder}
+        onClose={() => setImageOrder(null)}
+      />
+    </div>
   )
 }
