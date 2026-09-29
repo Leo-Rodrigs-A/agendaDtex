@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from 'cn'
-import { isToday, isWeekend } from '@/lib/production-calendar'
+import { toDateKey } from '@/lib/dates'
+import { getOrdersForDay, isToday, isWeekend } from '@/lib/production-calendar'
 import type { Order } from '@/types'
 import { ProductionCalendarOrder } from './ProductionCalendarOrder'
 
@@ -32,13 +33,13 @@ export function ProductionCalendarDays({
   return (
     <div className="flex-1 min-h-0 flex gap-3 overflow-x-auto">
       {days.map((day) => {
-        const dayOrders = grouped.get(day.toISOString().split('T')[0]) ?? []
+        const dayOrders = getOrdersForDay(grouped, day)
         const today = isToday(day)
         const weekend = isWeekend(day)
 
         return (
           <div
-            key={day.toISOString()}
+            key={toDateKey(day)}
             className={cn(
               'flex flex-col flex-1 min-w-0 bg-card rounded-xl border border-border overflow-hidden',
               today && 'bg-primary/10',

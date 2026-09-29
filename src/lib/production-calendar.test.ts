@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
 import {
   groupOrdersByProductionDate,
   getOrdersForDay,
@@ -117,6 +117,46 @@ describe('production-calendar', () => {
       const grouped = new Map<string, Order[]>()
       const day = localDate(2026, 10, 13)
       expect(getOrdersForDay(grouped, day)).toEqual([])
+    })
+
+    // Regressão: as telas montavam a chave com `day.toISOString()`, que
+    // converte para UTC — em fusos UTC+ a meia-noite local vira o dia
+    // ANTERIOR e os pedidos apareciam na célula errada. `toDateKey` lê os
+    // getters locais, então o dia certo é achado em qualquer fuso.
+    describe('chave de dia independente do fuso', () => {
+      const originalTz = process.env.TZ
+
+      afterEach(() => {
+        // `= undefined` escreveria a string "undefined" e o Node cairia
+        // num fuso inválido no resto da suíte — é preciso remover a chave.
+        if (originalTz === undefined) {
+          delete process.env.TZ
+        } else {
+          process.env.TZ = originalTz
+        }
+      })
+
+      it('acha o pedido em fuso UTC+', () => {
+        process.env.TZ = 'Asia/Tokyo' // UTC+9
+        const day = localDate(2026, 10, 13)
+        const grouped = new Map<string, Order[]>([
+          ['2026-10-13', [createOrder({ id: '1' })]],
+        ])
+
+        // Precondição do bug: em UTC a chave antiga seria 12/10.
+        expect(day.toISOString().split('T')[0]).toBe('2026-10-12')
+        expect(getOrdersForDay(grouped, day)).toHaveLength(1)
+      })
+
+      it('acha o pedido em fuso UTC-', () => {
+        process.env.TZ = 'America/Sao_Paulo' // UTC-3
+        const day = localDate(2026, 10, 13)
+        const grouped = new Map<string, Order[]>([
+          ['2026-10-13', [createOrder({ id: '1' })]],
+        ])
+
+        expect(getOrdersForDay(grouped, day)).toHaveLength(1)
+      })
     })
   })
 

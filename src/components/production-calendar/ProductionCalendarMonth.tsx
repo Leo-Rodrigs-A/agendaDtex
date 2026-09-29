@@ -11,6 +11,7 @@ import {
   isSameMonth,
   isWeekend,
   getMonthGridDays,
+  getOrdersForDay,
 } from '@/lib/production-calendar'
 import type { Order } from '@/types'
 import { ProductionCalendarOrder } from './ProductionCalendarOrder'
@@ -55,7 +56,7 @@ export function ProductionCalendarMonth({
             estourar (e rolar) em vez de a última semana ser cortada */}
         <div className="flex-1 grid grid-cols-7">
           {gridDays.map((day, index) => {
-            const dayOrders = grouped.get(day.toISOString().split('T')[0]) ?? []
+            const dayOrders = getOrdersForDay(grouped, day)
             const today = isToday(day)
             const sameMonth = isSameMonth(day, anchorDate)
             const weekend = isWeekend(day)
