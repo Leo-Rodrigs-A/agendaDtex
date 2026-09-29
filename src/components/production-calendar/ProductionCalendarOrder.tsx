@@ -1,4 +1,5 @@
 import { cn } from 'cn'
+import { motion } from 'framer-motion'
 import {
   Tooltip,
   TooltipContent,
@@ -28,16 +29,14 @@ export function ProductionCalendarOrder({
 
   const isCell = variant === 'cell'
 
-  return (
-    <div
-      className={cn(
-        'group relative flex items-center gap-2 rounded px-1.5 py-1 bg-accent hover:bg-accent/80 cursor-pointer transition-colors',
-        isCell && 'px-1.5 py-1 text-xs',
-        !isCell && 'px-3 py-2 text-sm rounded-lg',
-      )}
-      onClick={() => onClick(order)}
-      title={order.order_name}
-    >
+  const className = cn(
+    'group relative flex items-center gap-2 rounded px-1.5 py-1 bg-accent hover:bg-accent/80 cursor-pointer transition-colors',
+    isCell && 'px-1.5 py-1 text-xs',
+    !isCell && 'px-3 py-2 text-sm rounded-lg',
+  )
+
+  const content = (
+    <>
       {/* Conclusão: só nas visões por dia. O clique no checkbox não
           chega ao card (stopPropagation) — o pedido não é concluído e
           a imagem não abre ao mesmo tempo. `after:hidden` remove a área
@@ -89,6 +88,38 @@ export function ProductionCalendarOrder({
         </TooltipTrigger>
         <TooltipContent side="right">Ir para o pedido</TooltipContent>
       </Tooltip>
-    </div>
+    </>
+  )
+
+  // Célula do grid mensal: elemento puro, fora de qualquer AnimatePresence.
+  if (isCell) {
+    return (
+      <div
+        className={className}
+        onClick={() => onClick(order)}
+        title={order.order_name}
+      >
+        {content}
+      </div>
+    )
+  }
+
+  // Card das visões por dia. A altura anima num wrapper sem padding, para
+  // colapsar até 0 no exit; o `AnimatePresence` do `ProductionCalendarDays`
+  // roda esta saída quando o `DataProvider` remove o pedido concluído.
+  return (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0, x: -20 }}
+    >
+      <div
+        className={className}
+        onClick={() => onClick(order)}
+        title={order.order_name}
+      >
+        {content}
+      </div>
+    </motion.div>
   )
 }
