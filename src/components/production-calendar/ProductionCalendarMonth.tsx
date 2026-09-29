@@ -36,98 +36,106 @@ export function ProductionCalendarMonth({
   const weeks = Math.ceil(gridDays.length / 7)
 
   return (
-    <div className="flex-1 min-h-0 overflow-auto">
-      <div className="grid grid-cols-7 gap-px bg-border p-px rounded-xl bg-card">
-        {/* Cabeçalho dos dias da semana */}
-        {DAYS_SHORT.map((day, i) => (
-          <div
-            key={day}
-            className={cn(
-              'h-10 bg-muted/50 flex items-center justify-center text-xs font-medium text-muted-foreground',
-              i === 0 && 'rounded-tl-xl',
-              i === 6 && 'rounded-tr-xl',
-            )}
-          >
-            {day}
-          </div>
-        ))}
-
-        {/* Células do calendário */}
-        {gridDays.map((day, index) => {
-          const dayOrders = grouped.get(day.toISOString().split('T')[0]) ?? []
-          const today = isToday(day)
-          const sameMonth = isSameMonth(day, anchorDate)
-          const weekend = isWeekend(day)
-          const hasMore = dayOrders.length > 3
-          const visibleOrders = dayOrders.slice(0, 3)
-
-          const isFirstCol = index % 7 === 0
-          const isLastCol = index % 7 === 6
-          const isFirstRow = index < 7
-          const isLastRow = index >= gridDays.length - 7
-
-          return (
+    <div className="flex-1 min-h-0 flex flex-col">
+      {/* Container do calendário com borda e cantos arredondados */}
+      <div className="flex-1 flex flex-col rounded-xl border border-border bg-card overflow-hidden">
+        {/* Cabeçalho dos dias da semana - com linha divisória inferior */}
+        <div className="grid grid-cols-7 border-b border-border bg-muted/50">
+          {DAYS_SHORT.map((day, i) => (
             <div
-              key={index}
-              className={cn(
-                'relative min-h-[100px] bg-card flex flex-col',
-                !sameMonth && 'bg-muted/30 text-muted-foreground/50',
-                weekend && sameMonth && 'bg-muted/30',
-                isFirstCol && 'rounded-l-xl',
-                isLastCol && 'rounded-r-xl',
-                isFirstRow && 'rounded-t-xl',
-                isLastRow && 'rounded-b-xl',
-              )}
+              key={day}
+              className="h-10 flex items-center justify-center text-xs font-medium text-muted-foreground"
             >
-              {/* Data */}
-              <div className="flex items-center justify-between p-1.5">
-                <span
+              {day}
+            </div>
+          ))}
+        </div>
+
+        {/* Células do calendário - flex para preencher altura */}
+        <div className="flex-1 grid grid-cols-7">
+          {gridDays.map((day, index) => {
+            const dayOrders = grouped.get(day.toISOString().split('T')[0]) ?? []
+            const today = isToday(day)
+            const sameMonth = isSameMonth(day, anchorDate)
+            const weekend = isWeekend(day)
+            const hasMore = dayOrders.length > 3
+            const visibleOrders = dayOrders.slice(0, 3)
+
+            const isLastCol = index % 7 === 6
+            const isLastRow = index >= gridDays.length - 7
+
+            return (
+              <div
+                key={index}
+                className={cn(
+                  'relative flex flex-col min-h-0 bg-card',
+                  !sameMonth && 'bg-muted text-muted-foreground/50',
+                  weekend && sameMonth && 'bg-muted',
+                  !isLastCol && 'border-r border-border',
+                  !isLastRow && 'border-b border-border',
+                )}
+              >
+                {/* Data */}
+                <div
                   className={cn(
-                    'text-xs font-medium',
-                    today && 'bg-primary text-primary-foreground rounded px-1.5 py-0.5',
-                    !sameMonth && 'text-muted-foreground/50',
+                    'flex items-center justify-between p-1.5',
+                    !sameMonth && 'bg-muted',
+                    weekend && sameMonth && 'bg-muted',
                   )}
                 >
-                  {day.getDate()}
-                </span>
-                {hasMore && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-5 p-0 hover:bg-accent cursor-pointer transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onExpandDay(day)
-                        }}
-                        aria-label={`Expandir ${dayOrders.length} pedidos`}
+                  <span
+                    className={cn(
+                      'text-xs font-medium',
+                      today &&
+                        'bg-primary text-primary-foreground rounded px-1.5 py-0.5',
+                      !sameMonth && 'text-muted-foreground/50',
+                    )}
+                  >
+                    {day.getDate()}
+                  </span>
+                  {hasMore && (
+                    <Tooltip>
+                      <TooltipTrigger
+                        render={
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 p-0 hover:bg-accent cursor-pointer transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              onExpandDay(day)
+                            }}
+                            aria-label={`Expandir ${dayOrders.length} pedidos`}
+                          >
+                            <CalendarClock className="h-3 w-3" />
+                          </Button>
+                        }
                       >
                         <CalendarClock className="h-3 w-3" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" align="center">
-                      Ver todos os {dayOrders.length} pedidos
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-              </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" align="center">
+                        Ver todos os {dayOrders.length} pedidos
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
 
-              {/* Pedidos */}
-              <div className="flex-1 min-h-0 overflow-hidden p-1.5 space-y-1">
-                {visibleOrders.map((order) => (
-                  <ProductionCalendarOrder
-                    key={order.id}
-                    order={order}
-                    onClick={onOrderClick}
-                    onFollowClick={onFollowClick}
-                    variant="cell"
-                  />
-                ))}
+                {/* Pedidos */}
+                <div className="flex-1 min-h-0 overflow-hidden p-1.5 space-y-1">
+                  {visibleOrders.map((order) => (
+                    <ProductionCalendarOrder
+                      key={order.id}
+                      order={order}
+                      onClick={onOrderClick}
+                      onFollowClick={onFollowClick}
+                      variant="cell"
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
     </div>
   )

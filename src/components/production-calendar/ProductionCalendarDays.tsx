@@ -28,7 +28,7 @@ export function ProductionCalendarDays({
   onFollowClick,
 }: ProductionCalendarDaysProps) {
   return (
-    <div className="flex-1 min-h-0 flex gap-3 overflow-x-auto p-4 pb-8">
+    <div className="flex-1 min-h-0 flex gap-3 overflow-x-auto p-4">
       {days.map((day) => {
         const dayOrders = grouped.get(day.toISOString().split('T')[0]) ?? []
         const today = isToday(day)
@@ -46,9 +46,11 @@ export function ProductionCalendarDays({
             {/* Header do dia */}
             <div
               className={cn(
-                'flex items-center justify-between px-4 py-3 text-sm font-semibold border-b border-border',
+                'flex items-center justify-between px-4 py-3 text-sm font-semibold',
                 today && 'bg-primary/10 text-primary',
                 today && 'border-primary',
+                weekend && 'bg-muted/30',
+                !today && !weekend && 'bg-card',
               )}
             >
               <span className={cn('font-semibold', today && 'text-primary')}>

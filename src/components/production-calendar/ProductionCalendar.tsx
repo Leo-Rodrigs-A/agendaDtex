@@ -62,7 +62,7 @@ export function ProductionCalendar() {
       goNext={goNext}
       isCalendarRoute={true}
     >
-      <div className="flex flex-col h-full min-h-0">
+      <div className="flex flex-col h-full min-h-0 gap-6">
         {/* Toolbar */}
         <ProductionCalendarToolbar
           scope={scope}

@@ -40,31 +40,45 @@ export function ProductionCalendarOrder({
       {hasImage && <FileText className="h-3.5 w-3.5 text-primary" />}
       <span className="truncate flex-1">{shortName}</span>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            className={cn(
-              'shrink-0 opacity-0 group-hover:opacity-100 rounded p-1 text-muted-foreground hover:text-primary transition-opacity transition-colors',
-              isCell && 'p-0.5',
-            )}
-            onClick={(e) => {
-              e.stopPropagation()
-              onFollowClick(order, e)
-            }}
-            aria-label="Ir para o pedido"
-          >
-            <svg
-              className={cn('h-4 w-4', isCell && 'h-3 w-3')}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
+        <TooltipTrigger
+          render={
+            <button
+              type="button"
+              className={cn(
+                'shrink-0 opacity-0 group-hover:opacity-100 rounded p-1 text-muted-foreground hover:text-primary transition-opacity transition-colors',
+                isCell && 'p-0.5',
+              )}
+              onClick={(e) => {
+                e.stopPropagation()
+                onFollowClick(order, e)
+              }}
+              aria-label="Ir para o pedido"
             >
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-              <polyline points="15 3 21 3 21 9" />
-              <line x1="10" y1="14" x2="21" y2="3" />
-            </svg>
-          </button>
+              <svg
+                className={cn('h-4 w-4', isCell && 'h-3 w-3')}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+            </button>
+          }
+        >
+          <svg
+            className={cn('h-4 w-4', isCell && 'h-3 w-3')}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
         </TooltipTrigger>
         <TooltipContent side="right">Ir para o pedido</TooltipContent>
       </Tooltip>
