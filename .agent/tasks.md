@@ -211,11 +211,12 @@
 
 ### 16.3 Toolbar e Segmented Control — paridade visual
 
-- [ ] **Toolbar idêntica a /producao e /**:
-  - Segmented "Todos / Somente eu" com mesmo `variant`/`className` de /producao
+- [x] **Toolbar idêntica a /producao e /**:
+  - Container: `rounded-xl border border-border bg-card p-4 shadow-sm`
+  - Segmented "Todos / Somente eu" com mesmo estilo do day/month de /producao
   - Dropdown "Mês / 7 dias / 3 dias" com mesmo estilo do dropdown de escopo de /producao
   - MonthSelector alinhado visualmente (gap, padding)
-- [ ] **Responsividade mobile em 2 linhas** igual Home/Produção (scope esq., view+month dir.)
+- [x] **Responsividade mobile em 2 linhas** igual Home/Produção (segmented + dropdown esq., month selector dir. na linha 1; linha 2: month selector)
 
 ### 16.4 Interações e ícones
 

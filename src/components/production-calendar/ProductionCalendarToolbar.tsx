@@ -35,59 +35,104 @@ export function ProductionCalendarToolbar({
   } as const
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 border-b border-border bg-background">
-      {/* Scope selector - segmented control inline */}
-      <div className="flex w-full sm:w-auto" role="group" aria-label="Escopo">
-        {(['all', 'mine'] as const).map((s) => (
-          <Button
-            key={s}
-            variant={scope === s ? 'default' : 'outline'}
-            className={cn(
-              'flex-1 sm:flex-none',
-              scope === s && 'bg-primary text-primary-foreground',
-            )}
-            onClick={() => onScopeChange(s)}
-          >
-            {s === 'all' ? 'Todos' : 'Somente eu'}
-          </Button>
-        ))}
+    <div className="flex shrink-0 flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+      {/* Linha 1: Segmented (Todos/Somente eu) + View Dropdown (mobile) */}
+      <div className="flex items-center justify-between gap-2 lg:contents">
+        {/* Segmented control - Todos / Somente eu (estilo idêntico ao da home) */}
+        <div className="inline-flex items-center gap-1 rounded-lg bg-muted p-1">
+          {(['all', 'mine'] as const).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => onScopeChange(s)}
+              className={cn(
+                'rounded-md px-3 py-1 text-sm font-medium transition-colors',
+                scope === s
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {s === 'all' ? 'Todos' : 'Somente eu'}
+            </button>
+          ))}
+        </div>
+
+        {/* View dropdown (mobile) - lg:hidden */}
+        <div className="lg:hidden">
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={({ open, ref, ...props }) => (
+                <Button
+                  ref={ref}
+                  {...props}
+                  variant="outline"
+                  className="gap-2 w-full sm:w-auto"
+                >
+                  {viewLabels[view]}
+                  <ChevronDown
+                    className={cn(
+                      'h-4 w-4 transition-transform',
+                      open && 'rotate-180',
+                    )}
+                  />
+                </Button>
+              )}
+            />
+            <DropdownMenuContent align="end" className="w-40">
+              {(['month', '7-days', '3-days'] as const).map((v) => (
+                <DropdownMenuItem
+                  key={v}
+                  className={`flex cursor-pointer items-center ${
+                    view === v ? 'bg-accent text-accent-foreground' : ''
+                  }`}
+                  onClick={() => onViewChange(v)}
+                >
+                  {viewLabels[v]}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center gap-3">
-        {/* View selector */}
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={({ open, ref, ...props }) => (
-              <Button
-                ref={ref}
-                {...props}
-                variant="outline"
-                className="gap-2 w-full sm:w-auto"
-              >
-                {viewLabels[view]}
-                <ChevronDown
-                  className={cn(
-                    'h-4 w-4 transition-transform',
-                    open && 'rotate-180',
-                  )}
-                />
-              </Button>
-            )}
-          />
-          <DropdownMenuContent align="end" className="w-40">
-            {(['month', '7-days', '3-days'] as const).map((v) => (
-              <DropdownMenuItem
-                key={v}
-                className={`flex cursor-pointer items-center ${
-                  view === v ? 'bg-accent text-accent-foreground' : ''
-                }`}
-                onClick={() => onViewChange(v)}
-              >
-                {viewLabels[v]}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+      {/* Linha 2 no mobile / Linha única no desktop: MonthSelector + View dropdown (desktop) */}
+      <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-end">
+        {/* View dropdown (desktop) - hidden lg:block */}
+        <div className="hidden lg:block">
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={({ open, ref, ...props }) => (
+                <Button
+                  ref={ref}
+                  {...props}
+                  variant="outline"
+                  className="gap-2 w-full sm:w-auto"
+                >
+                  {viewLabels[view]}
+                  <ChevronDown
+                    className={cn(
+                      'h-4 w-4 transition-transform',
+                      open && 'rotate-180',
+                    )}
+                  />
+                </Button>
+              )}
+            />
+            <DropdownMenuContent align="end" className="w-40">
+              {(['month', '7-days', '3-days'] as const).map((v) => (
+                <DropdownMenuItem
+                  key={v}
+                  className={`flex cursor-pointer items-center ${
+                    view === v ? 'bg-accent text-accent-foreground' : ''
+                  }`}
+                  onClick={() => onViewChange(v)}
+                >
+                  {viewLabels[v]}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
         {/* Month selector */}
         <MonthSelector
