@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CalendarioRouteImport } from './routes/calendario'
 import { Route as FeriadosRouteImport } from './routes/feriados'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -19,6 +20,11 @@ import { Route as ProducaoRouteImport } from './routes/producao'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarioRoute = CalendarioRouteImport.update({
+  id: '/calendario',
+  path: '/calendario',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeriadosRoute = FeriadosRouteImport.update({
@@ -49,6 +55,7 @@ const ProducaoRoute = ProducaoRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/calendario': typeof CalendarioRoute
   '/feriados': typeof FeriadosRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -57,6 +64,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/calendario': typeof CalendarioRoute
   '/feriados': typeof FeriadosRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -66,6 +74,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/calendario': typeof CalendarioRoute
   '/feriados': typeof FeriadosRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -75,12 +84,26 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/feriados' | '/login' | '/onboarding' | '/pedidos' | '/producao'
+    | '/'
+    | '/calendario'
+    | '/feriados'
+    | '/login'
+    | '/onboarding'
+    | '/pedidos'
+    | '/producao'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/feriados' | '/login' | '/onboarding' | '/pedidos' | '/producao'
+  to:
+    | '/'
+    | '/calendario'
+    | '/feriados'
+    | '/login'
+    | '/onboarding'
+    | '/pedidos'
+    | '/producao'
   id:
     | '__root__'
     | '/'
+    | '/calendario'
     | '/feriados'
     | '/login'
     | '/onboarding'
@@ -90,6 +113,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CalendarioRoute: typeof CalendarioRoute
   FeriadosRoute: typeof FeriadosRoute
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -104,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendario': {
+      id: '/calendario'
+      path: '/calendario'
+      fullPath: '/calendario'
+      preLoaderRoute: typeof CalendarioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feriados': {
@@ -146,6 +177,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CalendarioRoute: CalendarioRoute,
   FeriadosRoute: FeriadosRoute,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,

@@ -4,6 +4,7 @@ import { cn } from 'cn'
 import {
   ArrowUpRight,
   CalendarDays,
+  CalendarX,
   Factory,
   FileText,
   Home,
@@ -76,17 +77,24 @@ export function CommandPalette({
         run: () => navigate({ to: '/producao' }),
       },
       {
+        id: 'nav-calendario',
+        label: 'Ir para Calendário',
+        hint: 'C',
+        icon: CalendarDays,
+        run: () => navigate({ to: '/calendario' }),
+      },
+      {
         id: 'nav-pedidos',
         label: 'Ir para Pedidos',
         hint: 'P',
         icon: SquareMenu,
-        run: () => navigate({ to: '/pedidos', search: {} }),
+        run: () => navigate({ to: '/pedidos', search: { q: undefined } }),
       },
       {
         id: 'nav-feriados',
         label: 'Ir para Feriados',
         hint: 'F',
-        icon: CalendarDays,
+        icon: CalendarX,
         run: () => navigate({ to: '/feriados' }),
       },
     ]

@@ -228,8 +228,6 @@ type OrdersTableProps = {
   sortKey?: OrderSortKey
   sortDir?: OrderSortDir
   onSortChange?: (key: OrderSortKey, dir: OrderSortDir) => void
-  /** Linha destacada (ex.: "follow" vindo da paleta de comandos). */
-  highlightId?: string
 }
 
 export function OrdersTable({
@@ -240,7 +238,6 @@ export function OrdersTable({
   sortKey: controlledKey,
   sortDir: controlledDir,
   onSortChange,
-  highlightId,
 }: OrdersTableProps) {
   const { profile } = useAuth()
   const { holidays, refreshOrders } = useData()
@@ -370,10 +367,10 @@ export function OrdersTable({
                   data-order-id={order.id}
                   onClick={() => openImage(order)}
                   title={hasImage ? 'Ver imagem do pedido' : undefined}
-                   className={cn(
-                     order.is_done === true && 'opacity-60',
-                     hasImage && 'cursor-pointer',
-                   )}
+                  className={cn(
+                    order.is_done === true && 'opacity-60',
+                    hasImage && 'cursor-pointer',
+                  )}
                 >
                   <TableCell className="w-10 sticky left-0 bg-card">
                     <OrderDoneCheckbox order={order} />
@@ -386,13 +383,13 @@ export function OrdersTable({
                       ) : (
                         <ImageOff className="h-4 w-4 shrink-0 text-muted-foreground/40" />
                       )}
-                       <span
-                         title={order.order_name}
-                         className={cn(
-                           'truncate',
-                           order.is_done === true && 'line-through',
-                         )}
-                       >
+                      <span
+                        title={order.order_name}
+                        className={cn(
+                          'truncate',
+                          order.is_done === true && 'line-through',
+                        )}
+                      >
                         {order.order_name}
                       </span>
                     </div>

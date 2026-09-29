@@ -1,5 +1,5 @@
 import { useHotkeys } from 'react-hotkeys-hook'
-import { useNavigate } from '@tanstack/react-router'
+import { useLocation, useNavigate } from '@tanstack/react-router'
 import { useSidebar } from '@/components/ui/sidebar'
 import { useCommandPalette } from '@/components/CommandPaletteProvider'
 import { useFilters } from '@/components/FilterProvider'
@@ -12,9 +12,10 @@ import { useAllowSaturday } from '@/hooks/use-allow-saturday'
  *  - Ctrl/Cmd+K → paleta de comandos (estilo Notion/Linear)
  *  - N → novo pedido (staff)
  *  - S → retrair/expandir sidebar
- *  - H / P / F / D → Home / Pedidos / Feriados / Produção
- *  - Seta Esquerda / Seta Direita → dia útil anterior / próximo dia útil
- *    (em /producao o sábado é permitido, nos demais não)
+ *  - H / P / F / D / C → Home / Pedidos / Feriados / Produção / Calendário
+ *  - Seta Esquerda / Seta Direita → dia útil anterior/próximo
+ *      (em /producao permite sábado). Em /calendario ficam sem efeito:
+ *      a navegação de período do calendário é pelos botões da toolbar.
  */
 export function GlobalHotkeys() {
   const navigate = useNavigate()
@@ -23,6 +24,8 @@ export function GlobalHotkeys() {
   const { day, setDay } = useFilters()
   const { holidays } = useData()
   const allowSaturday = useAllowSaturday()
+  const isCalendarRoute =
+    useLocation({ select: (loc) => loc.pathname }) === '/calendario'
 
   // Impede disparo com texto sendo digitado em inputs/textareas
   const opts = { enableOnFormTags: false, preventDefault: true }
@@ -31,17 +34,29 @@ export function GlobalHotkeys() {
   useHotkeys('n', () => openNewOrder(), opts)
   useHotkeys('s', () => toggleSidebar(), opts)
   useHotkeys('h', () => navigate({ to: '/' }), opts)
-  useHotkeys('p', () => navigate({ to: '/pedidos', search: {} }), opts)
+  useHotkeys(
+    'p',
+    () => navigate({ to: '/pedidos', search: { q: undefined } }),
+    opts,
+  )
   useHotkeys('f', () => navigate({ to: '/feriados' }), opts)
   useHotkeys('d', () => navigate({ to: '/producao' }), opts)
+  useHotkeys('c', () => navigate({ to: '/calendario' }), opts)
+
   useHotkeys(
     'left',
-    () => setDay(shiftSelectableDay(day, -1, holidays, allowSaturday)),
+    () => {
+      if (isCalendarRoute) return
+      setDay(shiftSelectableDay(day, -1, holidays, allowSaturday))
+    },
     opts,
   )
   useHotkeys(
     'right',
-    () => setDay(shiftSelectableDay(day, 1, holidays, allowSaturday)),
+    () => {
+      if (isCalendarRoute) return
+      setDay(shiftSelectableDay(day, 1, holidays, allowSaturday))
+    },
     opts,
   )
 

@@ -116,7 +116,7 @@
 - [x] Colunas sticky: is_done (`left-0`) e ações edit/delete (`right-0`) no OrdersTable, com `bg-card`
 - [x] Hotkey `D` → `/producao` + ação "Ir para Produção" na paleta
 - [x] `OrderImageViewer` compartilhado: overlay limpo sem moldura/título, imagem ~70vh, fecha em clique fora/Esc, zoom por **clique na imagem** (1x ↔ 2.5x; ctrl+scroll descartado por conflitar com zoom da página); usado por OrdersTable e CommandPalette
-- [x] Paleta de comandos: checkbox is_done (toggle otimista, readOnly p/ designer), vendedor antes do valor, botão follow (`ArrowUpRight`) → `/pedidos?focus=<id>` com scroll ao topo da linha + highlight 2s (`highlightId` no OrdersTable; limpa busca se o pedido estiver fora do filtro)
+- [x] Paleta de comandos: checkbox is_done (toggle otimista, readOnly p/ designer), vendedor antes do valor, botão follow (`ArrowUpRight`) → `/pedidos` com `search: { q: <nome do pedido> }` (busca por nome). **Corrigido em 16.7**: o `?focus=<id>` com scroll ao topo + highlight de 2s nunca foi implementado — o `highlightId` do `OrdersTable` era código morto e foi removido
 - [x] Botão "dia de agendamento mais distante" agora calcula por `production_date` e só aparece na home (`DaySelector showLatestJump`; oculto em `/producao`)
 - [x] DateMaskInput com autocomplete: digitar só o dia completa mês/ano da data do campo; dia+mês completa o ano; foco seleciona o texto todo (qualquer tecla recomeça o input)
 - [x] Form de pedido: campo de data único — DateMaskInput como trigger do calendário (clique abre o calendário com o texto selecionado; digitação limpa e mascara)
@@ -184,3 +184,77 @@
 
 - [x] `ui/sidebar.tsx` `SidebarGroupLabel`: `group-data-[collapsible=icon]:pointer-events-none` — no estado recolhido o label ficava `opacity-0` + `-mt-8` (invisível, porém ainda no hit-test) e sobrepunha o último item do grupo anterior (Produção), deixando o clique funcionando só em 1 pixel
 - [x] Aceite: com a sidebar recolhida, hover e clique funcionam na área toda do botão
+
+## Slice 15: Nova rota /calendario — Calendário de Produção
+
+- [x] **Commit 1:** `feat: add production calendar route + nav` — `calendario.tsx`, `AppSidebar.tsx`, `Header.tsx`, `CommandPalette.tsx`, `routeTree.gen.ts`
+- [x] **Commit 2:** `feat: add production calendar domain logic` — `lib/production-calendar.ts`, `lib/production-calendar.test.ts` (25 testes)
+- [x] **Commit 3:** `feat: add production calendar hook` — `hooks/use-production-calendar.ts` (estado + localStorage + reset ao entrar)
+- [x] **Commit 4:** `feat: add monthly production calendar view` — `ProductionCalendarMonth`, `ProductionCalendarToolbar`, `ProductionCalendar`, `MonthSelector` controlado
+- [x] **Commit 5:** `feat: add 3/7 day production calendar views` — `ProductionCalendarDays`, `ProductionCalendarOrder` (compartilhado)
+- [x] **Commit 6:** `feat: add calendar interactions + image/follow` — integração `OrderImageViewer`, follow link
+- [x] **Commit 7:** `feat: add keyboard nav + responsive + polish` — `CalendarNavigationContext`, `GlobalHotkeys` rota-aware, `C` para abrir calendário
+
+## Slice 16: Refinamentos visuais e UX do Calendário de Produção
+
+### 16.1 Ajustes visuais do grid mensal
+
+- [x] **Remover contorno (ring) do dia atual** na visão de mês (`today && 'ring-2 ring-primary'` removido)
+- [x] **Box com cor primária no dia atual**: substituir ring por `bg-primary/10` + `text-primary` no número do dia (cor igual ao botão "Novo pedido" em /pedidos — `text-primary` no `variant="outline"`)
+- [x] **4 cantos arredondados na box do calendário**: container do grid com `rounded-xl bg-card`; células de borda com `rounded-tl/tr/bl/br-xl` conforme posição
+
+### 16.2 Visões 3 e 7 dias — cards de largura total
+
+- [x] **Cards expandem para largura máxima**: remover `max-w-[320px]` em `ProductionCalendarDays.tsx:41`, usar `flex-1 min-w-0`
+- [x] **Altura fixa do calendário / limite do padding bottom**: container principal (`ProductionCalendar.tsx`) com altura estável igual às outras rotas — `h-full min-h-0` + conteúdo com `overflow-auto` interno; não ultrapassar `pb-8`
+- [x] **Consistência com padding das outras rotas**: verificar `p-4 sm:p-6 lg:p-8` no `__root.tsx:41`
+
+### 16.3 Toolbar e Segmented Control — paridade visual
+
+- [x] **Toolbar idêntica a /producao e /**:
+  - Container: `rounded-xl border border-border bg-card p-4 shadow-sm`
+  - Segmented "Todos / Somente eu" com mesmo estilo do day/month de /producao
+  - Dropdown "Mês / 7 dias / 3 dias" com mesmo estilo do dropdown de escopo de /producao
+  - MonthSelector alinhado visualmente (gap, padding)
+- [x] **Responsividade mobile em 2 linhas** igual Home/Produção (segmented + dropdown esq., month selector dir. na linha 1; linha 2: month selector)
+
+### 16.4 Interações e ícones
+
+- [x] **Hover no botão "expandir" (CalendarClock)**: `hover:bg-accent cursor-pointer transition-colors` (padrão botões ghost/icon)
+- [x] **Hover no follow link (ArrowUpRight)**: `opacity-0 group-hover:opacity-100 hover:text-primary rounded p-1 transition-opacity transition-colors`
+- [x] **Ícone de imagem com cor primária**: substituir 📎 por `<FileText className="h-3.5 w-3.5 text-primary" />` de `lucide-react` em `ProductionCalendarOrder.tsx`
+
+### 16.5 Lógica de origem padrão ao alternar visão
+
+- [x] **No hook `useProductionCalendar`**: `setView(v, anchor?)` normaliza a âncora ao trocar a visão via dropdown (`normalizeAnchorForView` em `lib/production-calendar.ts`): visão mês → 1º dia do mês da âncora; 3/7 dias → hoje se a âncora estiver no mês atual, senão 1º dia do mês. Não normaliza quando a opção escolhida já é a atual; `anchor` explícito tem prioridade (usado pelo ícone "expandir" da grade, `setView('3-days', day)`)
+- [x] ~~Persistir `anchorDate` no localStorage~~ — **descartado de propósito**: o hook reseta view/scope/âncora ao entrar em `/calendario`, então persistir a âncora não teria efeito. Nenhuma chave nova foi criada
+- [x] 6 testes novos em `lib/production-calendar.test.ts` (31 no total)
+
+### 16.6 Altura consistente do calendário
+
+- [x] **Container** `flex flex-col h-full min-h-0` (herda o `<main>` em `__root.tsx:41`) — wrapper duplicado removido de `calendario.tsx`; a raiz do `ProductionCalendar` já é o container
+- [x] **Toolbar** `shrink-0` (já existia), **conteúdo** `relative flex min-h-0 flex-1 flex-col overflow-auto` — **coluna flex**: é o que permite os filhos esticarem até a base. Antes (block) o `flex-1` dos filhos era inerte e o calendário ficava curto, sem chegar ao rodapé
+- [x] Sem overflow vertical da página: `min-h-[360px]` na **raiz** da grade mensal (no card, o `overflow-hidden` cortaria a última semana; na raiz o card inteiro estoura e o wrapper rola), cabeçalho de dias da semana e cabeçalho de cada coluna com `shrink-0`, listas das colunas 3/7 dias com `overflow-y-auto` próprio
+- [x] Cards das visões 3/7 dias também preenchem até a base: `p-4` removido do container de dias (só o `gap-3` separa as colunas)
+
+### 16.7 Navegação de período e limpeza
+
+- [x] **Toolbar** com o grupo `[hoje] ‹ [período] ›`: botão "hoje" (`CalendarArrowDown` + tooltip, desabilitado quando já está no período atual), chevrons `goPrev`/`goNext` e o `MonthSelector` no meio exibindo o `periodLabel` (nova prop opcional `label`; sem ela o componente se comporta como antes)
+- [x] **Visão 3 dias passou a navegar** (±3 dias) via `navigateDays` em `lib/production-calendar.ts` — sem isso os chevrons ficariam mortos nessa visão. 3 testes novos (34 no total)
+- [x] **Hotkeys `←`/`→` removidos de `/calendario`** (no-op pelo `pathname`); `CalendarNavigationContext.tsx` deletado — nunca funcionou, porque `GlobalHotkeys` é montado no `__root.tsx`, fora do provider, então `useCalendarNavigation()` devolvia `null` e o handler caía no `setDay()` global
+- [x] **Código morto removido**: `users`/`canWrite` no `ProductionCalendar`, `weeks`/`i` no mês, imports `Tooltip*` nos dias, prop `highlightId` do `OrdersTable` (nunca implementada — a paleta busca por nome, `search: { q }`), `isLoading` em `AuthGate`/`login`/`onboarding`, `navigate` em `/pedidos`, `viewLabels` duplicado na toolbar
+- [x] **Tipagem**: `navigate({ to: '/pedidos' })` → `search: { q: undefined }` (o `validateSearch` devolve `q` obrigatório, então `search: {}` não compila)
+- [x] **DRO (deuda técnica) paga**: `tsc --noEmit` de 17 erros → **0**; `pnpm lint` de 3 erros → **0** (restam 7 warnings `no-shadow` preexistentes em `ui/calendar.tsx`/`ui/chart.tsx`); `prettier --check src .agent` limpo
+- [ ] **Validação visual do usuário** em `lg+` e abaixo de `lg` (não há browser headless no ambiente)
+
+---
+
+### Commits sugeridos (5)
+
+| #   | Mensagem                                                                     | Escopo                                                 |
+| --- | ---------------------------------------------------------------------------- | ------------------------------------------------------ |
+| 1   | `feat: month grid visual polish — today box, rounded corners, no ring`       | `ProductionCalendarMonth.tsx`                          |
+| 2   | `feat: 3/7 day views full-width cards + fixed height`                        | `ProductionCalendarDays.tsx`, `ProductionCalendar.tsx` |
+| 3   | `feat: toolbar parity with /producao — segmented, dropdown, responsive`      | `ProductionCalendarToolbar.tsx`                        |
+| 4   | `feat: order card interactions — hover expand/follow, primary FileText icon` | `ProductionCalendarOrder.tsx`                          |
+| 5   | `feat: smart anchorDate on view switch + height consistency`                 | `use-production-calendar.ts`, `ProductionCalendar.tsx` |
