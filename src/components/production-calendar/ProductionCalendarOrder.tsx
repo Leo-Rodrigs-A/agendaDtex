@@ -5,6 +5,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { FileText } from 'lucide-react'
+import { OrderDoneCheckbox } from '@/components/OrderDoneCheckbox'
 import { truncateOrderName } from '@/lib/production-calendar'
 import type { Order } from '@/types'
 
@@ -37,6 +38,12 @@ export function ProductionCalendarOrder({
       onClick={() => onClick(order)}
       title={order.order_name}
     >
+      {/* Conclusão: só nas visões por dia. O clique no checkbox não
+          chega ao card (stopPropagation) — o pedido não é concluído e
+          a imagem não abre ao mesmo tempo. `after:hidden` remove a área
+          de clique ampliada do checkbox, que aqui invadiria o ícone e o
+          nome do pedido. */}
+      {!isCell && <OrderDoneCheckbox order={order} className="after:hidden" />}
       {hasImage && <FileText className="h-3.5 w-3.5 text-primary" />}
       <span className="truncate flex-1">{shortName}</span>
       <Tooltip>
