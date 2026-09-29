@@ -6,6 +6,7 @@ import {
   getDaysForView,
   navigateMonth,
   navigateWeek,
+  navigateDays,
   normalizeAnchorForView,
   truncateOrderName,
   isToday,
@@ -182,6 +183,25 @@ describe('production-calendar', () => {
       const anchor = localDate(2026, 10, 15)
       const prev = navigateWeek(anchor, -1)
       expect(anchor.getTime() - prev.getTime()).toBe(7 * 24 * 60 * 60 * 1000)
+    })
+  })
+
+  describe('navigateDays', () => {
+    it('avança 3 dias', () => {
+      const anchor = localDate(2026, 10, 15)
+      const next = navigateDays(anchor, 1)
+      expect(next.getTime() - anchor.getTime()).toBe(3 * 24 * 60 * 60 * 1000)
+    })
+
+    it('volta 3 dias', () => {
+      const anchor = localDate(2026, 10, 15)
+      const prev = navigateDays(anchor, -1)
+      expect(anchor.getTime() - prev.getTime()).toBe(3 * 24 * 60 * 60 * 1000)
+    })
+
+    it('atravessa a virada de mês', () => {
+      expect(navigateDays(localDate(2026, 10, 30), 1).getDate()).toBe(2)
+      expect(navigateDays(localDate(2026, 10, 2), -1).getMonth()).toBe(8)
     })
   })
 

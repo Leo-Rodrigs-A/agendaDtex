@@ -99,6 +99,13 @@ export function navigateWeek(anchorDate: Date, delta: -1 | 1): Date {
   return result
 }
 
+/** Navega para o período anterior/próximo da visão 3 dias (3 dias) */
+export function navigateDays(anchorDate: Date, delta: -1 | 1): Date {
+  const result = new Date(anchorDate)
+  result.setDate(result.getDate() + delta * 3)
+  return result
+}
+
 /**
  * Reposiciona a âncora ao trocar de visão (regra do Slice 16.5):
  *  - visão mês → sempre o 1º dia do mês da âncora;

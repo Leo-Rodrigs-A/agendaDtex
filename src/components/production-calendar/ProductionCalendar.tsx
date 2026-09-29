@@ -24,6 +24,7 @@ export function ProductionCalendar() {
     setScope,
     goPrev,
     goNext,
+    goToday,
     jumpToMonth,
   } = useProductionCalendar()
 
@@ -70,6 +71,9 @@ export function ProductionCalendar() {
           periodLabel={periodLabel}
           anchorDate={anchorDate}
           onMonthChange={jumpToMonth}
+          onPrev={goPrev}
+          onNext={goNext}
+          onToday={goToday}
         />
 
         {/* Conteúdo: coluna flex para os filhos esticarem até a base.

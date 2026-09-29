@@ -24,12 +24,15 @@ type MonthSelectorProps = {
   year?: number
   /** Callback ao alterar mês/ano. Se omitido, usa FilterProvider.setMonthYear */
   onChange?: (month: number, year: number) => void
+  /** Texto do gatilho. Se omitido, mostra apenas "Mês Ano" */
+  label?: string
 }
 
 export function MonthSelector({
   month,
   year,
   onChange,
+  label,
 }: MonthSelectorProps = {}) {
   const { month: globalMonth, year: globalYear, setMonthYear } = useFilters()
   const [open, setOpen] = useState(false)
@@ -51,7 +54,7 @@ export function MonthSelector({
     month: 'long',
     year: 'numeric',
   }).format(new Date(effectiveYear, effectiveMonth, 1))
-  const label = rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1)
+  const monthAndYear = rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1)
 
   return (
     <Popover
@@ -65,7 +68,7 @@ export function MonthSelector({
         render={<Button variant="outline" className="gap-2 font-normal" />}
       >
         <CalendarRange className="h-4 w-4" />
-        {label}
+        {label ?? monthAndYear}
       </PopoverTrigger>
       <PopoverContent className="w-64" align="end">
         <div className="flex items-center justify-between">

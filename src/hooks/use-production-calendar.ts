@@ -3,6 +3,7 @@ import { useLocation } from '@tanstack/react-router'
 import {
   navigateMonth,
   navigateWeek,
+  navigateDays,
   getMonthGridDays,
   getDaysForView,
   normalizeAnchorForView,
@@ -95,8 +96,9 @@ export function useProductionCalendar() {
       setAnchorDateState(navigateMonth(anchorDate, -1))
     } else if (view === '7-days') {
       setAnchorDateState(navigateWeek(anchorDate, -1))
+    } else {
+      setAnchorDateState(navigateDays(anchorDate, -1))
     }
-    // 3-days: não faz nada
   }
 
   const goNext = () => {
@@ -104,8 +106,9 @@ export function useProductionCalendar() {
       setAnchorDateState(navigateMonth(anchorDate, 1))
     } else if (view === '7-days') {
       setAnchorDateState(navigateWeek(anchorDate, 1))
+    } else {
+      setAnchorDateState(navigateDays(anchorDate, 1))
     }
-    // 3-days: não faz nada
   }
 
   const goToday = () => {
