@@ -73,7 +73,6 @@ export function ProductionCalendarMonth({
                 'relative min-h-[100px] bg-card flex flex-col',
                 !sameMonth && 'bg-muted/30 text-muted-foreground/50',
                 weekend && sameMonth && 'bg-muted/30',
-                today && 'bg-primary/10',
                 isFirstCol && 'rounded-l-xl',
                 isLastCol && 'rounded-r-xl',
                 isFirstRow && 'rounded-t-xl',
@@ -85,7 +84,7 @@ export function ProductionCalendarMonth({
                 <span
                   className={cn(
                     'text-xs font-medium',
-                    today && 'text-primary',
+                    today && 'bg-primary text-primary-foreground rounded px-1.5 py-0.5',
                     !sameMonth && 'text-muted-foreground/50',
                   )}
                 >
