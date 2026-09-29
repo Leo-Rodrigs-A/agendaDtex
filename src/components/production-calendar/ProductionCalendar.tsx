@@ -77,8 +77,6 @@ export function ProductionCalendar() {
             grouped={grouped}
             anchorDate={anchorDate}
             onExpandDay={handleExpandDay}
-            onOrderClick={handleOrderClick}
-            onFollowClick={handleFollowClick}
           />
         ) : (
           <ProductionCalendarDays

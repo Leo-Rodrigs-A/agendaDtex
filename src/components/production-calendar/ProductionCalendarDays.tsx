@@ -93,7 +93,6 @@ export function ProductionCalendarDays({
                       order={order}
                       onClick={onOrderClick}
                       onFollowClick={onFollowClick}
-                      variant="card"
                     />
                   ))
                 )}

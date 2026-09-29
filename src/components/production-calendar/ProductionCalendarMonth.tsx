@@ -1,6 +1,4 @@
 import { cn } from 'cn'
-import { CalendarClock } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import {
   Tooltip,
   TooltipContent,
@@ -14,7 +12,6 @@ import {
   getOrdersForDay,
 } from '@/lib/production-calendar'
 import type { Order } from '@/types'
-import { ProductionCalendarOrder } from './ProductionCalendarOrder'
 
 const DAYS_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
@@ -22,16 +19,45 @@ type ProductionCalendarMonthProps = {
   grouped: Map<string, Order[]>
   anchorDate: Date
   onExpandDay: (day: Date) => void
-  onOrderClick: (order: Order) => void
-  onFollowClick: (order: Order, e: React.MouseEvent) => void
+}
+
+/** Contador de pedidos do dia — abre a visão de 3 dias a partir dele. */
+function DayCountButton({
+  count,
+  onClick,
+}: {
+  count: number
+  onClick: () => void
+}) {
+  const label = `${count} ${count === 1 ? 'pedido' : 'pedidos'}`
+
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <button
+            type="button"
+            className="w-full cursor-pointer rounded px-2 py-1.5 text-left text-xs transition-colors hover:bg-accent"
+            onClick={onClick}
+            aria-label={`Ver todos os ${count} pedidos`}
+          >
+            {label}
+          </button>
+        }
+      >
+        {label}
+      </TooltipTrigger>
+      <TooltipContent side="top" align="center">
+        Ver todos os {count} pedidos
+      </TooltipContent>
+    </Tooltip>
+  )
 }
 
 export function ProductionCalendarMonth({
   grouped,
   anchorDate,
   onExpandDay,
-  onOrderClick,
-  onFollowClick,
 }: ProductionCalendarMonthProps) {
   const gridDays = getMonthGridDays(anchorDate)
 
@@ -60,8 +86,6 @@ export function ProductionCalendarMonth({
             const today = isToday(day)
             const sameMonth = isSameMonth(day, anchorDate)
             const weekend = isWeekend(day)
-            const hasMore = dayOrders.length > 3
-            const visibleOrders = dayOrders.slice(0, 3)
 
             const isLastCol = index % 7 === 6
             const isLastRow = index >= gridDays.length - 7
@@ -95,44 +119,18 @@ export function ProductionCalendarMonth({
                   >
                     {day.getDate()}
                   </span>
-                  {hasMore && (
-                    <Tooltip>
-                      <TooltipTrigger
-                        render={
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-5 w-5 p-0 hover:bg-accent cursor-pointer transition-colors"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              onExpandDay(day)
-                            }}
-                            aria-label={`Expandir ${dayOrders.length} pedidos`}
-                          >
-                            <CalendarClock className="h-3 w-3" />
-                          </Button>
-                        }
-                      >
-                        <CalendarClock className="h-3 w-3" />
-                      </TooltipTrigger>
-                      <TooltipContent side="top" align="center">
-                        Ver todos os {dayOrders.length} pedidos
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
                 </div>
 
-                {/* Pedidos */}
-                <div className="flex-1 min-h-0 overflow-hidden p-1.5 space-y-1">
-                  {visibleOrders.map((order) => (
-                    <ProductionCalendarOrder
-                      key={order.id}
-                      order={order}
-                      onClick={onOrderClick}
-                      onFollowClick={onFollowClick}
-                      variant="cell"
+                {/* Contador de pedidos: a célula não lista mais os pedidos
+                    (nome, imagem, conclusão) — só quantos são e um atalho
+                    para a visão de 3 dias, onde o card completo aparece. */}
+                <div className="flex-1 min-h-0 overflow-hidden p-1.5">
+                  {dayOrders.length > 0 && (
+                    <DayCountButton
+                      count={dayOrders.length}
+                      onClick={() => onExpandDay(day)}
                     />
-                  ))}
+                  )}
                 </div>
               </div>
             )
