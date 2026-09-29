@@ -220,9 +220,9 @@
 
 ### 16.4 Interações e ícones
 
-- [ ] **Hover no botão "expandir" (CalendarClock)**: `hover:bg-accent cursor-pointer transition-colors` (padrão botões ghost/icon)
-- [ ] **Hover no follow link (ArrowUpRight)**: `opacity-0 group-hover:opacity-100 hover:text-primary rounded p-1 transition`
-- [ ] **Ícone de imagem com cor primária**: substituir 📎 por `<FileText className="h-3.5 w-3.5 text-primary" />` de `lucide-react` em `ProductionCalendarOrder.tsx:39`
+- [x] **Hover no botão "expandir" (CalendarClock)**: `hover:bg-accent cursor-pointer transition-colors` (padrão botões ghost/icon)
+- [x] **Hover no follow link (ArrowUpRight)**: `opacity-0 group-hover:opacity-100 hover:text-primary rounded p-1 transition-opacity transition-colors`
+- [x] **Ícone de imagem com cor primária**: substituir 📎 por `<FileText className="h-3.5 w-3.5 text-primary" />` de `lucide-react` em `ProductionCalendarOrder.tsx`
 
 ### 16.5 Lógica de origem padrão ao alternar visão
 

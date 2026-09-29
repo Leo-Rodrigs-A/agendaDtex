@@ -4,6 +4,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { FileText } from 'lucide-react'
 import { truncateOrderName } from '@/lib/production-calendar'
 import type { Order } from '@/types'
 
@@ -36,14 +37,14 @@ export function ProductionCalendarOrder({
       onClick={() => onClick(order)}
       title={order.order_name}
     >
-      {hasImage && <span className="text-muted-foreground">📎</span>}
+      {hasImage && <FileText className="h-3.5 w-3.5 text-primary" />}
       <span className="truncate flex-1">{shortName}</span>
       <Tooltip>
         <TooltipTrigger asChild>
           <button
             type="button"
             className={cn(
-              'shrink-0 opacity-0 group-hover:opacity-100 rounded p-1 text-muted-foreground hover:text-primary transition-opacity',
+              'shrink-0 opacity-0 group-hover:opacity-100 rounded p-1 text-muted-foreground hover:text-primary transition-opacity transition-colors',
               isCell && 'p-0.5',
             )}
             onClick={(e) => {

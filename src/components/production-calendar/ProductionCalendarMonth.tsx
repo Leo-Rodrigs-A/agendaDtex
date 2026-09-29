@@ -96,7 +96,7 @@ export function ProductionCalendarMonth({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-5 w-5 p-0"
+                        className="h-5 w-5 p-0 hover:bg-accent cursor-pointer transition-colors"
                         onClick={(e) => {
                           e.stopPropagation()
                           onExpandDay(day)
