@@ -8,6 +8,7 @@ import { ProductionCalendarMonth } from './ProductionCalendarMonth'
 import { ProductionCalendarDays } from './ProductionCalendarDays'
 import { OrderImageViewer } from '@/components/OrderImageViewer'
 import { useNavigate } from '@tanstack/react-router'
+import { CalendarNavigationProvider } from '@/components/CalendarNavigationContext'
 
 export function ProductionCalendar() {
   const navigate = useNavigate()
@@ -56,43 +57,49 @@ export function ProductionCalendar() {
   if (!profile) return null
 
   return (
-    <div className="flex flex-col h-full min-h-0">
-      {/* Toolbar */}
-      <ProductionCalendarToolbar
-        scope={scope}
-        onScopeChange={setScope}
-        view={view}
-        onViewChange={setView}
-        periodLabel={periodLabel}
-        anchorDate={anchorDate}
-        onMonthChange={jumpToMonth}
-      />
+    <CalendarNavigationProvider
+      goPrev={goPrev}
+      goNext={goNext}
+      isCalendarRoute={true}
+    >
+      <div className="flex flex-col h-full min-h-0">
+        {/* Toolbar */}
+        <ProductionCalendarToolbar
+          scope={scope}
+          onScopeChange={setScope}
+          view={view}
+          onViewChange={setView}
+          periodLabel={periodLabel}
+          anchorDate={anchorDate}
+          onMonthChange={jumpToMonth}
+        />
 
-      {/* Conteúdo */}
-      <div className="flex-1 min-h-0 relative">
-        {view === 'month' ? (
-          <ProductionCalendarMonth
-            grouped={grouped}
-            anchorDate={anchorDate}
-            onExpandDay={handleExpandDay}
-            onOrderClick={handleOrderClick}
-            onFollowClick={handleFollowClick}
-          />
-        ) : (
-          <ProductionCalendarDays
-            grouped={grouped}
-            days={visibleDays}
-            onOrderClick={handleOrderClick}
-            onFollowClick={handleFollowClick}
-          />
-        )}
+        {/* Conteúdo */}
+        <div className="flex-1 min-h-0 relative">
+          {view === 'month' ? (
+            <ProductionCalendarMonth
+              grouped={grouped}
+              anchorDate={anchorDate}
+              onExpandDay={handleExpandDay}
+              onOrderClick={handleOrderClick}
+              onFollowClick={handleFollowClick}
+            />
+          ) : (
+            <ProductionCalendarDays
+              grouped={grouped}
+              days={visibleDays}
+              onOrderClick={handleOrderClick}
+              onFollowClick={handleFollowClick}
+            />
+          )}
+        </div>
+
+        {/* Image Viewer */}
+        <OrderImageViewer
+          order={imageOrder}
+          onClose={() => setImageOrder(null)}
+        />
       </div>
-
-      {/* Image Viewer */}
-      <OrderImageViewer
-        order={imageOrder}
-        onClose={() => setImageOrder(null)}
-      />
-    </div>
+    </CalendarNavigationProvider>
   )
 }
