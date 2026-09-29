@@ -37,12 +37,16 @@ export function ProductionCalendarMonth({
 
   return (
     <div className="flex-1 min-h-0 overflow-auto">
-      <div className="grid grid-cols-7 gap-px bg-border p-px">
+      <div className="grid grid-cols-7 gap-px bg-border p-px rounded-xl bg-card">
         {/* Cabeçalho dos dias da semana */}
         {DAYS_SHORT.map((day, i) => (
           <div
             key={day}
-            className="h-10 bg-muted/50 flex items-center justify-center text-xs font-medium text-muted-foreground"
+            className={cn(
+              'h-10 bg-muted/50 flex items-center justify-center text-xs font-medium text-muted-foreground',
+              i === 0 && 'rounded-tl-xl',
+              i === 6 && 'rounded-tr-xl',
+            )}
           >
             {day}
           </div>
@@ -57,14 +61,23 @@ export function ProductionCalendarMonth({
           const hasMore = dayOrders.length > 3
           const visibleOrders = dayOrders.slice(0, 3)
 
+          const isFirstCol = index % 7 === 0
+          const isLastCol = index % 7 === 6
+          const isFirstRow = index < 7
+          const isLastRow = index >= gridDays.length - 7
+
           return (
             <div
               key={index}
               className={cn(
                 'relative min-h-[100px] bg-card flex flex-col',
                 !sameMonth && 'bg-muted/30 text-muted-foreground/50',
-                today && 'ring-2 ring-primary',
                 weekend && sameMonth && 'bg-muted/30',
+                today && 'bg-primary/10',
+                isFirstCol && 'rounded-l-xl',
+                isLastCol && 'rounded-r-xl',
+                isFirstRow && 'rounded-t-xl',
+                isLastRow && 'rounded-b-xl',
               )}
             >
               {/* Data */}

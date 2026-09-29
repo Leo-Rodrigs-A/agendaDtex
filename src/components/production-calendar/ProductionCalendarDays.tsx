@@ -38,8 +38,8 @@ export function ProductionCalendarDays({
           <div
             key={day.toISOString()}
             className={cn(
-              'flex flex-col min-w-[280px] max-w-[320px] flex-1 bg-card rounded-xl border border-border overflow-hidden',
-              today && 'ring-2 ring-primary',
+              'flex flex-col flex-1 min-w-0 bg-card rounded-xl border border-border overflow-hidden',
+              today && 'bg-primary/10',
               weekend && 'bg-muted/30',
             )}
           >
@@ -47,11 +47,13 @@ export function ProductionCalendarDays({
             <div
               className={cn(
                 'flex items-center justify-between px-4 py-3 text-sm font-semibold border-b border-border',
-                today && 'bg-primary text-primary-foreground',
+                today && 'bg-primary/10 text-primary',
                 today && 'border-primary',
               )}
             >
-              <span>{DAY_FORMATTER.format(day)}</span>
+              <span className={cn('font-semibold', today && 'text-primary')}>
+                {DAY_FORMATTER.format(day)}
+              </span>
               <span
                 className={cn(
                   'text-xs px-2 py-0.5 rounded-full',

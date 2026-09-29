@@ -194,3 +194,56 @@
 - [x] **Commit 5:** `feat: add 3/7 day production calendar views` — `ProductionCalendarDays`, `ProductionCalendarOrder` (compartilhado)
 - [x] **Commit 6:** `feat: add calendar interactions + image/follow` — integração `OrderImageViewer`, follow link
 - [x] **Commit 7:** `feat: add keyboard nav + responsive + polish` — `CalendarNavigationContext`, `GlobalHotkeys` rota-aware, `C` para abrir calendário
+
+## Slice 16: Refinamentos visuais e UX do Calendário de Produção
+
+### 16.1 Ajustes visuais do grid mensal
+
+- [x] **Remover contorno (ring) do dia atual** na visão de mês (`today && 'ring-2 ring-primary'` removido)
+- [x] **Box com cor primária no dia atual**: substituir ring por `bg-primary/10` + `text-primary` no número do dia (cor igual ao botão "Novo pedido" em /pedidos — `text-primary` no `variant="outline"`)
+- [x] **4 cantos arredondados na box do calendário**: container do grid com `rounded-xl bg-card`; células de borda com `rounded-tl/tr/bl/br-xl` conforme posição
+
+### 16.2 Visões 3 e 7 dias — cards de largura total
+
+- [ ] **Cards expandem para largura máxima**: remover `max-w-[320px]` em `ProductionCalendarDays.tsx:41`, usar `flex-1 min-w-0`
+- [ ] **Altura fixa do calendário / limite do padding bottom**: container principal (`ProductionCalendar.tsx`) com altura estável igual às outras rotas — `h-full min-h-0` + conteúdo com `overflow-auto` interno; não ultrapassar `pb-8`
+- [ ] **Consistência com padding das outras rotas**: verificar `p-4 sm:p-6 lg:p-8` no `__root.tsx:41`
+
+### 16.3 Toolbar e Segmented Control — paridade visual
+
+- [ ] **Toolbar idêntica a /producao e /**:
+  - Segmented "Todos / Somente eu" com mesmo `variant`/`className` de /producao
+  - Dropdown "Mês / 7 dias / 3 dias" com mesmo estilo do dropdown de escopo de /producao
+  - MonthSelector alinhado visualmente (gap, padding)
+- [ ] **Responsividade mobile em 2 linhas** igual Home/Produção (scope esq., view+month dir.)
+
+### 16.4 Interações e ícones
+
+- [ ] **Hover no botão "expandir" (CalendarClock)**: `hover:bg-accent cursor-pointer transition-colors` (padrão botões ghost/icon)
+- [ ] **Hover no follow link (ArrowUpRight)**: `opacity-0 group-hover:opacity-100 hover:text-primary rounded p-1 transition`
+- [ ] **Ícone de imagem com cor primária**: substituir 📎 por `<FileText className="h-3.5 w-3.5 text-primary" />` de `lucide-react` em `ProductionCalendarOrder.tsx:39`
+
+### 16.5 Lógica de origem padrão ao alternar visão
+
+- [ ] **No hook `useProductionCalendar`**: ao mudar `view` via dropdown:
+  - Se `anchorDate` no mês atual → `anchorDate = hoje` (3/7 dias) ou `1º dia do mês` (mês)
+  - Se mês diferente → `anchorDate = 1ª semana do mês` (3/7 dias) ou `1º dia do mês` (mês)
+- [ ] Persistir `anchorDate` ajustado no localStorage junto com `view`
+
+### 16.6 Altura consistente do calendário
+
+- [ ] **Container** `flex flex-col h-full min-h-0` (herda do `<main>` em `__root.tsx`)
+- [ ] **Toolbar** `shrink-0`, **conteúdo** `flex-1 min-h-0 overflow-auto` interno
+- [ ] Sem overflow vertical da página (scroll interno no grid/colunas)
+
+---
+
+### Commits sugeridos (5)
+
+| # | Mensagem | Escopo |
+|---|----------|--------|
+| 1 | `feat: month grid visual polish — today box, rounded corners, no ring` | `ProductionCalendarMonth.tsx` |
+| 2 | `feat: 3/7 day views full-width cards + fixed height` | `ProductionCalendarDays.tsx`, `ProductionCalendar.tsx` |
+| 3 | `feat: toolbar parity with /producao — segmented, dropdown, responsive` | `ProductionCalendarToolbar.tsx` |
+| 4 | `feat: order card interactions — hover expand/follow, primary FileText icon` | `ProductionCalendarOrder.tsx` |
+| 5 | `feat: smart anchorDate on view switch + height consistency` | `use-production-calendar.ts`, `ProductionCalendar.tsx` |
