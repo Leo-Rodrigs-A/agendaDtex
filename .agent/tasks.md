@@ -205,9 +205,9 @@
 
 ### 16.2 Visões 3 e 7 dias — cards de largura total
 
-- [ ] **Cards expandem para largura máxima**: remover `max-w-[320px]` em `ProductionCalendarDays.tsx:41`, usar `flex-1 min-w-0`
-- [ ] **Altura fixa do calendário / limite do padding bottom**: container principal (`ProductionCalendar.tsx`) com altura estável igual às outras rotas — `h-full min-h-0` + conteúdo com `overflow-auto` interno; não ultrapassar `pb-8`
-- [ ] **Consistência com padding das outras rotas**: verificar `p-4 sm:p-6 lg:p-8` no `__root.tsx:41`
+- [x] **Cards expandem para largura máxima**: remover `max-w-[320px]` em `ProductionCalendarDays.tsx:41`, usar `flex-1 min-w-0`
+- [x] **Altura fixa do calendário / limite do padding bottom**: container principal (`ProductionCalendar.tsx`) com altura estável igual às outras rotas — `h-full min-h-0` + conteúdo com `overflow-auto` interno; não ultrapassar `pb-8`
+- [x] **Consistência com padding das outras rotas**: verificar `p-4 sm:p-6 lg:p-8` no `__root.tsx:41`
 
 ### 16.3 Toolbar e Segmented Control — paridade visual
 
@@ -226,10 +226,9 @@
 
 ### 16.5 Lógica de origem padrão ao alternar visão
 
-- [ ] **No hook `useProductionCalendar`**: ao mudar `view` via dropdown:
-  - Se `anchorDate` no mês atual → `anchorDate = hoje` (3/7 dias) ou `1º dia do mês` (mês)
-  - Se mês diferente → `anchorDate = 1ª semana do mês` (3/7 dias) ou `1º dia do mês` (mês)
-- [ ] Persistir `anchorDate` ajustado no localStorage junto com `view`
+- [x] **No hook `useProductionCalendar`**: `setView(v, anchor?)` normaliza a âncora ao trocar a visão via dropdown (`normalizeAnchorForView` em `lib/production-calendar.ts`): visão mês → 1º dia do mês da âncora; 3/7 dias → hoje se a âncora estiver no mês atual, senão 1º dia do mês. Não normaliza quando a opção escolhida já é a atual; `anchor` explícito tem prioridade (usado pelo ícone "expandir" da grade, `setView('3-days', day)`)
+- [x] ~~Persistir `anchorDate` no localStorage~~ — **descartado de propósito**: o hook reseta view/scope/âncora ao entrar em `/calendario`, então persistir a âncora não teria efeito. Nenhuma chave nova foi criada
+- [x] 6 testes novos em `lib/production-calendar.test.ts` (31 no total)
 
 ### 16.6 Altura consistente do calendário
 
@@ -241,10 +240,10 @@
 
 ### Commits sugeridos (5)
 
-| # | Mensagem | Escopo |
-|---|----------|--------|
-| 1 | `feat: month grid visual polish — today box, rounded corners, no ring` | `ProductionCalendarMonth.tsx` |
-| 2 | `feat: 3/7 day views full-width cards + fixed height` | `ProductionCalendarDays.tsx`, `ProductionCalendar.tsx` |
-| 3 | `feat: toolbar parity with /producao — segmented, dropdown, responsive` | `ProductionCalendarToolbar.tsx` |
-| 4 | `feat: order card interactions — hover expand/follow, primary FileText icon` | `ProductionCalendarOrder.tsx` |
-| 5 | `feat: smart anchorDate on view switch + height consistency` | `use-production-calendar.ts`, `ProductionCalendar.tsx` |
+| #   | Mensagem                                                                     | Escopo                                                 |
+| --- | ---------------------------------------------------------------------------- | ------------------------------------------------------ |
+| 1   | `feat: month grid visual polish — today box, rounded corners, no ring`       | `ProductionCalendarMonth.tsx`                          |
+| 2   | `feat: 3/7 day views full-width cards + fixed height`                        | `ProductionCalendarDays.tsx`, `ProductionCalendar.tsx` |
+| 3   | `feat: toolbar parity with /producao — segmented, dropdown, responsive`      | `ProductionCalendarToolbar.tsx`                        |
+| 4   | `feat: order card interactions — hover expand/follow, primary FileText icon` | `ProductionCalendarOrder.tsx`                          |
+| 5   | `feat: smart anchorDate on view switch + height consistency`                 | `use-production-calendar.ts`, `ProductionCalendar.tsx` |

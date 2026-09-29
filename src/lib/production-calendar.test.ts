@@ -6,6 +6,7 @@ import {
   getDaysForView,
   navigateMonth,
   navigateWeek,
+  normalizeAnchorForView,
   truncateOrderName,
   isToday,
   isSameMonth,
@@ -181,6 +182,56 @@ describe('production-calendar', () => {
       const anchor = localDate(2026, 10, 15)
       const prev = navigateWeek(anchor, -1)
       expect(anchor.getTime() - prev.getTime()).toBe(7 * 24 * 60 * 60 * 1000)
+    })
+  })
+
+  describe('normalizeAnchorForView', () => {
+    const today = localDate(2026, 10, 15)
+
+    it('visão mês sempre cai no 1º dia do mês da âncora', () => {
+      const anchor = localDate(2026, 10, 28)
+      const result = normalizeAnchorForView(anchor, 'month', today)
+      expect(result.getDate()).toBe(1)
+      expect(result.getMonth()).toBe(9)
+      expect(result.getFullYear()).toBe(2026)
+    })
+
+    it('visão mês mantém o ano quando a âncora é de outro ano', () => {
+      const anchor = localDate(2027, 3, 20)
+      const result = normalizeAnchorForView(anchor, 'month', today)
+      expect(result.getFullYear()).toBe(2027)
+      expect(result.getMonth()).toBe(2)
+      expect(result.getDate()).toBe(1)
+    })
+
+    it('3/7 dias no mês atual cai em hoje', () => {
+      const anchor = localDate(2026, 10, 1)
+      const seven = normalizeAnchorForView(anchor, '7-days', today)
+      const three = normalizeAnchorForView(anchor, '3-days', today)
+      expect(seven.getTime()).toBe(today.getTime())
+      expect(three.getTime()).toBe(today.getTime())
+    })
+
+    it('3/7 dias com âncora no mesmo mês mas noutro ano cai no 1º do mês', () => {
+      const anchor = localDate(2027, 10, 20)
+      const result = normalizeAnchorForView(anchor, '7-days', today)
+      expect(result.getFullYear()).toBe(2027)
+      expect(result.getMonth()).toBe(9)
+      expect(result.getDate()).toBe(1)
+    })
+
+    it('3/7 dias em outro mês cai no 1º dia daquele mês', () => {
+      const anchor = localDate(2026, 12, 20)
+      const seven = normalizeAnchorForView(anchor, '7-days', today)
+      const three = normalizeAnchorForView(anchor, '3-days', today)
+      expect(seven.getTime()).toBe(localDate(2026, 12, 1).getTime())
+      expect(three.getTime()).toBe(localDate(2026, 12, 1).getTime())
+    })
+
+    it('não muta a âncora recebida', () => {
+      const anchor = localDate(2026, 12, 20)
+      normalizeAnchorForView(anchor, '7-days', today)
+      expect(anchor.getDate()).toBe(20)
     })
   })
 

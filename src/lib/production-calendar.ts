@@ -2,6 +2,9 @@ import type { Holiday, Order } from '@/types'
 import { productionDateOf } from './orders'
 import { toDateKey } from './dates'
 
+/** Visões do calendário de produção */
+export type CalendarView = 'month' | '7-days' | '3-days'
+
 /** Pedido já com sua data de produção calculada */
 export type CalendarOrder = {
   order: Order
@@ -94,6 +97,26 @@ export function navigateWeek(anchorDate: Date, delta: -1 | 1): Date {
   const result = new Date(anchorDate)
   result.setDate(result.getDate() + delta * 7)
   return result
+}
+
+/**
+ * Reposiciona a âncora ao trocar de visão (regra do Slice 16.5):
+ *  - visão mês → sempre o 1º dia do mês da âncora;
+ *  - 3/7 dias → hoje, se a âncora já estiver no mês atual; senão o
+ *    1º dia do mês da âncora.
+ */
+export function normalizeAnchorForView(
+  anchorDate: Date,
+  view: CalendarView,
+  today: Date,
+): Date {
+  if (view === 'month') {
+    return new Date(anchorDate.getFullYear(), anchorDate.getMonth(), 1)
+  }
+  if (isSameMonth(anchorDate, today)) {
+    return new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  }
+  return new Date(anchorDate.getFullYear(), anchorDate.getMonth(), 1)
 }
 
 /** Abrevia nome do pedido para 12 chars + ellipsis */

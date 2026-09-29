@@ -22,7 +22,6 @@ export function ProductionCalendar() {
     periodLabel,
     setView,
     setScope,
-    setAnchorDate,
     goPrev,
     goNext,
     jumpToMonth,
@@ -48,8 +47,7 @@ export function ProductionCalendar() {
   }
 
   const handleExpandDay = (day: Date) => {
-    setView('3-days')
-    setAnchorDate(day)
+    setView('3-days', day)
   }
 
   const [imageOrder, setImageOrder] = useState<(typeof orders)[0] | null>(null)

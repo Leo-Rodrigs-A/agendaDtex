@@ -5,9 +5,10 @@ import {
   navigateWeek,
   getMonthGridDays,
   getDaysForView,
+  normalizeAnchorForView,
 } from '@/lib/production-calendar'
+import type { CalendarView } from '@/lib/production-calendar'
 
-type CalendarView = 'month' | '7-days' | '3-days'
 type Scope = 'all' | 'mine'
 
 const VIEW_KEY = 'dtex-calendar-view'
@@ -69,9 +70,24 @@ export function useProductionCalendar() {
   }, [isCalendarRoute])
 
   // Setters
-  const setView = (v: CalendarView) => setViewState(v)
+  /**
+   * Troca a visão e reposiciona a âncora (`normalizeAnchorForView`) quando a
+   * visão realmente muda — clicar na opção já selecionada não move nada.
+   * `anchor` explícito (ex.: expandir um dia do mês) sempre tem prioridade.
+   */
+  const setView = (v: CalendarView, anchor?: Date) => {
+    if (anchor) {
+      setViewState(v)
+      setAnchorDateState(anchor)
+      return
+    }
+    if (v === view) return
+    setViewState(v)
+    setAnchorDateState((current) =>
+      normalizeAnchorForView(current, v, new Date()),
+    )
+  }
   const setScope = (s: Scope) => setScopeState(s)
-  const setAnchorDate = (d: Date) => setAnchorDateState(d)
 
   // Navegação
   const goPrev = () => {
@@ -145,7 +161,6 @@ export function useProductionCalendar() {
     periodLabel,
     setView,
     setScope,
-    setAnchorDate,
     goPrev,
     goNext,
     goToday,
