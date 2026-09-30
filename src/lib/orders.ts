@@ -22,8 +22,11 @@ export function countPieces(order: Order): number {
   return num(order.shirt_count) + num(order.others_items_count)
 }
 
-/** Pedidos cuja entrega cai no dia informado. */
-export function ordersForDay(orders: Array<Order>, day: Date): Array<Order> {
+/** Pedidos cuja entrega cai no dia informado. Só usado internamente pelo
+ *  `businessDaysBreakdown` — a convenção de nomes das "views por data":
+ *  `ordersForProductionDay` = produção, `ordersCreatedOnDay` = created_at,
+ *  `ordersCreatedInMonth` = encomendados no mês. */
+function ordersForDay(orders: Array<Order>, day: Date): Array<Order> {
   const key = toDateKey(day)
   return orders.filter((o) => dateKeyOf(o.delivery_date) === key)
 }
@@ -58,22 +61,8 @@ export function ordersCreatedOnDay(
   })
 }
 
-/** Pedidos cujo mês de entrega é o informado (month: 0-11). */
-export function ordersForMonth(
-  orders: Array<Order>,
-  month: number,
-  year: number,
-): Array<Order> {
-  return orders.filter((o) => {
-    const key = dateKeyOf(o.delivery_date)
-    const [y, m] = key.split('-').map(Number)
-    return y === year && m === month + 1
-  })
-}
-
-/**
- * Pedidos criados (encomendados) no mês informado (month: 0-11),
- * com base em `created_at`. Base dos KPIs mensais de vendas.
+/** Pedidos criados (encomendados) no mês informado (month: 0-11),
+ *  com base em `created_at`. Base dos KPIs mensais de vendas.
  */
 export function ordersCreatedInMonth(
   orders: Array<Order>,
@@ -96,30 +85,6 @@ export function sumRevenue(orders: Array<Order>): number {
 
 export function averageTicket(orders: Array<Order>): number {
   return orders.length === 0 ? 0 : sumRevenue(orders) / orders.length
-}
-
-export type WeekDayStatus = {
-  date: Date
-  orderCount: number
-  pieceCount: number
-}
-
-/**
- * Status dos próximos 7 dias úteis a partir de `today` (inclusive),
- * excluindo sábados e domingos. Sempre relativo a hoje.
- */
-export function weekStatus(
-  orders: Array<Order>,
-  today: Date,
-): Array<WeekDayStatus> {
-  return nextBusinessDays(today, 7).map((date) => {
-    const dayOrders = ordersForDay(orders, date)
-    return {
-      date,
-      orderCount: dayOrders.length,
-      pieceCount: sumPieces(dayOrders),
-    }
-  })
 }
 
 export type DayBreakdown = {

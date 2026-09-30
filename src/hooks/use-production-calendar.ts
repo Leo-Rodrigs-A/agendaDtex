@@ -168,6 +168,5 @@ export function useProductionCalendar() {
     goNext,
     goToday,
     jumpToMonth,
-    isCalendarRoute,
   }
 }

@@ -61,7 +61,15 @@ refactor(auth): migrar useActiveUser para useAuth e remover o UserProvider
 
 ---
 
-## 3. 🟡 Código morto (exports sem uso)
+## 3. ✅ Resolvido — código morto (exports sem uso)
+
+> **Fechado em 29/09/2026.** Os cinco foram removidos, e a auditoria original
+> perdeu um sexto: o `export` de `ordersForDay` também era morto (só o
+> `businessDaysBreakdown` o consome). Em vez de renomeá-lo, tirei o `export`,
+> deixei como função module-private e documentei a convenção de nomes das
+> "views por data" num comentário — `ordersForProductionDay` = produção,
+> `ordersCreatedOnDay` = `created_at`. A RPC `update_own_name` continua no
+> banco, intocada (sem tela de editar nome hoje).
 
 O `tsc` não pega export não importado, então isso passa silencioso.
 
@@ -72,9 +80,10 @@ O `tsc` não pega export não importado, então isso passa silencioso.
 | `weekStatus` + `WeekDayStatus`      | `src/lib/orders.ts:101,111`                | par inteiro sem uso                                                                                       |
 | `updateOwnName`                     | `src/services/profiles.ts`                 | serviço sem uso                                                                                           |
 | `isCalendarRoute` (retorno do hook) | `src/hooks/use-production-calendar.ts:171` | exportado pela API do hook, mas ninguém consome (a checagem de rota do hotkey é feita no `GlobalHotkeys`) |
+| `ordersForDay` (export)             | `src/lib/orders.ts:26`                     | só usado internamente pelo `businessDaysBreakdown` → virou module-private                                 |
 
-- [ ] Remover os cinco, ou documentar no arquivo por que permanecem
-- [ ] Revisar a dualidade de nomes em `lib/orders.ts` (`ordersForDay`/`ordersForProductionDay`/`ordersCreatedOnDay` e o par `ordersForMonth`/`ordersCreatedInMonth`) para deixar a convenção óbvia
+- [x] Remover os cinco, ou documentar no arquivo por que permanecem
+- [x] Revisar a dualidade de nomes em `lib/orders.ts` (`ordersForDay`/`ordersForProductionDay`/`ordersCreatedOnDay` e o par `ordersForMonth`/`ordersCreatedInMonth`) para deixar a convenção óbvia
 
 ```text
 chore: remover código morto e dependências não utilizadas
@@ -152,7 +161,7 @@ fix(a11y): nome acessível nos botões só-ícone do Header e do DaySelector
 | --- | ---------------------------------------------- | --------- | -------------------------------- |
 | 1   | Chaves de dia via `toISOString` (fuso)         | 🔴        | só em fusos UTC+                 |
 | 2   | `UserProvider` shim com duas fontes de usuário | ✅        | nenhum (equivalentes)            |
-| 3   | Exports mortos                                 | 🟡        | nenhum                           |
+| 3   | Exports mortos                                 | ✅        | nenhum                           |
 | 4   | Deps/config não usadas + versões `latest`      | 🟡        | deriva de dependência            |
 | 5   | Cobertura de teste quase inexistente           | 🟡        | regressões passam batidas        |
 | 6   | Formatadores de data espalhados                | 🟡        | nenhum (re-render desnecessário) |

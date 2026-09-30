@@ -5,12 +5,6 @@ import { toDateKey } from './dates'
 /** Visões do calendário de produção */
 export type CalendarView = 'month' | '7-days' | '3-days'
 
-/** Pedido já com sua data de produção calculada */
-export type CalendarOrder = {
-  order: Order
-  productionDate: Date
-}
-
 /** Agrupa pedidos por data de produção (apenas não concluídos) */
 export function groupOrdersByProductionDate(
   orders: Order[],
