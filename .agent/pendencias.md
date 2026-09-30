@@ -39,15 +39,21 @@ fix(calendario): usar toDateKey em vez de toISOString nas chaves de dia
 
 ---
 
-## 2. 🟡 Duas fontes de verdade para o usuário (`UserProvider` é shim deprecated)
+## 2. ✅ Resolvido — duas fontes de verdade para o usuário (`UserProvider` e shim deprecated removidos)
+
+> **Fechado em 29/09/2026.** `useActiveUser()` virou `useAuth().profile` em
+> `routes/index.tsx` e `NewOrderDialog.tsx` (que já lia o mesmo dado pelos
+> dois hooks em linhas vizinhas), o `UserProvider` e o wrapper em
+> `contexts/index.tsx:9,35,40` foram removidos e o arquivo apagado. O bullet
+> de `UserProvider` em `.agent/architecture.md` foi atualizado.
 
 **Arquivos:** `src/components/UserProvider.tsx`, `src/contexts/index.tsx:9,35,40`, `src/routes/index.tsx:38`, `src/components/NewOrderDialog.tsx:21,62`
 
 `UserProvider` é um shim de compatibilidade da era "usuário ativo em localStorage": `activeUser` é só o `profile` da sessão, e `setActiveUser` é um **no-op que só faz `console.warn`** (`UserProvider.tsx:31`). Ele ainda está montado em `AppProviders` e consumido pela home e pelo `NewOrderDialog`, enquanto o resto do app lê o mesmo dado de `useAuth` direto. Ou seja, o mesmo dado é lido de duas formas — e o próprio TODO do arquivo (`UserProvider.tsx:21`) já pede a migração.
 
-- [ ] Trocar `useActiveUser()` por `useAuth().profile` em `routes/index.tsx` e `NewOrderDialog.tsx`
-- [ ] Remover `UserProvider.tsx` e o wrapper em `contexts/index.tsx` (e a linha correspondente do comentário de ordem de providers)
-- [ ] Atualizar o bullet de `UserProvider` em `.agent/architecture.md`, se houver
+- [x] Trocar `useActiveUser()` por `useAuth().profile` em `routes/index.tsx` e `NewOrderDialog.tsx`
+- [x] Remover `UserProvider.tsx` e o wrapper em `contexts/index.tsx` (e a linha correspondente do comentário de ordem de providers)
+- [x] Atualizar o bullet de `UserProvider` em `.agent/architecture.md`, se houver
 
 ```text
 refactor(auth): migrar useActiveUser para useAuth e remover o UserProvider
@@ -145,7 +151,7 @@ fix(a11y): nome acessível nos botões só-ícone do Header e do DaySelector
 | #   | Pendência                                      | Gravidade | Risco real hoje                  |
 | --- | ---------------------------------------------- | --------- | -------------------------------- |
 | 1   | Chaves de dia via `toISOString` (fuso)         | 🔴        | só em fusos UTC+                 |
-| 2   | `UserProvider` shim com duas fontes de usuário | 🟡        | nenhum (equivalentes)            |
+| 2   | `UserProvider` shim com duas fontes de usuário | ✅        | nenhum (equivalentes)            |
 | 3   | Exports mortos                                 | 🟡        | nenhum                           |
 | 4   | Deps/config não usadas + versões `latest`      | 🟡        | deriva de dependência            |
 | 5   | Cobertura de teste quase inexistente           | 🟡        | regressões passam batidas        |

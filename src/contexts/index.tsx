@@ -6,7 +6,6 @@ import { ThemeProvider } from '@/components/ThemeProvider'
 import { AuthProvider } from '@/components/AuthProvider'
 import { FilterProvider } from '@/components/FilterProvider'
 import { DataProvider } from '@/components/DataProvider'
-import { UserProvider } from '@/components/UserProvider'
 import { CommandPaletteProvider } from '@/components/CommandPaletteProvider'
 import { SplashGateProvider } from '@/components/SplashGateProvider'
 
@@ -20,7 +19,6 @@ import { SplashGateProvider } from '@/components/SplashGateProvider'
  * - AuthProvider: sessão Supabase + profile (fonte do usuário ativo).
  * - FilterProvider: estado de filtros, independente dos dados.
  * - DataProvider: busca os dados do Supabase (depende da sessão).
- * - UserProvider: shim de compatibilidade — activeUser = profile da sessão.
  * - CommandPaletteProvider: estado global da paleta Ctrl+K (depende de Auth e Data).
  */
 export function AppProviders({ children }: { children: ReactNode }) {
@@ -32,12 +30,10 @@ export function AppProviders({ children }: { children: ReactNode }) {
             <AuthProvider>
               <FilterProvider>
                 <DataProvider>
-                  <UserProvider>
-                    <CommandPaletteProvider>
-                      {children}
-                      <Toaster position="bottom-right" />
-                    </CommandPaletteProvider>
-                  </UserProvider>
+                  <CommandPaletteProvider>
+                    {children}
+                    <Toaster position="bottom-right" />
+                  </CommandPaletteProvider>
                 </DataProvider>
               </FilterProvider>
             </AuthProvider>

@@ -27,7 +27,7 @@ React Frontend (SPA) ──supabase-js──▶ Supabase (Auth + Postgres + RLS 
 - `src/services/orders.ts` — `listOrders`, `listOrdersFrom` (fetch escalonado), `createOrder`, `toggleOrderDone` (RPC), `updateOrder`, `deleteOrder` (RPCs).
 - `src/services/holidays.ts`, `src/services/profiles.ts` (+ `inviteUser` via Edge Function, `adminUpdateUser` RPC).
 - **`DataProvider`** mantém a API `useData()` (`orders`/`holidays`/`users` + `refresh*` + `toggleOrderDone` otimista) — consumidores (`OrdersTable`, KPIs, `lib/orders.ts`) inalterados. Fetch inicial: mês atual + futuros; histórico em background. **Polling silencioso a cada 5 min** (pedidos + feriados + usuários, sem loading/toast) — pausa com a aba oculta e atualiza na hora ao voltar (`visibilitychange`). Dados limpos no logout.
-- **`UserProvider`** virou shim: `activeUser` = profile da sessão (não há mais "trocar de usuário").
+- **Usuário ativo = sessão:** não há mais `UserProvider` nem `useActiveUser` — tudo lê `useAuth().profile`. O `UserProvider` virou shim ("usuário ativo" da era localStorage) e foi removido na limpeza das pendências.
 
 ## Decisões de Frontend (estado atual)
 
