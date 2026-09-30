@@ -91,16 +91,24 @@ chore: remover código morto e dependências não utilizadas
 
 ---
 
-## 4. 🟡 Dependências e configuração não utilizadas
+## 4. ✅ Resolvido — dependências e configuração não utilizadas
+
+> **Fechado em 29/09/2026.** Removidos `date-fns` (continua resolvida como
+> dependência transitiva de `react-day-picker@10` — `pnpm why` confirma),
+> `@tanstack/react-devtools` e `@tanstack/react-router-devtools` (o painel vem
+> do `@tanstack/devtools-vite`, que ficou), `@vitest/ui` e o alias `#/*`.
+> As 4 versões TanStack restantes foram pinadas com `^` no instalado
+> (`react-router ^1.170.40`, `router-plugin ^1.168.41`, `devtools-vite ^0.8.5`,
+> `eslint-config ^0.4.0`). `tsr generate`, `tsc`, lint, vitest e build ok.
 
 **Arquivos:** `package.json`, `tsconfig.json:16`
 
-- [ ] `date-fns` (`package.json:27`) — **zero imports** em `src/`
-- [ ] `@tanstack/react-devtools` (`:22`) e `@tanstack/react-router-devtools` (`:24`) — zero imports; o painel vem do plugin `@tanstack/devtools-vite` em `vite.config.ts`
-- [ ] `@vitest/ui` (`:48`) — nenhum script usa (`package.json` não tem script `test`, os testes rodam por `pnpm vitest run`)
-- [ ] Alias `#/*`: declarado em `package.json` (`imports`) e em `tsconfig.json:16`, com **zero usos** — todo import usa `@/`
-- [ ] Decidir entre remover o alias ou passar a usá-lo (hoje é configuração morta)
-- [ ] Pinar as 6 versões em `"latest"` (`:22,23,24,40,41,43`), incluindo `@tanstack/react-router` e `@tanstack/eslint-config` — o lockfile segura o build de hoje, mas qualquer `pnpm update` pode trazer breaking sem aviso
+- [x] `date-fns` (`package.json:27`) — **zero imports** em `src/`
+- [x] `@tanstack/react-devtools` (`:22`) e `@tanstack/react-router-devtools` (`:24`) — zero imports; o painel vem do plugin `@tanstack/devtools-vite` em `vite.config.ts`
+- [x] `@vitest/ui` (`:48`) — nenhum script usa (`package.json` não tem script `test`, os testes rodam por `pnpm vitest run`)
+- [x] Alias `#/*`: declarado em `package.json` (`imports`) e em `tsconfig.json:16`, com **zero usos** — todo import usa `@/`
+- [x] Decidir entre remover o alias ou passar a usá-lo (hoje é configuração morta)
+- [x] Pinar as 6 versões em `"latest"` (`:22,23,24,40,41,43`), incluindo `@tanstack/react-router` e `@tanstack/eslint-config` — o lockfile segura o build de hoje, mas qualquer `pnpm update` pode trazer breaking sem aviso
 
 ```text
 chore: remover dependências e alias não utilizados, pinar versões do TanStack
@@ -162,7 +170,7 @@ fix(a11y): nome acessível nos botões só-ícone do Header e do DaySelector
 | 1   | Chaves de dia via `toISOString` (fuso)         | 🔴        | só em fusos UTC+                 |
 | 2   | `UserProvider` shim com duas fontes de usuário | ✅        | nenhum (equivalentes)            |
 | 3   | Exports mortos                                 | ✅        | nenhum                           |
-| 4   | Deps/config não usadas + versões `latest`      | 🟡        | deriva de dependência            |
+| 4   | Deps/config não usadas + versões `latest`      | ✅        | deriva de dependência            |
 | 5   | Cobertura de teste quase inexistente           | 🟡        | regressões passam batidas        |
 | 6   | Formatadores de data espalhados                | 🟡        | nenhum (re-render desnecessário) |
 | 7   | Botões só-ícone sem nome acessível             | 🟡        | leitor de tela                   |
