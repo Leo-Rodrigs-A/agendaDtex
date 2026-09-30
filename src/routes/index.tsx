@@ -15,8 +15,13 @@ import { ProductionChart } from '@/components/ProductionChart'
 import { KpiPair } from '@/components/KpiPair'
 import { useFilters } from '@/components/FilterProvider'
 import { useData } from '@/components/DataProvider'
-import { businessDaysForward } from '@/lib/dates'
-import { useActiveUser } from '@/components/UserProvider'
+import {
+  businessDaysForward,
+  capitalize,
+  formatDayMonth,
+  formatMonthLong,
+} from '@/lib/dates'
+import { useAuth } from '@/components/AuthProvider'
 import {
   DAILY_PIECE_QUOTA,
   DAILY_ORDER_QUOTA,
@@ -35,40 +40,30 @@ export const Route = createFileRoute('/')({
 function DashboardPage() {
   const { day, month, year } = useFilters()
   const { orders, users, holidays, isLoading, error } = useData()
-  const { activeUser } = useActiveUser()
+  const { profile } = useAuth()
 
   // Visão ativa: dia ou mês (segmented da top bar, em todos os breakpoints)
   const [activeTab, setActiveTab] = useState<'day' | 'month'>('day')
 
   // Escopo global (só admin): afeta KPIs de dia, KPIs de mês e tabela do dia.
   // Não-admin: dia vê todos (como antes) e mês vê os próprios (como antes).
-  const isAdmin = activeUser?.role === 'admin'
+  const isAdmin = profile?.role === 'admin'
   const [scope, setScope] = useState<'all' | 'mine'>('all')
 
-  const dayLabel = new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: 'short',
-  }).format(day)
+  const dayLabel = formatDayMonth(day)
 
   // O dia selecionado representa a data de PRODUÇÃO; o hint entre parênteses
   // é a data de entrega correspondente (2 dias úteis à frente).
   const deliveryDay = businessDaysForward(day, 2, holidays)
-  const deliveryDayLabel = new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: 'short',
-  }).format(deliveryDay)
+  const deliveryDayLabel = formatDayMonth(deliveryDay)
 
-  const rawMonthLabel = new Intl.DateTimeFormat('pt-BR', {
-    month: 'long',
-  }).format(new Date(year, month, 1))
-  const monthLabel =
-    rawMonthLabel.charAt(0).toUpperCase() + rawMonthLabel.slice(1)
+  const monthLabel = capitalize(formatMonthLong(new Date(year, month, 1)))
 
   // ---- Grupo Dia (por data de produção = 2 dias úteis antes da entrega) ----
   const dayOrders = ordersForProductionDay(orders, day, holidays)
   const dayScoped =
     isAdmin && scope === 'mine'
-      ? dayOrders.filter((o) => o.user_id === activeUser.id)
+      ? dayOrders.filter((o) => o.user_id === profile.id)
       : dayOrders
   const dayScopePieces = sumPieces(dayScoped)
   const dayScopeRevenue = sumRevenue(dayScoped)
@@ -81,7 +76,7 @@ function DashboardPage() {
   // ---- Grupo Mês (por data de encomenda) ----
   const monthShowAll = isAdmin && scope === 'all'
   const monthOrders = ordersCreatedInMonth(orders, month, year).filter(
-    (o) => monthShowAll || o.user_id === activeUser?.id,
+    (o) => monthShowAll || o.user_id === profile?.id,
   )
   const monthCount = monthOrders.length
   const monthPieces = sumPieces(monthOrders)
@@ -93,7 +88,7 @@ function DashboardPage() {
     orders,
     prevDate.getMonth(),
     prevDate.getFullYear(),
-  ).filter((o) => monthShowAll || o.user_id === activeUser?.id)
+  ).filter((o) => monthShowAll || o.user_id === profile?.id)
   const growthPct =
     prevMonthOrders.length > 0
       ? Math.round(

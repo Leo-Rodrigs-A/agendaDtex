@@ -15,7 +15,7 @@ import {
 import { AddHolidayDialog } from '@/components/AddHolidayDialog'
 import { useData } from '@/components/DataProvider'
 import { useAuth } from '@/components/AuthProvider'
-import { parseDateKey, toDateKey } from '@/lib/dates'
+import { formatMonthShort, parseDateKey, toDateKey } from '@/lib/dates'
 import type { Holiday } from '@/types'
 
 export const Route = createFileRoute('/feriados')({
@@ -218,9 +218,7 @@ function HolidayGrid({
                 {String(date.getDate()).padStart(2, '0')}
               </span>
               <span className="text-[10px] uppercase">
-                {new Intl.DateTimeFormat('pt-BR', { month: 'short' })
-                  .format(date)
-                  .replace('.', '')}
+                {formatMonthShort(date).replace('.', '')}
               </span>
             </div>
             <div className="min-w-0 flex-1">

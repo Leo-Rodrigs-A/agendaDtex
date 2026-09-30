@@ -1,19 +1,12 @@
 import { cn } from 'cn'
-import { CalendarClock } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import {
-  isToday,
-  isSameMonth,
-  isWeekend,
-  getMonthGridDays,
-} from '@/lib/production-calendar'
+import { isToday, isSameMonth, isWeekend } from '@/lib/dates'
+import { getMonthGridDays, getOrdersForDay } from '@/lib/production-calendar'
 import type { Order } from '@/types'
-import { ProductionCalendarOrder } from './ProductionCalendarOrder'
 
 const DAYS_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
@@ -21,121 +14,139 @@ type ProductionCalendarMonthProps = {
   grouped: Map<string, Order[]>
   anchorDate: Date
   onExpandDay: (day: Date) => void
-  onOrderClick: (order: Order) => void
-  onFollowClick: (order: Order, e: React.MouseEvent) => void
+}
+
+/**
+ * Contador de pedidos do dia — abre a visão de 3 dias a partir dele.
+ * Todos os pedidos no mapa estão pendentes por construção: quem monta o
+ * `grouped` (`groupOrdersByProductionDate`) já descarta `is_done`.
+ */
+function DayCountButton({
+  count,
+  onClick,
+}: {
+  count: number
+  onClick: () => void
+}) {
+  const label = `${count} ${count === 1 ? 'pedido pendente' : 'pedidos pendentes'}`
+  const actionLabel =
+    count === 1
+      ? 'Ver o pedido pendente'
+      : `Ver todos os ${count} pedidos pendentes`
+
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <button
+            type="button"
+            className="w-full cursor-pointer rounded px-2 py-1.5 text-left text-xs transition-colors hover:bg-accent"
+            onClick={onClick}
+            aria-label={actionLabel}
+          >
+            {label}
+          </button>
+        }
+      >
+        {label}
+      </TooltipTrigger>
+      <TooltipContent side="top" align="center">
+        {actionLabel}
+      </TooltipContent>
+    </Tooltip>
+  )
 }
 
 export function ProductionCalendarMonth({
   grouped,
   anchorDate,
   onExpandDay,
-  onOrderClick,
-  onFollowClick,
 }: ProductionCalendarMonthProps) {
   const gridDays = getMonthGridDays(anchorDate)
 
   return (
     <div className="flex-1 min-h-[360px] flex flex-col">
-      {/* Container do calendário com borda e cantos arredondados */}
-      <div className="flex-1 flex flex-col rounded-xl border border-border bg-card overflow-hidden">
-        {/* Cabeçalho dos dias da semana - com linha divisória inferior */}
-        <div className="grid grid-cols-7 border-b border-border bg-muted/50">
-          {DAYS_SHORT.map((day) => (
-            <div
-              key={day}
-              className="flex h-10 shrink-0 items-center justify-center text-xs font-medium text-muted-foreground"
-            >
-              {day}
-            </div>
-          ))}
-        </div>
-
-        {/* Células do calendário - o grid cresce junto com o card.
-            O piso de altura fica no wrapper de fora para o card inteiro
-            estourar (e rolar) em vez de a última semana ser cortada */}
-        <div className="flex-1 grid grid-cols-7">
-          {gridDays.map((day, index) => {
-            const dayOrders = grouped.get(day.toISOString().split('T')[0]) ?? []
-            const today = isToday(day)
-            const sameMonth = isSameMonth(day, anchorDate)
-            const weekend = isWeekend(day)
-            const hasMore = dayOrders.length > 3
-            const visibleOrders = dayOrders.slice(0, 3)
-
-            const isLastCol = index % 7 === 6
-            const isLastRow = index >= gridDays.length - 7
-
-            return (
+      {/* Scrollport horizontal do mês. Cabeçalho e grade ficam no MESMO
+          scrollport, então as colunas não desalinham ao arrastar.
+          O card tem piso de 840px (7 colunas × 120px) — com `grid-cols-7`
+          isso equivale a `repeat(7, minmax(120px, 1fr))` em cada track, e
+          mantém as duas grades com a mesma template.
+          Acima de lg a grade cabe na tela, então o wrapper volta a overflow
+          visível: o estouro vertical (janela baixa) continua rolando no
+          contêiner externo, como antes, em vez de criar um scroll aninhado. */}
+      <div className="flex-1 min-h-0 flex overflow-x-auto lg:overflow-visible">
+        <div className="flex-1 min-w-[840px] lg:min-w-0 flex flex-col rounded-xl border border-border bg-card overflow-hidden">
+          {/* Cabeçalho dos dias da semana - com linha divisória inferior */}
+          <div className="grid grid-cols-7 border-b border-border bg-muted/50">
+            {DAYS_SHORT.map((day) => (
               <div
-                key={index}
-                className={cn(
-                  'relative flex flex-col min-h-0 bg-card',
-                  !sameMonth && 'bg-muted text-muted-foreground/50',
-                  weekend && sameMonth && 'bg-muted',
-                  !isLastCol && 'border-r border-border',
-                  !isLastRow && 'border-b border-border',
-                )}
+                key={day}
+                className="flex h-10 shrink-0 items-center justify-center text-xs font-medium text-muted-foreground"
               >
-                {/* Data */}
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {/* Células do calendário - o grid cresce junto com o card.
+              O piso de altura fica no wrapper de fora para o card inteiro
+              estourar (e rolar) em vez de a última semana ser cortada */}
+          <div className="flex-1 grid grid-cols-7">
+            {gridDays.map((day, index) => {
+              const dayOrders = getOrdersForDay(grouped, day)
+              const today = isToday(day)
+              const sameMonth = isSameMonth(day, anchorDate)
+              const weekend = isWeekend(day)
+
+              const isLastCol = index % 7 === 6
+              const isLastRow = index >= gridDays.length - 7
+
+              return (
                 <div
+                  key={index}
                   className={cn(
-                    'flex shrink-0 items-center justify-between p-1.5',
-                    !sameMonth && 'bg-muted',
+                    'relative flex flex-col min-h-0 bg-card',
+                    !sameMonth && 'bg-muted text-muted-foreground/50',
                     weekend && sameMonth && 'bg-muted',
+                    !isLastCol && 'border-r border-border',
+                    !isLastRow && 'border-b border-border',
                   )}
                 >
-                  <span
+                  {/* Data */}
+                  <div
                     className={cn(
-                      'text-xs font-medium',
-                      today &&
-                        'bg-primary text-primary-foreground rounded px-1.5 py-0.5',
-                      !sameMonth && 'text-muted-foreground/50',
+                      'flex shrink-0 items-center justify-between p-1.5',
+                      !sameMonth && 'bg-muted',
+                      weekend && sameMonth && 'bg-muted',
                     )}
                   >
-                    {day.getDate()}
-                  </span>
-                  {hasMore && (
-                    <Tooltip>
-                      <TooltipTrigger
-                        render={
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-5 w-5 p-0 hover:bg-accent cursor-pointer transition-colors"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              onExpandDay(day)
-                            }}
-                            aria-label={`Expandir ${dayOrders.length} pedidos`}
-                          >
-                            <CalendarClock className="h-3 w-3" />
-                          </Button>
-                        }
-                      >
-                        <CalendarClock className="h-3 w-3" />
-                      </TooltipTrigger>
-                      <TooltipContent side="top" align="center">
-                        Ver todos os {dayOrders.length} pedidos
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                </div>
+                    <span
+                      className={cn(
+                        'text-xs font-medium',
+                        today &&
+                          'bg-primary text-primary-foreground rounded px-1.5 py-0.5',
+                        !sameMonth && 'text-muted-foreground/50',
+                      )}
+                    >
+                      {day.getDate()}
+                    </span>
+                  </div>
 
-                {/* Pedidos */}
-                <div className="flex-1 min-h-0 overflow-hidden p-1.5 space-y-1">
-                  {visibleOrders.map((order) => (
-                    <ProductionCalendarOrder
-                      key={order.id}
-                      order={order}
-                      onClick={onOrderClick}
-                      onFollowClick={onFollowClick}
-                      variant="cell"
-                    />
-                  ))}
+                  {/* Contador de pedidos: a célula não lista mais os pedidos
+                      (nome, imagem, conclusão) — só quantos são e um atalho
+                      para a visão de 3 dias, onde o card completo aparece. */}
+                  <div className="flex-1 min-h-0 overflow-hidden p-1.5">
+                    {dayOrders.length > 0 && (
+                      <DayCountButton
+                        count={dayOrders.length}
+                        onClick={() => onExpandDay(day)}
+                      />
+                    )}
+                  </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
       </div>
     </div>

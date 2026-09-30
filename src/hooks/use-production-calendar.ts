@@ -9,6 +9,7 @@ import {
   normalizeAnchorForView,
 } from '@/lib/production-calendar'
 import type { CalendarView } from '@/lib/production-calendar'
+import { capitalize, formatDayMonth, formatMonthLongYear } from '@/lib/dates'
 
 type Scope = 'all' | 'mine'
 
@@ -137,22 +138,12 @@ export function useProductionCalendar() {
 
   // Label do período atual
   const periodLabel = useMemo(() => {
-    const formatter = new Intl.DateTimeFormat('pt-BR', {
-      month: 'long',
-      year: 'numeric',
-    })
     if (view === 'month') {
-      return formatter.format(anchorDate).replace(/^\w/, (c) => c.toUpperCase())
+      return capitalize(formatMonthLongYear(anchorDate))
     }
     const endDate = new Date(visibleDays[visibleDays.length - 1])
-    const startLabel = new Intl.DateTimeFormat('pt-BR', {
-      day: '2-digit',
-      month: 'short',
-    }).format(visibleDays[0])
-    const endLabel = new Intl.DateTimeFormat('pt-BR', {
-      day: '2-digit',
-      month: 'short',
-    }).format(endDate)
+    const startLabel = formatDayMonth(visibleDays[0])
+    const endLabel = formatDayMonth(endDate)
     return `${startLabel} – ${endLabel}`
   }, [view, anchorDate, visibleDays])
 
@@ -168,6 +159,5 @@ export function useProductionCalendar() {
     goNext,
     goToday,
     jumpToMonth,
-    isCalendarRoute,
   }
 }

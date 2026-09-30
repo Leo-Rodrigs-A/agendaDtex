@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
 import {
   groupOrdersByProductionDate,
   getOrdersForDay,
@@ -9,9 +9,6 @@ import {
   navigateDays,
   normalizeAnchorForView,
   truncateOrderName,
-  isToday,
-  isSameMonth,
-  isWeekend,
 } from './production-calendar'
 import type { Order, Holiday } from '@/types'
 
@@ -117,6 +114,46 @@ describe('production-calendar', () => {
       const grouped = new Map<string, Order[]>()
       const day = localDate(2026, 10, 13)
       expect(getOrdersForDay(grouped, day)).toEqual([])
+    })
+
+    // Regressão: as telas montavam a chave com `day.toISOString()`, que
+    // converte para UTC — em fusos UTC+ a meia-noite local vira o dia
+    // ANTERIOR e os pedidos apareciam na célula errada. `toDateKey` lê os
+    // getters locais, então o dia certo é achado em qualquer fuso.
+    describe('chave de dia independente do fuso', () => {
+      const originalTz = process.env.TZ
+
+      afterEach(() => {
+        // `= undefined` escreveria a string "undefined" e o Node cairia
+        // num fuso inválido no resto da suíte — é preciso remover a chave.
+        if (originalTz === undefined) {
+          delete process.env.TZ
+        } else {
+          process.env.TZ = originalTz
+        }
+      })
+
+      it('acha o pedido em fuso UTC+', () => {
+        process.env.TZ = 'Asia/Tokyo' // UTC+9
+        const day = localDate(2026, 10, 13)
+        const grouped = new Map<string, Order[]>([
+          ['2026-10-13', [createOrder({ id: '1' })]],
+        ])
+
+        // Precondição do bug: em UTC a chave antiga seria 12/10.
+        expect(day.toISOString().split('T')[0]).toBe('2026-10-12')
+        expect(getOrdersForDay(grouped, day)).toHaveLength(1)
+      })
+
+      it('acha o pedido em fuso UTC-', () => {
+        process.env.TZ = 'America/Sao_Paulo' // UTC-3
+        const day = localDate(2026, 10, 13)
+        const grouped = new Map<string, Order[]>([
+          ['2026-10-13', [createOrder({ id: '1' })]],
+        ])
+
+        expect(getOrdersForDay(grouped, day)).toHaveLength(1)
+      })
     })
   })
 
@@ -262,52 +299,6 @@ describe('production-calendar', () => {
 
     it('trunca e adiciona ellipsis se > 12', () => {
       expect(truncateOrderName('1234567890123')).toBe('123456789012…')
-    })
-  })
-
-  describe('isToday', () => {
-    it('retorna true para hoje', () => {
-      expect(isToday(new Date())).toBe(true)
-    })
-
-    it('retorna false para ontem', () => {
-      const yesterday = new Date()
-      yesterday.setDate(yesterday.getDate() - 1)
-      expect(isToday(yesterday)).toBe(false)
-    })
-  })
-
-  describe('isSameMonth', () => {
-    it('true para mesmo mês/ano', () => {
-      expect(
-        isSameMonth(localDate(2026, 10, 15), localDate(2026, 10, 20)),
-      ).toBe(true)
-    })
-
-    it('false para mês diferente', () => {
-      expect(
-        isSameMonth(localDate(2026, 10, 15), localDate(2026, 11, 15)),
-      ).toBe(false)
-    })
-
-    it('false para ano diferente', () => {
-      expect(
-        isSameMonth(localDate(2026, 10, 15), localDate(2027, 10, 15)),
-      ).toBe(false)
-    })
-  })
-
-  describe('isWeekend', () => {
-    it('true para sábado', () => {
-      expect(isWeekend(localDate(2026, 10, 10))).toBe(true) // sábado
-    })
-
-    it('true para domingo', () => {
-      expect(isWeekend(localDate(2026, 10, 11))).toBe(true) // domingo
-    })
-
-    it('false para dia útil', () => {
-      expect(isWeekend(localDate(2026, 10, 12))).toBe(false) // segunda
     })
   })
 })

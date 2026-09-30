@@ -57,9 +57,27 @@ export function holidayDates(holidays: Array<Holiday>): Array<Date> {
   return holidays.map((h) => parseDateKey(h.holiday_date))
 }
 
-function isWeekend(date: Date): boolean {
+export function isWeekend(date: Date): boolean {
   const dow = date.getDay()
   return dow === 0 || dow === 6
+}
+
+/** Verifica se a data é hoje. */
+export function isToday(date: Date): boolean {
+  const today = new Date()
+  return (
+    date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear()
+  )
+}
+
+/** Verifica se duas datas caem no mesmo mês/ano. */
+export function isSameMonth(date: Date, anchorDate: Date): boolean {
+  return (
+    date.getMonth() === anchorDate.getMonth() &&
+    date.getFullYear() === anchorDate.getFullYear()
+  )
 }
 
 /**
@@ -129,4 +147,57 @@ export function nextBusinessDays(startDate: Date, count: number): Array<Date> {
     cursor.setDate(cursor.getDate() + 1)
   }
   return days
+}
+
+/** "An" -> "AN", "setembro" -> "Setembro". */
+export function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
+/** "jan.", "fev.", … (abreviado pt-BR, com ponto). */
+export function formatMonthShort(date: Date): string {
+  return new Intl.DateTimeFormat('pt-BR', { month: 'short' }).format(date)
+}
+
+/** "Jan", "Fev", … (abreviado, sem ponto, capitalizado). */
+export function formatMonthShortTitle(date: Date): string {
+  return capitalize(formatMonthShort(date).replace('.', ''))
+}
+
+/** "setembro". */
+export function formatMonthLong(date: Date): string {
+  return new Intl.DateTimeFormat('pt-BR', { month: 'long' }).format(date)
+}
+
+/** "setembro de 2026". */
+export function formatMonthLongYear(date: Date): string {
+  return new Intl.DateTimeFormat('pt-BR', {
+    month: 'long',
+    year: 'numeric',
+  }).format(date)
+}
+
+/** "14 set." (2 dígitos). */
+export function formatDayMonth(date: Date): string {
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+  }).format(date)
+}
+
+/** "02/09" (numérico). */
+export function formatNumericDayMonth(date: Date): string {
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+  }).format(date)
+}
+
+/** "14 set. 2026". */
+export function formatFullDate(date: Date): string {
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(date)
 }

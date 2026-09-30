@@ -1,5 +1,7 @@
+import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from 'cn'
-import { isToday, isWeekend } from '@/lib/production-calendar'
+import { toDateKey, isToday, isWeekend } from '@/lib/dates'
+import { getOrdersForDay } from '@/lib/production-calendar'
 import type { Order } from '@/types'
 import { ProductionCalendarOrder } from './ProductionCalendarOrder'
 
@@ -22,19 +24,31 @@ export function ProductionCalendarDays({
   onOrderClick,
   onFollowClick,
 }: ProductionCalendarDaysProps) {
+  // Identifica o período visível. Ao navegar com os chevrons a âncora
+  // muda, a key muda e o AnimatePresence é remontado — a troca de período
+  // é instantânea, sem animação. Concluir um pedido não mexe na âncora,
+  // então o exit do card roda normalmente.
+  const periodKey = days[0]?.getTime() ?? 0
+
   return (
+    // Um único scrollport: arrastar o contêiner leva os cards juntos.
+    // `flex gap-3` sem wrap — os cards fluem na horizontal, não quebram linha.
     <div className="flex-1 min-h-0 flex gap-3 overflow-x-auto">
       {days.map((day) => {
-        const dayOrders = grouped.get(day.toISOString().split('T')[0]) ?? []
+        const dayOrders = getOrdersForDay(grouped, day)
         const today = isToday(day)
         const weekend = isWeekend(day)
 
         return (
           <div
-            key={day.toISOString()}
+            key={toDateKey(day)}
             className={cn(
-              'flex flex-col flex-1 min-w-0 bg-card rounded-xl border border-border overflow-hidden',
-              today && 'bg-primary/10',
+              // `min-w-[300px]` impede o card de encolher abaixo de 300px:
+              // somados ao gap, os 7 dias da semana não cabem num celular,
+              // e o contêiner passa a rolar. `flex-1` (basis 0) deixa o
+              // card crescer para preencher a sobra em telas largas — no
+              // desktop os 3/7 dias continuam dividindo a largura toda.
+              'flex flex-col flex-1 min-w-[300px] bg-card rounded-xl border border-border overflow-hidden',
               weekend && 'bg-muted/30',
             )}
           >
@@ -42,8 +56,6 @@ export function ProductionCalendarDays({
             <div
               className={cn(
                 'flex shrink-0 items-center justify-between px-4 py-3 text-sm font-semibold',
-                today && 'bg-primary/10 text-primary',
-                today && 'border-primary',
                 weekend && 'bg-muted/30',
                 !today && !weekend && 'bg-card',
               )}
@@ -63,23 +75,32 @@ export function ProductionCalendarDays({
               </span>
             </div>
 
-            {/* Lista de pedidos com scroll */}
+            {/* Lista de pedidos com scroll. O estado vazio mora dentro do
+                AnimatePresence (com key própria) para que concluir o ÚLTIMO
+                pedido do dia ainda rode a saída do card. */}
             <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2">
-              {dayOrders.length === 0 ? (
-                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                  Nenhum pedido
-                </div>
-              ) : (
-                dayOrders.map((order) => (
-                  <ProductionCalendarOrder
-                    key={order.id}
-                    order={order}
-                    onClick={onOrderClick}
-                    onFollowClick={onFollowClick}
-                    variant="card"
-                  />
-                ))
-              )}
+              <AnimatePresence initial={false} key={periodKey}>
+                {dayOrders.length === 0 ? (
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex h-full items-center justify-center text-sm text-muted-foreground"
+                  >
+                    Nenhum pedido
+                  </motion.div>
+                ) : (
+                  dayOrders.map((order) => (
+                    <ProductionCalendarOrder
+                      key={order.id}
+                      order={order}
+                      onClick={onOrderClick}
+                      onFollowClick={onFollowClick}
+                    />
+                  ))
+                )}
+              </AnimatePresence>
             </div>
           </div>
         )

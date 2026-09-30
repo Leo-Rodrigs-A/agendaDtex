@@ -8,14 +8,15 @@ import {
 } from '@/components/ui/popover'
 import { useFilters } from '@/components/FilterProvider'
 
-const MONTHS = Array.from({ length: 12 }, (_, i) => {
-  const short = new Intl.DateTimeFormat('pt-BR', { month: 'short' }).format(
-    new Date(2000, i, 1),
-  )
-  // "set." -> "Set", "jan." -> "Jan"
-  const clean = short.replace('.', '')
-  return clean.charAt(0).toUpperCase() + clean.slice(1)
-})
+import {
+  capitalize,
+  formatMonthLongYear,
+  formatMonthShortTitle,
+} from '@/lib/dates'
+
+const MONTHS = Array.from({ length: 12 }, (_, i) =>
+  formatMonthShortTitle(new Date(2000, i, 1)),
+)
 
 type MonthSelectorProps = {
   /** Mês controlado (0-11). Se omitido, usa FilterProvider */
@@ -50,11 +51,9 @@ export function MonthSelector({
     setOpen(false)
   }
 
-  const rawLabel = new Intl.DateTimeFormat('pt-BR', {
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date(effectiveYear, effectiveMonth, 1))
-  const monthAndYear = rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1)
+  const monthAndYear = capitalize(
+    formatMonthLongYear(new Date(effectiveYear, effectiveMonth, 1)),
+  )
 
   return (
     <Popover

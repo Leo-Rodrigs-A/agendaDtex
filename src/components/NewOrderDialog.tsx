@@ -18,11 +18,11 @@ import {
 import { createOrder, updateOrder } from '@/services/orders'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useData } from '@/components/DataProvider'
-import { useActiveUser } from '@/components/UserProvider'
 import { useAuth } from '@/components/AuthProvider'
 import {
   WEEKEND_MATCHER,
   businessDaysBack,
+  formatNumericDayMonth,
   holidayDates,
   nextBusinessDays,
   parseDateKey,
@@ -59,7 +59,6 @@ export function NewOrderDialog({
   order = null,
 }: NewOrderDialogProps) {
   const { holidays, refreshOrders } = useData()
-  const { activeUser } = useActiveUser()
   const { profile } = useAuth()
   const isEdit = order != null
 
@@ -112,7 +111,7 @@ export function NewOrderDialog({
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
     if (isSubmitting) return
-    if (!activeUser) {
+    if (!profile) {
       setError('Você precisa estar autenticado para criar um pedido.')
       return
     }
@@ -142,7 +141,7 @@ export function NewOrderDialog({
         })
       } else {
         await createOrder({
-          user_id: activeUser.id,
+          user_id: profile.id,
           order_name: cleanName,
           shirt_count: toSafeNumber(shirts),
           others_items_count: toSafeNumber(others),
@@ -320,10 +319,9 @@ export function NewOrderDialog({
             </div>
             <p className="text-xs text-muted-foreground">
               A produção da fábrica será dia{' '}
-              {new Intl.DateTimeFormat('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-              }).format(businessDaysBack(deliveryDate, 2, holidays))}
+              {formatNumericDayMonth(
+                businessDaysBack(deliveryDate, 2, holidays),
+              )}
               .
             </p>
           </div>

@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
+import type { HTMLMotionProps } from 'framer-motion'
 import {
   ArrowDown,
   ArrowUp,
@@ -18,9 +20,9 @@ import { deleteOrder } from '@/services/orders'
 import { useData } from '@/components/DataProvider'
 import { useAuth } from '@/components/AuthProvider'
 import { NewOrderDialog } from '@/components/NewOrderDialog'
+import { OrderDoneCheckbox } from '@/components/OrderDoneCheckbox'
 import { OrderImageViewer } from '@/components/OrderImageViewer'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -44,34 +46,28 @@ const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
   year: 'numeric',
 })
 
-/** Checkbox de conclusão: update otimista via DataProvider. */
-function OrderDoneCheckbox({ order }: { order: Order }) {
-  const { toggleOrderDone } = useData()
-  const { profile } = useAuth()
-  const [pending, setPending] = useState(false)
-  const readOnly = profile?.role === 'designer'
-
+/**
+ * Linha da tabela com animação de layout. Só entra no `variant="day"`,
+ * onde marcar um pedido o move da seção de pendentes para a de
+ * concluídos — o `layout="position"` costura a transição de posição
+ * (só posição: a altura da linha não muda, e sem `scale` na distorção).
+ *
+ * Replica as classes do `TableRow` do registry porque o `TableRow` emite
+ * um `<tr>` fixo, que não aceita virar `motion.tr`. O `transform` que o
+ * Framer aplica durante a animação desfaz o `sticky` das células de
+ * checkbox e ações; o efeito volta quando ela termina e o transform é
+ * zerado.
+ */
+function AnimatedTableRow({ className, ...props }: HTMLMotionProps<'tr'>) {
   return (
-    <Checkbox
-      checked={order.is_done === true}
-      disabled={pending || readOnly}
-      title={
-        readOnly
-          ? 'Designers apenas visualizam'
-          : order.is_done
-            ? 'Marcar como pendente'
-            : 'Marcar como concluído'
-      }
-      className="cursor-pointer"
-      onClick={(e) => e.stopPropagation()}
-      onCheckedChange={async (checked) => {
-        setPending(true)
-        try {
-          await toggleOrderDone(order.id, checked === true)
-        } finally {
-          setPending(false)
-        }
-      }}
+    <motion.tr
+      data-slot="table-row"
+      className={cn(
+        'border-b transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted',
+        className,
+      )}
+      layout="position"
+      {...props}
     />
   )
 }
@@ -288,6 +284,9 @@ export function OrdersTable({
       : sortOrders(orders, sortKey, sortDir, sellerName)
   const showDeliveryDate = variant === 'full'
   const canWrite = profile?.role !== 'designer'
+  // `layout` só no "day": no "full" a lista tem uma ordenação só, então a
+  // posição de uma linha nunca muda e a animação não teria o que animar.
+  const Row = variant === 'day' ? AnimatedTableRow : TableRow
   // +1 = coluna "Produção" (calculada no front: 2 dias úteis antes da entrega)
   const columnCount = 8 + (showDeliveryDate ? 1 : 0) + (canWrite ? 1 : 0)
 
@@ -362,7 +361,7 @@ export function OrdersTable({
             sortedOrders.map((order) => {
               const hasImage = Boolean(order.imgurl?.trim())
               return (
-                <TableRow
+                <Row
                   key={order.id}
                   data-order-id={order.id}
                   onClick={() => openImage(order)}
@@ -428,7 +427,7 @@ export function OrdersTable({
                       />
                     </TableCell>
                   )}
-                </TableRow>
+                </Row>
               )
             })
           )}

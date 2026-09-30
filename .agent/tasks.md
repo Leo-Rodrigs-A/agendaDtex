@@ -258,3 +258,103 @@
 | 3   | `feat: toolbar parity with /producao — segmented, dropdown, responsive`      | `ProductionCalendarToolbar.tsx`                        |
 | 4   | `feat: order card interactions — hover expand/follow, primary FileText icon` | `ProductionCalendarOrder.tsx`                          |
 | 5   | `feat: smart anchorDate on view switch + height consistency`                 | `use-production-calendar.ts`, `ProductionCalendar.tsx` |
+
+## Slice 17: Framer Motion + Checkbox is_done nas views 7/3 dias + Animação de saída ✅
+
+> **Dependência:** `pnpm add framer-motion`
+
+### 17.1 Instalar Framer Motion
+
+- [x] `pnpm add framer-motion` (13.4.4)
+
+### 17.2 Checkbox de conclusão nas views 7/3 dias (`ProductionCalendarOrder` variant="card")
+
+- [x] Extrair `OrderDoneCheckbox` para `src/components/OrderDoneCheckbox.tsx`, compartilhado com `OrdersTable` (em vez de um `CalendarOrderDoneCheckbox` paralelo), consumindo `useData().toggleOrderDone` e `useAuth().profile` (readOnly para designer)
+- [x] Em `ProductionCalendarOrder.tsx`, renderizar checkbox à esquerda do nome, com `after:hidden` — senão a área de clique ampliada do checkbox invade ícone e nome
+- [x] `onCheckedChange` chama `toggleOrderDone(order.id, checked)` → atualização otimista via `DataProvider` remove o item do `grouped` (já filtra `is_done=true`)
+- [ ] Testar: marcar/desmarcar em 7-dias e 3-dias, verificar rollback em erro — validação manual
+
+### 17.3 Animação de desaparecimento (exit) nas views 7/3 dias
+
+- [x] Em `ProductionCalendarDays.tsx`: envolver `.map()` dos pedidos com `<AnimatePresence>` do Framer Motion
+- [x] Em `ProductionCalendarOrder.tsx`: envolver card em `<motion.div>` com `initial={{opacity:0, height:0}}`, `animate={{opacity:1, height:'auto'}}`, `exit={{opacity:0, height:0, x:-20}}`
+- [x] A animação de saída ocorre antes da remoção do DOM (quando `toggleOrderDone` atualiza o estado e o item sai do `grouped`)
+- [x] O estado vazio entra no `AnimatePresence` (key `"empty"`) para concluir o ÚLTIMO pedido ainda rodar a saída do card
+- [x] `key={days[0]?.getTime()}` no `AnimatePresence`: navegar de período remonta a lista (troca instantânea), sem animar
+
+**Commits sugeridos:**
+
+| #   | Mensagem                                                  | Escopo                                                      |
+| --- | --------------------------------------------------------- | ----------------------------------------------------------- |
+| 1   | `feat: add framer-motion dependency`                      | `package.json`                                              |
+| 2   | `feat(calendario): checkbox is_done nas views 7/3 dias`   | `ProductionCalendarOrder.tsx`, `ProductionCalendarDays.tsx` |
+| 3   | `feat(calendario): animate exit order card on completion` | `ProductionCalendarOrder.tsx`, `ProductionCalendarDays.tsx` |
+
+---
+
+## Slice 18: Visão mensal — botão contador + follow link mobile ✅
+
+### 18.1 Botão contador de pedidos por dia (substitui lista de até 3 + botão expandir)
+
+- [x] Em `ProductionCalendarMonth.tsx`: remover lógica `hasMore` / `visibleOrders.slice(0,3)` / `CalendarClock` (linhas ~62-63, 97-121)
+- [x] Substituir área de pedidos por botão único quando `dayOrders.length > 0`:
+  - Label: `{n} pedido pendente` / `{n} pedidos pendentes` (o `grouped` já descarta `is_done`)
+  - `onClick` → `onExpandDay(day)` (navega para visão 3 dias a partir desse dia)
+  - Estilo: `w-full text-left px-2 py-1.5 text-xs hover:bg-accent rounded transition-colors`
+  - Tooltip + `aria-label`: "Ver todos os N pedidos pendentes" ("Ver o pedido pendente" no singular)
+- [x] Dias sem pedidos ficam vazios (sem botão)
+
+### 18.2 Follow link na visão mensal (mobile/tablet) — substitui CalendarClock
+
+- [x] Descartada: o botão contador já é o atalho para a visão de 3 dias, então um segundo botão no mesmo dia duplicaria a ação sem ganho
+
+**Commits sugeridos:**
+
+| #   | Mensagem                                                                      | Escopo                        |
+| --- | ----------------------------------------------------------------------------- | ----------------------------- |
+| 1   | `feat(calendario): month view — counter button per day, remove expand button` | `ProductionCalendarMonth.tsx` |
+| 2   | `feat(calendario): month view mobile — follow link to 3-days view`            | `ProductionCalendarMonth.tsx` |
+
+---
+
+## Slice 19: Animação /home — movimentação pendente ↔ concluído (Framer Motion) ✅
+
+### 19.1 Animação de linhas na tabela do dia (variant="day")
+
+- [x] Em `OrdersTable.tsx`: `AnimatedTableRow` (wrapper local) renderiza `motion.tr` com `layout="position"`, replicando as classes do `TableRow` do registry — o `TableRow` emite um `<tr>` fixo e não aceita virar `motion.tr`
+- [x] `Row = variant === 'day' ? AnimatedTableRow : TableRow` — o `variant="full"` não paga medição de layout, já que a ordenação é única e a posição nunca muda
+- [x] Como `OrdersTable` já separa `pendingOrders` + `doneOrders` e concatena (`[...pendingOrders, ...doneOrders]`), a mudança de `is_done` move o item entre arrays → `layout` anima automaticamente
+- [x] `layout="position"` em vez de `layout`: só a posição muda, e sem `scale` na distorção
+- [x] A alternativa com `motion.tbody` + `display: contents` não foi necessária
+- [ ] Testar: marcar pedido como concluído → desce para seção de concluídos; desmarcar → sobe — validação manual
+
+**Commits sugeridos:**
+
+| #   | Mensagem                                                           | Escopo                         |
+| --- | ------------------------------------------------------------------ | ------------------------------ |
+| 1   | `feat(home): animate order row move between pending/done sections` | `OrdersTable.tsx`, `index.tsx` |
+
+---
+
+## Slice 20: Mobile/Tablet — scroll horizontal interno + largura mínima nos cards ✅
+
+### 20.1 ProductionCalendarDays — container com scroll horizontal + cards min-width fixo
+
+- [x] Container já tem `overflow-x-auto` — garantido `flex gap-3` (não wrap)
+- [x] Cada card (dia): `flex flex-col flex-1 min-w-[300px] bg-card rounded-xl border border-border overflow-hidden` — sem `w-[300px]` fixo, para o card continuar dividindo a largura toda no desktop
+- [x] Scroll horizontal arrasta **todos os cards juntos** (um único scrollport no container)
+
+### 20.2 ProductionCalendarMonth — mobile/tablet: grid → flex com scroll ou minmax
+
+- [x] Opção A descartada: viraria o mês numa fileira de células, perdendo a semântica de grade
+- [x] Opção B escolhida: grade `grid-cols-7` mantida, com um único scrollport no wrapper do card (`overflow-x-auto`) e piso de `min-w-[840px]` no card (7 × 120px) — equivale a `repeat(7, minmax(120px, 1fr))` e mantém cabeçalho e células na mesma template
+- [x] Cabeçalho dos dias da semana e grade no mesmo scrollport: as colunas não desalinham ao arrastar
+- [x] `lg:overflow-visible` no scrollport — em CSS `overflow-x: auto` força `overflow-y: auto`; acima de lg a grade cabe na tela, então o estouro vertical (janela baixa) continua rolando no contêiner externo, sem scroll aninhado
+- [ ] Testar alinhamento cabeçalho × colunas e o piso de 120px no celular — validação manual
+
+**Commits sugeridos:**
+
+| #   | Mensagem                                                            | Escopo                        |
+| --- | ------------------------------------------------------------------- | ----------------------------- |
+| 1   | `feat(calendario): 3/7 days horizontal scroll with min-width cards` | `ProductionCalendarDays.tsx`  |
+| 2   | `feat(calendario): month view mobile horizontal scroll`             | `ProductionCalendarMonth.tsx` |

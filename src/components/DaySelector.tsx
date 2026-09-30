@@ -29,9 +29,10 @@ import { productionDateOf } from '@/lib/orders'
 import {
   SUNDAY_ONLY_MATCHER,
   WEEKEND_MATCHER,
+  formatFullDate,
   holidayDates,
+  isToday,
   shiftSelectableDay,
-  toDateKey,
 } from '@/lib/dates'
 
 export function DaySelector({
@@ -52,11 +53,7 @@ export function DaySelector({
     if (open) setCalendarMonth(day)
   }, [open, day])
 
-  const label = new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(day)
+  const label = formatFullDate(day)
 
   /** "Dia de agendamento": pula para a data de produção mais distante com
    *  pedido registrado. Não altera o mês dos KPIs (MonthSelector segue
@@ -76,26 +73,22 @@ export function DaySelector({
 
   return (
     <div className="flex items-center gap-1">
-      {(() => {
-        const isToday = toDateKey(day) === toDateKey(new Date())
-        return (
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <Button
-                  variant="outline"
-                  size="icon"
-                  disabled={isToday}
-                  onClick={() => setDay(new Date())}
-                />
-              }
-            >
-              <CalendarArrowDown className="h-4 w-4" />
-            </TooltipTrigger>
-            <TooltipContent>Voltar para hoje</TooltipContent>
-          </Tooltip>
-        )
-      })()}
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label="Voltar para hoje"
+              disabled={isToday(day)}
+              onClick={() => setDay(new Date())}
+            />
+          }
+        >
+          <CalendarArrowDown className="h-4 w-4" />
+        </TooltipTrigger>
+        <TooltipContent>Voltar para hoje</TooltipContent>
+      </Tooltip>
       <Button
         variant="outline"
         size="icon"
@@ -168,6 +161,7 @@ export function DaySelector({
               <Button
                 variant="outline"
                 size="icon"
+                aria-label="Dia de agendamento mais distante"
                 onClick={jumpToLatestScheduledDay}
               />
             }

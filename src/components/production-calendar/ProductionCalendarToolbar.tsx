@@ -18,7 +18,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { MonthSelector } from '@/components/MonthSelector'
-import { isSameMonth, isToday } from '@/lib/production-calendar'
+import { isSameMonth, isToday } from '@/lib/dates'
 import type { CalendarView } from '@/lib/production-calendar'
 import { cn } from 'cn'
 
