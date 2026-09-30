@@ -85,6 +85,7 @@ export function Header() {
                   <Button
                     variant="outline"
                     size="icon"
+                    aria-label="Novo pedido"
                     onClick={() => setNewOrderOpen(true)}
                   />
                 }

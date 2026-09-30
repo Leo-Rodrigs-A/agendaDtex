@@ -85,6 +85,7 @@ export function DaySelector({
                 <Button
                   variant="outline"
                   size="icon"
+                  aria-label="Voltar para hoje"
                   disabled={isToday}
                   onClick={() => setDay(new Date())}
                 />
@@ -168,6 +169,7 @@ export function DaySelector({
               <Button
                 variant="outline"
                 size="icon"
+                aria-label="Dia de agendamento mais distante"
                 onClick={jumpToLatestScheduledDay}
               />
             }
