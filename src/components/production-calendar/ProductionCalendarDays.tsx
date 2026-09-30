@@ -49,7 +49,6 @@ export function ProductionCalendarDays({
               // card crescer para preencher a sobra em telas largas — no
               // desktop os 3/7 dias continuam dividindo a largura toda.
               'flex flex-col flex-1 min-w-[300px] bg-card rounded-xl border border-border overflow-hidden',
-              today && 'bg-primary/10',
               weekend && 'bg-muted/30',
             )}
           >
@@ -57,8 +56,6 @@ export function ProductionCalendarDays({
             <div
               className={cn(
                 'flex shrink-0 items-center justify-between px-4 py-3 text-sm font-semibold',
-                today && 'bg-primary/10 text-primary',
-                today && 'border-primary',
                 weekend && 'bg-muted/30',
                 !today && !weekend && 'bg-card',
               )}
