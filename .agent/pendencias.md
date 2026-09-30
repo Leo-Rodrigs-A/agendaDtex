@@ -118,12 +118,14 @@ chore: remover dependências e alias não utilizados, pinar versões do TanStack
 
 ## 5. 🟡 Cobertura de teste muito desigual
 
-**Estado:** ~9.300 linhas em `src/` e **um** único arquivo de teste — `src/lib/production-calendar.test.ts` (34 casos, todos do Slice 15/16).
+**Estado:** `src/lib/dates.test.ts` cobre predicados, chaves de dia (inclusive
+o fuso do item 1), pulo de feriados/fds e todos os formatadores pt-BR — 28
+casos. `src/lib/orders.test.ts` ainda não existe.
 
 Sem nenhum teste:
 
 - [ ] `src/lib/orders.ts` — `sortOrders`, `businessDaysBreakdown`, `sumPieces`/`sumRevenue`/`averageTicket`, `countPieces` (com as quotas `DAILY_PIECE_QUOTA`/`DAILY_ORDER_QUOTA`)
-- [ ] `src/lib/dates.ts` — `shiftSelectableDay`, `shiftBusinessDay`, `businessDaysBack/Forward`, `nextBusinessDays`, `toDateKey`/`parseDateKey`/`dateKeyOf` (ótimo lugar para travar o item 1)
+- [x] `src/lib/dates.ts` — `shiftSelectableDay`, `shiftBusinessDay`, `businessDaysBack/Forward`, `nextBusinessDays`, `toDateKey`/`parseDateKey`/`dateKeyOf` (ótimo lugar para travar o item 1)
 - [ ] `src/hooks/use-production-calendar.ts` — regras do 16.5 (`setView` normalizando âncora, reset ao entrar na rota)
 
 Começo sugerido: `sortOrders` (lógica pura, muitos casos de borda) e `lib/dates.ts` (protegem o bug de fuso).
