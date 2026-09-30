@@ -119,14 +119,14 @@ chore: remover dependências e alias não utilizados, pinar versões do TanStack
 ## 5. 🟡 Cobertura de teste muito desigual
 
 **Estado:** `src/lib/dates.test.ts` cobre predicados, chaves de dia (inclusive
-o fuso do item 1), pulo de feriados/fds e todos os formatadores pt-BR — 28
-casos. `src/lib/orders.test.ts` ainda não existe.
+o fuso do item 1), pulo de feriados/fds e todos os formatadores pt-BR;
+`src/lib/orders.test.ts` cobre `sortOrders`, `businessDaysBreakdown`,
+`sumPieces`/`sumRevenue`/`averageTicket`, `countPieces`, `productionDateOf` e
+as 3 "views por data". Sobra o hook de rota.
 
-Sem nenhum teste:
-
-- [ ] `src/lib/orders.ts` — `sortOrders`, `businessDaysBreakdown`, `sumPieces`/`sumRevenue`/`averageTicket`, `countPieces` (com as quotas `DAILY_PIECE_QUOTA`/`DAILY_ORDER_QUOTA`)
+- [x] `src/lib/orders.ts` — `sortOrders`, `businessDaysBreakdown`, `sumPieces`/`sumRevenue`/`averageTicket`, `countPieces` (com as quotas `DAILY_PIECE_QUOTA`/`DAILY_ORDER_QUOTA`)
 - [x] `src/lib/dates.ts` — `shiftSelectableDay`, `shiftBusinessDay`, `businessDaysBack/Forward`, `nextBusinessDays`, `toDateKey`/`parseDateKey`/`dateKeyOf` (ótimo lugar para travar o item 1)
-- [ ] `src/hooks/use-production-calendar.ts` — regras do 16.5 (`setView` normalizando âncora, reset ao entrar na rota)
+- [ ] `src/hooks/use-production-calendar.ts` — regras do 16.5 (`setView` normalizando âncora, reset ao entrar na rota). **Adiado por decisão:** pede `jsdom`/testing-library (depende de `useLocation` + efeitos de render), fora do escopo "só funções puras" fechado em 29/09/2026; revisitar se `react-router` expor `createMemoryRouter` para testes de hook ficar viável.
 
 Começo sugerido: `sortOrders` (lógica pura, muitos casos de borda) e `lib/dates.ts` (protegem o bug de fuso).
 
@@ -176,14 +176,14 @@ fix(a11y): nome acessível nos botões só-ícone do Header e do DaySelector
 
 ## Resumo
 
-| #   | Pendência                                      | Gravidade | Risco real hoje                  |
-| --- | ---------------------------------------------- | --------- | -------------------------------- |
-| 1   | Chaves de dia via `toISOString` (fuso)         | 🔴        | só em fusos UTC+                 |
-| 2   | `UserProvider` shim com duas fontes de usuário | ✅        | nenhum (equivalentes)            |
-| 3   | Exports mortos                                 | ✅        | nenhum                           |
-| 4   | Deps/config não usadas + versões `latest`      | ✅        | deriva de dependência            |
-| 5   | Cobertura de teste quase inexistente           | 🟡        | regressões passam batidas        |
-| 6   | Formatadores de data espalhados                | ✅        | nenhum (re-render desnecessário) |
-| 7   | Botões só-ícone sem nome acessível             | 🟡        | leitor de tela                   |
+| #   | Pendência                                      | Gravidade | Risco real hoje                     |
+| --- | ---------------------------------------------- | --------- | ----------------------------------- |
+| 1   | Chaves de dia via `toISOString` (fuso)         | ✅        | só em fusos UTC+                    |
+| 2   | `UserProvider` shim com duas fontes de usuário | ✅        | nenhum (equivalentes)               |
+| 3   | Exports mortos                                 | ✅        | nenhum                              |
+| 4   | Deps/config não usadas + versões `latest`      | ✅        | deriva de dependência               |
+| 5   | Cobertura de teste quase inexistente           | ✅        | hook de rota adiado (precisa jsdom) |
+| 6   | Formatadores de data espalhados                | ✅        | nenhum (re-render desnecessário)    |
+| 7   | Botões só-ícone sem nome acessível             | ✅        | leitor de tela                      |
 
 Nada aqui é urgente. O item 1 é o único que eu trataria mesmo sem demanda — são três linhas e elimina uma classe inteira de bug.
