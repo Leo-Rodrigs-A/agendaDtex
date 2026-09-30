@@ -23,6 +23,7 @@ import {
   sumPieces,
   sumRevenue,
 } from '@/lib/orders'
+import { capitalize, formatDayMonth, formatMonthLong } from '@/lib/dates'
 
 export const Route = createFileRoute('/producao')({
   component: ProducaoPage,
@@ -47,15 +48,8 @@ function ProducaoPage() {
   const [scopeUserId, setScopeUserId] = useState<string | null>(null)
   const effectiveScope = scopeUserId ?? profile?.id ?? ''
 
-  const dayLabel = new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: 'short',
-  }).format(day)
-  const rawMonthLabel = new Intl.DateTimeFormat('pt-BR', {
-    month: 'long',
-  }).format(new Date(year, month, 1))
-  const monthLabel =
-    rawMonthLabel.charAt(0).toUpperCase() + rawMonthLabel.slice(1)
+  const dayLabel = formatDayMonth(day)
+  const monthLabel = capitalize(formatMonthLong(new Date(year, month, 1)))
 
   const baseOrders =
     view === 'day'

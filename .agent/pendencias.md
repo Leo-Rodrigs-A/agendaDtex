@@ -134,13 +134,22 @@ test: cobrir lib/orders e lib/dates
 
 ---
 
-## 6. 🟡 Formatação de data espalhada e dois jeitos de testar "é hoje"
+## 6. ✅ Resolvido — formatação de data espalhada e dois jeitos de testar "é hoje"
+
+> **Fechado em 29/09/2026.** `lib/dates.ts` ganhou `capitalize` + 7 formatadores
+> (`formatMonthShort`, `formatMonthShortTitle`, `formatMonthLong`,
+> `formatMonthLongYear`, `formatDayMonth`, `formatNumericDayMonth`,
+> `formatFullDate`) e os 13 `Intl.DateTimeFormat` criados por render dos 8
+> arquivos foram trocados por eles. Os predicados `isToday`/`isSameMonth`/
+> `isWeekend` migraram de `lib/production-calendar.ts` para `lib/dates.ts`
+> (matando o `isWeekend` duplicado) e o `DaySelector` agora usa `isToday(day)`
+> no lugar do IIFE com `toDateKey(...) === toDateKey(...)`.
 
 **19 `new Intl.DateTimeFormat(...)` em 12 arquivos**, vários criados a cada render dentro do corpo do componente (`MonthSelector.tsx`, `routes/index.tsx` ×3, `routes/feriados.tsx` ×2, `routes/producao.tsx` ×2). Já existe precedente de helper central no projeto: `formatBRL` em `lib/orders.ts:224`.
 
-- [ ] Extrair os formatadores repetidos para um módulo único (mesmo padrão de `formatBRL`), reaproveitando os que já são constantes de módulo (`ProductionCalendarDays.tsx:6` faz isso certo com `DAY_FORMATTER`)
-- [ ] Unificar o "é hoje": hoje existem `isToday()` (`lib/production-calendar.ts:136`) **e** `toDateKey(day) === toDateKey(new Date())` (`DaySelector.tsx:80`) — deixar um único caminho
-- [ ] `MonthSelector.tsx` recria o `Intl.DateTimeFormat` a cada render (e `use-production-calendar.ts` cria 3 dentro de `useMemo`)
+- [x] Extrair os formatadores repetidos para um módulo único (mesmo padrão de `formatBRL`), reaproveitando os que já são constantes de módulo (`ProductionCalendarDays.tsx:6` faz isso certo com `DAY_FORMATTER`)
+- [x] Unificar o "é hoje": hoje existem `isToday()` (`lib/production-calendar.ts:136`) **e** `toDateKey(day) === toDateKey(new Date())` (`DaySelector.tsx:80`) — deixar um único caminho
+- [x] `MonthSelector.tsx` recria o `Intl.DateTimeFormat` a cada render (e `use-production-calendar.ts` cria 3 dentro de `useMemo`)
 
 ```text
 refactor: centralizar formatadores de data e unificar a checagem de "hoje"
@@ -172,7 +181,7 @@ fix(a11y): nome acessível nos botões só-ícone do Header e do DaySelector
 | 3   | Exports mortos                                 | ✅        | nenhum                           |
 | 4   | Deps/config não usadas + versões `latest`      | ✅        | deriva de dependência            |
 | 5   | Cobertura de teste quase inexistente           | 🟡        | regressões passam batidas        |
-| 6   | Formatadores de data espalhados                | 🟡        | nenhum (re-render desnecessário) |
+| 6   | Formatadores de data espalhados                | ✅        | nenhum (re-render desnecessário) |
 | 7   | Botões só-ícone sem nome acessível             | 🟡        | leitor de tela                   |
 
 Nada aqui é urgente. O item 1 é o único que eu trataria mesmo sem demanda — são três linhas e elimina uma classe inteira de bug.

@@ -4,13 +4,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import {
-  isToday,
-  isSameMonth,
-  isWeekend,
-  getMonthGridDays,
-  getOrdersForDay,
-} from '@/lib/production-calendar'
+import { isToday, isSameMonth, isWeekend } from '@/lib/dates'
+import { getMonthGridDays, getOrdersForDay } from '@/lib/production-calendar'
 import type { Order } from '@/types'
 
 const DAYS_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']

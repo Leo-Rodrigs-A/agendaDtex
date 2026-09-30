@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from 'cn'
-import { toDateKey } from '@/lib/dates'
-import { getOrdersForDay, isToday, isWeekend } from '@/lib/production-calendar'
+import { toDateKey, isToday, isWeekend } from '@/lib/dates'
+import { getOrdersForDay } from '@/lib/production-calendar'
 import type { Order } from '@/types'
 import { ProductionCalendarOrder } from './ProductionCalendarOrder'
 

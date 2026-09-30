@@ -1,6 +1,6 @@
 import type { Holiday, Order } from '@/types'
 import { productionDateOf } from './orders'
-import { toDateKey } from './dates'
+import { isSameMonth, toDateKey } from './dates'
 
 /** Visões do calendário de produção */
 export type CalendarView = 'month' | '7-days' | '3-days'
@@ -124,28 +124,4 @@ export function normalizeAnchorForView(
 export function truncateOrderName(name: string, max = 12): string {
   if (name.length <= max) return name
   return `${name.slice(0, max)}…`
-}
-
-/** Verifica se uma data é hoje */
-export function isToday(date: Date): boolean {
-  const today = new Date()
-  return (
-    date.getDate() === today.getDate() &&
-    date.getMonth() === today.getMonth() &&
-    date.getFullYear() === today.getFullYear()
-  )
-}
-
-/** Verifica se uma data é do mês do anchor (para células de outros meses no grid) */
-export function isSameMonth(date: Date, anchorDate: Date): boolean {
-  return (
-    date.getMonth() === anchorDate.getMonth() &&
-    date.getFullYear() === anchorDate.getFullYear()
-  )
-}
-
-/** Verifica se é fim de semana (sábado ou domingo) */
-export function isWeekend(date: Date): boolean {
-  const dow = date.getDay()
-  return dow === 0 || dow === 6
 }

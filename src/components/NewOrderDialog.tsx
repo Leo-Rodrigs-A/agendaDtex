@@ -22,6 +22,7 @@ import { useAuth } from '@/components/AuthProvider'
 import {
   WEEKEND_MATCHER,
   businessDaysBack,
+  formatNumericDayMonth,
   holidayDates,
   nextBusinessDays,
   parseDateKey,
@@ -318,10 +319,9 @@ export function NewOrderDialog({
             </div>
             <p className="text-xs text-muted-foreground">
               A produção da fábrica será dia{' '}
-              {new Intl.DateTimeFormat('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-              }).format(businessDaysBack(deliveryDate, 2, holidays))}
+              {formatNumericDayMonth(
+                businessDaysBack(deliveryDate, 2, holidays),
+              )}
               .
             </p>
           </div>

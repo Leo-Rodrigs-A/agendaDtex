@@ -9,9 +9,6 @@ import {
   navigateDays,
   normalizeAnchorForView,
   truncateOrderName,
-  isToday,
-  isSameMonth,
-  isWeekend,
 } from './production-calendar'
 import type { Order, Holiday } from '@/types'
 
@@ -302,52 +299,6 @@ describe('production-calendar', () => {
 
     it('trunca e adiciona ellipsis se > 12', () => {
       expect(truncateOrderName('1234567890123')).toBe('123456789012…')
-    })
-  })
-
-  describe('isToday', () => {
-    it('retorna true para hoje', () => {
-      expect(isToday(new Date())).toBe(true)
-    })
-
-    it('retorna false para ontem', () => {
-      const yesterday = new Date()
-      yesterday.setDate(yesterday.getDate() - 1)
-      expect(isToday(yesterday)).toBe(false)
-    })
-  })
-
-  describe('isSameMonth', () => {
-    it('true para mesmo mês/ano', () => {
-      expect(
-        isSameMonth(localDate(2026, 10, 15), localDate(2026, 10, 20)),
-      ).toBe(true)
-    })
-
-    it('false para mês diferente', () => {
-      expect(
-        isSameMonth(localDate(2026, 10, 15), localDate(2026, 11, 15)),
-      ).toBe(false)
-    })
-
-    it('false para ano diferente', () => {
-      expect(
-        isSameMonth(localDate(2026, 10, 15), localDate(2027, 10, 15)),
-      ).toBe(false)
-    })
-  })
-
-  describe('isWeekend', () => {
-    it('true para sábado', () => {
-      expect(isWeekend(localDate(2026, 10, 10))).toBe(true) // sábado
-    })
-
-    it('true para domingo', () => {
-      expect(isWeekend(localDate(2026, 10, 11))).toBe(true) // domingo
-    })
-
-    it('false para dia útil', () => {
-      expect(isWeekend(localDate(2026, 10, 12))).toBe(false) // segunda
     })
   })
 })
