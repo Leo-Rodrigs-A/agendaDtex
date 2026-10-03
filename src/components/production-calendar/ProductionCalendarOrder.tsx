@@ -6,7 +6,6 @@ import {
 } from '@/components/ui/tooltip'
 import { FileText } from 'lucide-react'
 import { OrderDoneCheckbox } from '@/components/OrderDoneCheckbox'
-import { truncateOrderName } from '@/lib/production-calendar'
 import type { Order } from '@/types'
 
 type ProductionCalendarOrderProps = {
@@ -21,7 +20,7 @@ export function ProductionCalendarOrder({
   onFollowClick,
 }: ProductionCalendarOrderProps) {
   const hasImage = Boolean(order.imgurl?.trim())
-  const shortName = truncateOrderName(order.order_name)
+  const orderName = order.order_name
 
   return (
     // A altura anima num wrapper sem padding, para colapsar até 0 no exit;
@@ -43,7 +42,7 @@ export function ProductionCalendarOrder({
             que aqui invadiria o ícone e o nome do pedido. */}
         <OrderDoneCheckbox order={order} className="after:hidden" />
         {hasImage && <FileText className="h-3.5 w-3.5 text-primary" />}
-        <span className="truncate flex-1">{shortName}</span>
+        <span className="truncate flex-1">{orderName}</span>
         <Tooltip>
           <TooltipTrigger
             render={

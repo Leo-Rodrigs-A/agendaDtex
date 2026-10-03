@@ -119,9 +119,3 @@ export function normalizeAnchorForView(
   }
   return new Date(anchorDate.getFullYear(), anchorDate.getMonth(), 1)
 }
-
-/** Abrevia nome do pedido para 12 chars + ellipsis */
-export function truncateOrderName(name: string, max = 12): string {
-  if (name.length <= max) return name
-  return `${name.slice(0, max)}…`
-}

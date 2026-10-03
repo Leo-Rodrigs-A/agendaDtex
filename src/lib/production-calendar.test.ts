@@ -8,7 +8,6 @@ import {
   navigateWeek,
   navigateDays,
   normalizeAnchorForView,
-  truncateOrderName,
 } from './production-calendar'
 import type { Order, Holiday } from '@/types'
 
@@ -289,16 +288,6 @@ describe('production-calendar', () => {
       const anchor = localDate(2026, 12, 20)
       normalizeAnchorForView(anchor, '7-days', today)
       expect(anchor.getDate()).toBe(20)
-    })
-  })
-
-  describe('truncateOrderName', () => {
-    it('não trunca se <= 12', () => {
-      expect(truncateOrderName('123456789012')).toBe('123456789012')
-    })
-
-    it('trunca e adiciona ellipsis se > 12', () => {
-      expect(truncateOrderName('1234567890123')).toBe('123456789012…')
     })
   })
 })
