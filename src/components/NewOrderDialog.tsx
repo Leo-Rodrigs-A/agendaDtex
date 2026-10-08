@@ -152,6 +152,7 @@ export function NewOrderDialog({
     setImageUrl('')
     setDeliveryDate(defaultDate())
     setError(null)
+    setCalendarOpen(false)
   }
 
   const handleSubmit = async (event: FormEvent) => {
@@ -312,9 +313,14 @@ export function NewOrderDialog({
                 overflow), acima do input no mobile para não cortar na tela. */}
             <div
               className="relative"
-              onFocus={() => setCalendarOpen(true)}
+              onFocus={(e) => {
+                const input =
+                  e.currentTarget.querySelector<HTMLInputElement>('input')
+                if (e.target === input) setCalendarOpen(true)
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Escape') {
+                  e.preventDefault()
                   setCalendarOpen(false)
                   return
                 }
