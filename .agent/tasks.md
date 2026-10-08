@@ -361,7 +361,7 @@
 
 ---
 
-## Slice 21: Dias úteis na home + UX do modal de pedido (PLANEJADA — 08/10/2026)
+## Slice 21: Dias úteis na home + UX do modal de pedido ✅
 
 > **Regra de execução (pedido do usuário):** ao concluir cada item, sugerir a mensagem de commit e **aguardar a confirmação do usuário de que o commit foi feito** antes de avançar para o próximo item. Ao final da slice, atualizar a documentação `.agent`.
 
@@ -384,7 +384,7 @@
 
 ### 21.1 `getBusinessDaysUntil` em `src/lib/dates.ts`
 
-- [ ] Novo type no próprio `dates.ts` (sem arquivo novo — decisão do usuário):
+- [x] Novo type no próprio `dates.ts` (sem arquivo novo — decisão do usuário):
 
 ```ts
 export type BusinessDaysResult =
@@ -399,10 +399,10 @@ export function getBusinessDaysUntil(
 ): BusinessDaysResult
 ```
 
-- [ ] Normalizar `date` e `today` para meia-noite local antes de comparar (o `day` do `FilterProvider` carrega a hora do boot — `src/components/FilterProvider.tsx:16`); comparar por timestamp (`getTime()`), não por string.
-- [ ] Se `date < today` → `{ type: 'past' }`; se igual → `{ type: 'today' }`; senão loop dia a dia de `today` até `date` somando dias úteis (`isWeekend` + `Set` de `holidayKeys` via `toDateKey`).
-- [ ] Manter a mesma convenção do módulo: `holidays: Array<Holiday>` (mesma assinatura de `shiftBusinessDay`/`businessDaysBack`).
-- [ ] **Testes** em `src/lib/dates.test.ts` — `describe('getBusinessDaysUntil')`, com `today` injetado (~10 casos): data passada → `past`; hoje → `today`; amanhã útil → `1`; dois dias úteis à frente → `2`; atravessando fds (sex→seg); atravessando feriado; data-alvo em fds (conta só até o último útil); data-alvo em feriado; virada de mês; virada de ano.
+- [x] Normalizar `date` e `today` para meia-noite local antes de comparar (o `day` do `FilterProvider` carrega a hora do boot — `src/components/FilterProvider.tsx:16`); comparar por timestamp (`getTime()`), não por string.
+- [x] Se `date < today` → `{ type: 'past' }`; se igual → `{ type: 'today' }`; senão loop dia a dia de `today` até `date` somando dias úteis (`isWeekend` + `Set` de `holidayKeys` via `toDateKey`).
+- [x] Manter a mesma convenção do módulo: `holidays: Array<Holiday>` (mesma assinatura de `shiftBusinessDay`/`businessDaysBack`).
+- [x] **Testes** em `src/lib/dates.test.ts` — `describe('getBusinessDaysUntil')`, com `today` injetado (~10 casos): data passada → `past`; hoje → `today`; amanhã útil → `1`; dois dias úteis à frente → `2`; atravessando fds (sex→seg); atravessando feriado; data-alvo em fds (conta só até o último útil); data-alvo em feriado; virada de mês; virada de ano.
 
 ```text
 feat(dates): getBusinessDaysUntil com estados past/today/future
@@ -410,9 +410,9 @@ feat(dates): getBusinessDaysUntil com estados past/today/future
 
 ### 21.2 Mensagem no `/home` — `src/routes/index.tsx:186-193`
 
-- [ ] Substituir o parágrafo `Visão diária {dayLabel} ({deliveryDayLabel}).` pelo resultado de `getBusinessDaysUntil(day, holidays)`, mantendo as classes atuais (`text-muted-foreground`, data/`hoje` em `font-medium text-primary`) e o hint de entrega.
-- [ ] Só no branch `activeTab === 'day'` — o branch mês (`Acompanhamento mensal …`) não muda.
-- [ ] Copy exata (a interface monta o texto; `lib` só devolve o resultado estruturado):
+- [x] Substituir o parágrafo `Visão diária {dayLabel} ({deliveryDayLabel}).` pelo resultado de `getBusinessDaysUntil(day, holidays)`, mantendo as classes atuais (`text-muted-foreground`, data/`hoje` em `font-medium text-primary`) e o hint de entrega.
+- [x] Só no branch `activeTab === 'day'` — o branch mês (`Acompanhamento mensal …`) não muda.
+- [x] Copy exata (a interface monta o texto; `lib` só devolve o resultado estruturado):
 
 | Caso     | Texto                                                                    |
 | -------- | ------------------------------------------------------------------------ |
@@ -427,10 +427,10 @@ feat(home): distância em dias úteis na visão diária
 
 ### 21.3 Bloqueio de data passada na criação
 
-- [ ] `src/components/NewOrderDialog.tsx:314` — no `disabled` do `Calendar`, adicionar o matcher `{ before: <hoje em meia-noite> }` **apenas quando `!isEdit`** (em edição o picker continua livre).
-- [ ] `src/components/DateMaskInput.tsx` — nova prop opcional `disallowPast?: boolean` (padrão `false` → o `DaySelector` da home segue aceitando data passada para ver histórico). Em `commit()`, após validar a data real e **antes** da checagem de fds/feriado: se `disallowPast` e `parsed < hoje` → `toast.error('A data de entrega não pode estar no passado.')` + `setText(toMask(date))` e retorna.
-- [ ] `NewOrderDialog.tsx` `handleSubmit` (~linha 111) — guarda de defesa, **só `!isEdit`**: `toDateKey(deliveryDate) < toDateKey(new Date())` → `setError('A data de entrega não pode estar no passado.')` e não submete.
-- [ ] Sem mudança no banco (decisão 08/10/2026 — ver "Fora de escopo").
+- [x] `src/components/NewOrderDialog.tsx:314` — no `disabled` do `Calendar`, adicionar o matcher `{ before: <hoje em meia-noite> }` **apenas quando `!isEdit`** (em edição o picker continua livre).
+- [x] `src/components/DateMaskInput.tsx` — nova prop opcional `disallowPast?: boolean` (padrão `false` → o `DaySelector` da home segue aceitando data passada para ver histórico). Em `commit()`, após validar a data real e **antes** da checagem de fds/feriado: se `disallowPast` e `parsed < hoje` → `toast.error('A data de entrega não pode estar no passado.')` + `setText(toMask(date))` e retorna.
+- [x] `NewOrderDialog.tsx` `handleSubmit` (~linha 111) — guarda de defesa, **só `!isEdit`**: `toDateKey(deliveryDate) < toDateKey(new Date())` → `setError('A data de entrega não pode estar no passado.')` e não submete.
+- [x] Sem mudança no banco (decisão 08/10/2026 — ver "Fora de escopo").
 
 ```text
 feat(pedido): bloquear data no passado na criação
@@ -440,8 +440,8 @@ feat(pedido): bloquear data no passado na criação
 
 **Arquivo:** `src/components/NewOrderDialog.tsx` (hoje só `holidays, refreshOrders` no `useData()` — linha 61; adicionar `orders`).
 
-- [ ] `src/lib/orders.ts`: **exportar** o `ordersForDay` privado (linha 29) renomeando para `ordersDeliveredOnDay` — fecha a tríade de nomes já documentada no comentário de convenção (`ordersForProductionDay` = produção, `ordersCreatedOnDay` = created_at, `ordersDeliveredOnDay` = entrega). Atualizar o uso interno em `businessDaysBreakdown` (linha 113) e o comentário.
-- [ ] Bloco `<div className="space-y-1">` com as duas linhas em `text-xs text-muted-foreground`, imediatamente **depois** do `<p>` "A produção da fábrica será dia {dd/mm}.":
+- [x] `src/lib/orders.ts`: **exportar** o `ordersForDay` privado (linha 29) renomeando para `ordersDeliveredOnDay` — fecha a tríade de nomes já documentada no comentário de convenção (`ordersForProductionDay` = produção, `ordersCreatedOnDay` = created_at, `ordersDeliveredOnDay` = entrega). Atualizar o uso interno em `businessDaysBreakdown` (linha 113) e o comentário.
+- [x] Bloco `<div className="space-y-1">` com as duas linhas em `text-xs text-muted-foreground`, imediatamente **depois** do `<p>` "A produção da fábrica será dia {dd/mm}.":
 
 | Linha | Conteúdo                                                                                                                 |
 | ----- | ------------------------------------------------------------------------------------------------------------------------ |
@@ -455,7 +455,7 @@ feat(pedido): bloquear data no passado na criação
 | futuro 1 | `Faltam 1 dia útil até a entrega.`                |
 | futuro n | `Faltam {n} dias úteis até a entrega.`            |
 
-- [ ] **Testes** em `src/lib/orders.test.ts`: `describe('ordersDeliveredOnDay')` — filtra por `delivery_date` (ignora hora/ISO), devolve lista vazia quando não há pedidos no dia.
+- [x] **Testes** em `src/lib/orders.test.ts`: `describe('ordersDeliveredOnDay')` — filtra por `delivery_date` (ignora hora/ISO), devolve lista vazia quando não há pedidos no dia.
 
 ```text
 feat(pedido): resumo de pedidos/peças e dias úteis no modal
@@ -465,10 +465,10 @@ feat(pedido): resumo de pedidos/peças e dias úteis no modal
 
 **Arquivo:** `src/components/NewOrderDialog.tsx:262-276` (o wrapper `div.relative` já trata `Escape`).
 
-- [ ] Em `onKeyDown`: `e.key === 'Tab'` → `e.preventDefault()`, `setCalendarOpen(false)` e mover o foco explicitamente.
-- [ ] **Por que `preventDefault`:** o `DayPicker` sempre deixa um dia com `tabIndex=0` (`isFocusTarget` em `react-day-picker/dist/esm/useFocus.js`), então o Tab nativo entraria no grid; se o grid desmontar depois, o foco cai no `body` e o próximo Tab recomeça do topo do dialog.
-- [ ] Helper local `focusSibling(input, +1 | -1)`: pega `input.closest('form')`, lista os focáveis (`input, button, select, textarea, a[href]` habilitados), encontra o índice do input de data e foca o vizinho. Shift+Tab fecha e volta para o campo "Imagem do pedido".
-- [ ] O calendário continua **abrindo** ao entrar no campo pelo Tab (`onFocus` do wrapper não muda) — só o segundo Tab recolhe.
+- [x] Em `onKeyDown`: `e.key === 'Tab'` → `e.preventDefault()`, `setCalendarOpen(false)` e mover o foco explicitamente.
+- [x] **Por que `preventDefault`:** o `DayPicker` sempre deixa um dia com `tabIndex=0` (`isFocusTarget` em `react-day-picker/dist/esm/useFocus.js`), então o Tab nativo entraria no grid; se o grid desmontar depois, o foco cai no `body` e o próximo Tab recomeça do topo do dialog.
+- [x] Helper local `focusSibling(input, +1 | -1)`: pega `input.closest('form')`, lista os focáveis (`input, button, select, textarea, a[href]` habilitados), encontra o índice do input de data e foca o vizinho. Shift+Tab fecha e volta para o campo "Imagem do pedido".
+- [x] O calendário continua **abrindo** ao entrar no campo pelo Tab (`onFocus` do wrapper não muda) — só o segundo Tab recolhe.
 
 ```text
 feat(pedido): fechar calendário no Tab com foco explícito
@@ -476,10 +476,10 @@ feat(pedido): fechar calendário no Tab com foco explícito
 
 ### 21.6 Documentação e housekeeping (ao final da slice)
 
-- [ ] Fechar os itens abertos aceitos em 08/10/2026 (feito nesta sessão): Slice 16.7 validação visual, 17.2, 19.1 e 20.2 — marcados ✅.
-- [ ] `src/lib/dates.test.ts` / `orders.test.ts` novos → total de testes sobe (baseline: 85).
-- [ ] Commitar o `package.json` solto (script `test:watch`).
-- [ ] Ao terminar os itens 21.1–21.5: marcar esta slice ✅ e atualizar `project-context.md` + `architecture.md` com as funcionalidades novas.
+- [x] Fechar os itens abertos aceitos em 08/10/2026 (feito nesta sessão): Slice 16.7 validação visual, 17.2, 19.1 e 20.2 — marcados ✅.
+- [x] `src/lib/dates.test.ts` / `orders.test.ts` novos → total de testes sobe (85 → **100**).
+- [x] Commitar o `package.json` solto (script `test:watch`).
+- [x] Ao terminar os itens 21.1–21.5: marcar esta slice ✅ e atualizar `project-context.md` + `architecture.md` com as funcionalidades novas.
 
 **Commits sugeridos (6):**
 
@@ -490,7 +490,9 @@ feat(pedido): fechar calendário no Tab com foco explícito
 | 3   | `feat(pedido): bloquear data no passado na criação`               | `src/components/NewOrderDialog.tsx`, `DateMaskInput.tsx`    |
 | 4   | `feat(pedido): resumo de pedidos/peças e dias úteis no modal`     | `NewOrderDialog.tsx`, `src/lib/orders.ts`, `orders.test.ts` |
 | 5   | `feat(pedido): fechar calendário no Tab com foco explícito`       | `src/components/NewOrderDialog.tsx`                         |
-| 6   | `docs(agenda): fechar Slice 21 e registrar decisões`              | `.agent/*`, `package.json`                                  |
+| 6   | `docs(agenda): fechar Slice 21 e registrar decisões`              | `.agent/*`                                                  |
+
+**Status de execução:** commits 1–5 efetuados em 08/10/2026 (cada commit confirmado pelo usuário antes de avançar); o commit 6 (este registro) inclui o fechamento da slice e das docs. O `package.json` (`test:watch`) já havia sido commitado no `plan` `11e44ce`.
 
 **Verificação após cada item:** `npx tsc --noEmit` · `pnpm lint` · `pnpm test` · `pnpm check`.
 

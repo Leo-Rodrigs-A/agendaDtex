@@ -22,11 +22,12 @@ Sistema interno para registrar pedidos, atribuir a vendedores autenticados, calc
 - **Usuários (admin):** convite por e-mail com escolha de role (vendedor/designer) e gerenciador (trocar role, ativar/desativar).
 - **Hotkeys:** Ctrl+K paleta (busca pedidos + ações), N/S/H/P/F.
 - **Seletores:** calendário abre no mês da data selecionada, fds/feriados bloqueados; botão "hoje" (CalendarArrowDown) e "dia de agendamento mais distante" (CalendarClock).
+- **Dias úteis na visão diária (Slice 21):** a linha "Visão diária …" do `/home` mostra a distância em dias úteis até o dia selecionado (`getBusinessDaysUntil`: `past`/`today`/`future`, janela `(hoje, alvo]`, exclui fds/feriados).
+- **Modal de pedido (Slice 21):** ao criar, datas no passado ficam bloqueadas (calendário + input mascarado + guarda no submit — só front, edição livre); abaixo do hint de produção, resumo `{n} pedidos · {m} peças` (via `ordersDeliveredOnDay`, base `delivery_date`) + `Faltam {n} dias úteis até a entrega.`; `Tab` recolhe o calendário e move o foco ao campo vizinho do form.
 
 **Planejadas/Próximas:**
 
-- **Slice 21** (backlog detalhado em `tasks.md`): contagem de dias úteis até o dia selecionado exibida no `/home`, bloqueio de data passada **na criação** de pedido (só front), resumo de "pedidos · peças" + dias úteis no modal de pedido e recolhimento do calendário ao pressionar Tab.
-- Regra de prazo validada no banco (RPC `create_order` — dívida consciente do MVP; hoje é client-side e a constraint `orders_delivery_not_past` foi removida).
+- Regra de prazo validada no banco (RPC `create_order` — dívida consciente do MVP; hoje é client-side: a constraint `orders_delivery_not_past` foi removida e `createOrder` faz insert direto).
 - Offline-first real (PWA hoje é só instalável; escritas exigem conexão).
 
 ## Stack Tecnológica
