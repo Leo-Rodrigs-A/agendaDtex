@@ -23,11 +23,13 @@ import {
   WEEKEND_MATCHER,
   businessDaysBack,
   formatNumericDayMonth,
+  getBusinessDaysUntil,
   holidayDates,
   nextBusinessDays,
   parseDateKey,
   toDateKey,
 } from '@/lib/dates'
+import { ordersDeliveredOnDay, sumPieces } from '@/lib/orders'
 import type { Order } from '@/types'
 
 // Texto colado pode trazer quebras de linha/espaços extras — limpa antes de enviar
@@ -40,6 +42,23 @@ function cleanText(value: string): string {
 function toSafeNumber(value: string): number {
   const n = Number(value)
   return Number.isFinite(n) ? n : 0
+}
+
+// Fecha o calendário no Tab devolvendo o foco ao campo vizinho do form.
+// O DayPicker mantém sempre um dia com tabIndex=0 (isFocusTarget): sem
+// preventDefault o Tab entraria no grid e, ao desmontar, o foco cairia no
+// body — o próximo Tab recomeçaria do topo do dialog.
+function focusSibling(current: HTMLElement, direction: 1 | -1): void {
+  const form = current.closest('form')
+  if (!form) return
+  const focusables = Array.from(
+    form.querySelectorAll<HTMLElement>(
+      'input, button, select, textarea, a[href]',
+    ),
+  ).filter((el) => !el.hasAttribute('disabled'))
+  const index = focusables.indexOf(current)
+  const next = focusables.at(index + direction)
+  if (next) next.focus()
 }
 
 type NewOrderDialogProps = {
@@ -58,12 +77,20 @@ export function NewOrderDialog({
   onOpenChange,
   order = null,
 }: NewOrderDialogProps) {
-  const { holidays, refreshOrders } = useData()
+  const { orders, holidays, refreshOrders } = useData()
   const { profile } = useAuth()
   const isEdit = order != null
 
   // Default: próximo dia útil a partir de hoje
   const defaultDate = () => nextBusinessDays(new Date(), 1)[0]
+
+  // Hoje em meia-noite local — bloqueia datas passadas só na criação
+  // (em edição, pedidos antigos continuam com data no passado)
+  const todayStart = (() => {
+    const t = new Date()
+    t.setHours(0, 0, 0, 0)
+    return t
+  })()
 
   const [orderName, setOrderName] = useState('')
   const [shirts, setShirts] = useState('')
@@ -78,6 +105,25 @@ export function NewOrderDialog({
   // No mobile o calendário abre ACIMA do input para não cortar na borda
   // inferior da tela; no desktop ele abre abaixo (âncora CSS, sem medição).
   const isMobile = useIsMobile()
+
+  // Resumo abaixo do hint de produção: entregas previstas para o dia
+  // selecionado + distância em dias úteis até a entrega
+  const dayDeliveries = ordersDeliveredOnDay(orders, deliveryDate)
+  const deliveriesCount = dayDeliveries.length
+  const deliveriesPieces = sumPieces(dayDeliveries)
+  const deliveriesSummary =
+    deliveriesCount === 0
+      ? 'Nenhum pedido para este dia.'
+      : `${deliveriesCount} ${deliveriesCount === 1 ? 'pedido' : 'pedidos'} · ${deliveriesPieces} ${deliveriesPieces === 1 ? 'peça' : 'peças'}`
+  const daysUntil = getBusinessDaysUntil(deliveryDate, holidays)
+  const deliveryHint =
+    daysUntil.type === 'past'
+      ? 'Esta data já passou.'
+      : daysUntil.type === 'today'
+        ? 'Esta data é hoje.'
+        : daysUntil.businessDays === 1
+          ? 'Faltam 1 dia útil até a entrega.'
+          : `Faltam ${daysUntil.businessDays} dias úteis até a entrega.`
 
   // Abre o calendário já no mês da data selecionada (única ou do pedido)
   useEffect(() => setCalendarMonth(deliveryDate), [deliveryDate])
@@ -123,6 +169,11 @@ export function NewOrderDialog({
     const cleanImageUrl = imageUrl.replace(/\s/g, '')
     if (cleanImageUrl && !/^https?:\/\//i.test(cleanImageUrl)) {
       setError('A imagem precisa ser uma URL começando com http:// ou https://')
+      return
+    }
+    // Defesa contra data no passado (só criação; edição não bloqueia)
+    if (!isEdit && toDateKey(deliveryDate) < toDateKey(new Date())) {
+      setError('A data de entrega não pode estar no passado.')
       return
     }
 
@@ -263,12 +314,25 @@ export function NewOrderDialog({
               className="relative"
               onFocus={() => setCalendarOpen(true)}
               onKeyDown={(e) => {
-                if (e.key === 'Escape') setCalendarOpen(false)
+                if (e.key === 'Escape') {
+                  setCalendarOpen(false)
+                  return
+                }
+                // Tab com o calendário aberto: fecha e segue para o campo
+                // vizinho do form (Entrar digitando continua abrindo no foco).
+                if (e.key === 'Tab' && calendarOpen) {
+                  e.preventDefault()
+                  setCalendarOpen(false)
+                  const input =
+                    e.currentTarget.querySelector<HTMLInputElement>('input')
+                  if (input) focusSibling(input, e.shiftKey ? -1 : 1)
+                }
               }}
             >
               <DateMaskInput
                 date={deliveryDate}
                 holidays={holidays}
+                disallowPast={!isEdit}
                 onSelect={(date) => {
                   setDeliveryDate(date)
                   setCalendarMonth(date)
@@ -310,8 +374,17 @@ export function NewOrderDialog({
                           setCalendarOpen(false)
                         }
                       }}
-                      // Regra de agendamento: fds e feriados bloqueados aqui
-                      disabled={[WEEKEND_MATCHER, ...holidayDates(holidays)]}
+                      // Regra de agendamento: fds e feriados bloqueados aqui;
+                      // na criação, também datas passadas (edição libera)
+                      disabled={
+                        isEdit
+                          ? [WEEKEND_MATCHER, ...holidayDates(holidays)]
+                          : [
+                              WEEKEND_MATCHER,
+                              { before: todayStart },
+                              ...holidayDates(holidays),
+                            ]
+                      }
                     />
                   </div>
                 </>
@@ -324,6 +397,12 @@ export function NewOrderDialog({
               )}
               .
             </p>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">
+                {deliveriesSummary}
+              </p>
+              <p className="text-xs text-muted-foreground">{deliveryHint}</p>
+            </div>
           </div>
           {error && (
             <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">

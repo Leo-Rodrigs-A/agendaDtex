@@ -22,11 +22,14 @@ export function countPieces(order: Order): number {
   return num(order.shirt_count) + num(order.others_items_count)
 }
 
-/** Pedidos cuja entrega cai no dia informado. Só usado internamente pelo
- *  `businessDaysBreakdown` — a convenção de nomes das "views por data":
- *  `ordersForProductionDay` = produção, `ordersCreatedOnDay` = created_at,
+/** Pedidos cuja entrega cai no dia informado. Convenção de nomes das
+ *  "views por data": `ordersForProductionDay` = produção,
+ *  `ordersCreatedOnDay` = created_at, `ordersDeliveredOnDay` = entrega,
  *  `ordersCreatedInMonth` = encomendados no mês. */
-function ordersForDay(orders: Array<Order>, day: Date): Array<Order> {
+export function ordersDeliveredOnDay(
+  orders: Array<Order>,
+  day: Date,
+): Array<Order> {
   const key = toDateKey(day)
   return orders.filter((o) => dateKeyOf(o.delivery_date) === key)
 }
@@ -110,7 +113,7 @@ export function businessDaysBreakdown(
   count: number,
 ): Array<DayBreakdown> {
   return nextBusinessDays(from, count).map((date) => {
-    const dayOrders = ordersForDay(orders, date)
+    const dayOrders = ordersDeliveredOnDay(orders, date)
     return {
       date,
       label: breakdownFormatter.format(date),

@@ -116,7 +116,7 @@ chore: remover dependências e alias não utilizados, pinar versões do TanStack
 
 ---
 
-## 5. 🟡 Cobertura de teste muito desigual
+## 5. ✅ Cobertura de teste muito desigual
 
 **Estado:** `src/lib/dates.test.ts` cobre predicados, chaves de dia (inclusive
 o fuso do item 1), pulo de feriados/fds e todos os formatadores pt-BR;
@@ -126,7 +126,7 @@ as 3 "views por data". Sobra o hook de rota.
 
 - [x] `src/lib/orders.ts` — `sortOrders`, `businessDaysBreakdown`, `sumPieces`/`sumRevenue`/`averageTicket`, `countPieces` (com as quotas `DAILY_PIECE_QUOTA`/`DAILY_ORDER_QUOTA`)
 - [x] `src/lib/dates.ts` — `shiftSelectableDay`, `shiftBusinessDay`, `businessDaysBack/Forward`, `nextBusinessDays`, `toDateKey`/`parseDateKey`/`dateKeyOf` (ótimo lugar para travar o item 1)
-- [ ] `src/hooks/use-production-calendar.ts` — regras do 16.5 (`setView` normalizando âncora, reset ao entrar na rota). **Adiado por decisão:** pede `jsdom`/testing-library (depende de `useLocation` + efeitos de render), fora do escopo "só funções puras" fechado em 29/09/2026; revisitar se `react-router` expor `createMemoryRouter` para testes de hook ficar viável.
+- [x] `src/hooks/use-production-calendar.ts` — regras do 16.5 (`setView` normalizando âncora, reset ao entrar na rota). **Fechado por decisão em 08/10/2026:** pede `jsdom`/testing-library (depende de `useLocation` + efeitos de render), fora do escopo "só funções puras" fechado em 29/09/2026; revisitar se `react-router` expor `createMemoryRouter` para testes de hook ficar viável. Itens restantes de teste manual das Slices 16–20 também aceitos em 08/10/2026.
 
 Começo sugerido: `sortOrders` (lógica pura, muitos casos de borda) e `lib/dates.ts` (protegem o bug de fuso).
 
