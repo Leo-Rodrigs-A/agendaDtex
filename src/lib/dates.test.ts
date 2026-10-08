@@ -12,6 +12,7 @@ import {
   formatMonthShort,
   formatMonthShortTitle,
   formatNumericDayMonth,
+  getBusinessDaysUntil,
   isSameMonth,
   isToday,
   isWeekend,
@@ -215,6 +216,166 @@ describe('nextBusinessDays', () => {
   it('não considera feriados (documentado)', () => {
     const days = nextBusinessDays(localDate(2026, 10, 9), 2).map(toDateKey)
     expect(days).toEqual(['2026-10-09', '2026-10-12'])
+  })
+})
+
+describe('getBusinessDaysUntil', () => {
+  // Janela contada: (hoje, alvo] — exclui hoje, inclui o alvo se for dia útil.
+  // Fixa de out/2026: 10 = sáb, 11 = dom, 12 = feriado (seg), 13 = ter.
+  // holidays globais do arquivo: [2026-10-12].
+
+  it('retorna "past" quando o alvo é um dia útil no passado', () => {
+    expect(
+      getBusinessDaysUntil(
+        localDate(2026, 10, 9),
+        holidays,
+        localDate(2026, 10, 13),
+      ),
+    ).toEqual({
+      type: 'past',
+    })
+  })
+
+  it('retorna "past" mesmo quando o alvo no passado é sábado', () => {
+    expect(
+      getBusinessDaysUntil(
+        localDate(2026, 10, 10),
+        holidays,
+        localDate(2026, 10, 13),
+      ),
+    ).toEqual({
+      type: 'past',
+    })
+  })
+
+  it('retorna "today" quando o alvo é hoje', () => {
+    expect(
+      getBusinessDaysUntil(
+        localDate(2026, 10, 13),
+        holidays,
+        localDate(2026, 10, 13),
+      ),
+    ).toEqual({
+      type: 'today',
+    })
+  })
+
+  it('"today" é insensível à hora do dia de hoje', () => {
+    const today = new Date(2026, 9, 13, 23, 59)
+    expect(
+      getBusinessDaysUntil(localDate(2026, 10, 13), holidays, today),
+    ).toEqual({
+      type: 'today',
+    })
+  })
+
+  it('"future" com 1 dia útil para amanhã', () => {
+    expect(
+      getBusinessDaysUntil(
+        localDate(2026, 10, 14),
+        holidays,
+        localDate(2026, 10, 13),
+      ),
+    ).toEqual({
+      type: 'future',
+      businessDays: 1,
+    })
+  })
+
+  it('"future" conta dois dias úteis à frente', () => {
+    expect(
+      getBusinessDaysUntil(
+        localDate(2026, 10, 15),
+        holidays,
+        localDate(2026, 10, 13),
+      ),
+    ).toEqual({
+      type: 'future',
+      businessDays: 2,
+    })
+  })
+
+  it('atravessa fim de semana contando só dias úteis (sem feriado)', () => {
+    // sex 09 → seg 12: janela 10(sab)+11(dom) pulados, 12 conta → 1.
+    expect(
+      getBusinessDaysUntil(localDate(2026, 10, 12), [], localDate(2026, 10, 9)),
+    ).toEqual({
+      type: 'future',
+      businessDays: 1,
+    })
+  })
+
+  it('atravessa fim de semana e feriado', () => {
+    // sex 09 → ter 13: 10(sab)+11(dom)+12(feriado) pulados, 13 conta → 1.
+    expect(
+      getBusinessDaysUntil(
+        localDate(2026, 10, 13),
+        holidays,
+        localDate(2026, 10, 9),
+      ),
+    ).toEqual({
+      type: 'future',
+      businessDays: 1,
+    })
+  })
+
+  it('data-alvo em feriado não conta (janela vazia vale 0)', () => {
+    const holidayTarget: Holiday[] = [createHoliday('2026-10-14')]
+    expect(
+      getBusinessDaysUntil(
+        localDate(2026, 10, 14),
+        holidayTarget,
+        localDate(2026, 10, 13),
+      ),
+    ).toEqual({
+      type: 'future',
+      businessDays: 0,
+    })
+  })
+
+  it('sábado como "today" conta a partir do próximo dia útil', () => {
+    // sáb 10 → seg 12: janela 11(dom) pulado, 12 conta → 1.
+    expect(
+      getBusinessDaysUntil(
+        localDate(2026, 10, 12),
+        [],
+        localDate(2026, 10, 10),
+      ),
+    ).toEqual({
+      type: 'future',
+      businessDays: 1,
+    })
+  })
+
+  it('atravessa a virada de mês', () => {
+    // qua 30/09 → sex 02/10: janela 01/10 + 02/10 → 2.
+    expect(
+      getBusinessDaysUntil(localDate(2026, 10, 2), [], localDate(2026, 9, 30)),
+    ).toEqual({
+      type: 'future',
+      businessDays: 2,
+    })
+  })
+
+  it('atravessa a virada de ano', () => {
+    // qua 30/12/2026 → seg 04/01/2027: 31/12(qui)+01/01(sex) contam,
+    // 02/01(sáb)+03/01(dom) pulados, 04/01(seg) conta → 3.
+    expect(
+      getBusinessDaysUntil(localDate(2027, 1, 4), [], localDate(2026, 12, 30)),
+    ).toEqual({
+      type: 'future',
+      businessDays: 3,
+    })
+  })
+
+  it('hora do dia no alvo não altera a contagem', () => {
+    const targetWithTime = new Date(2026, 9, 15, 23, 59)
+    expect(
+      getBusinessDaysUntil(targetWithTime, holidays, localDate(2026, 10, 13)),
+    ).toEqual({
+      type: 'future',
+      businessDays: 2,
+    })
   })
 })
 

@@ -130,6 +130,48 @@ export function businessDaysForward(
 }
 
 /**
+ * Resultado da contagem de dias úteis entre hoje e um dia-alvo:
+ * - `'past'` → o dia-alvo é anterior a hoje;
+ * - `'today'` → o dia-alvo é hoje;
+ * - `'future'` → com `businessDays` = dias úteis na janela `(hoje, diaAlvo]`
+ *   (exclui hoje; inclui o dia-alvo se ele cair em dia útil).
+ */
+export type BusinessDaysResult =
+  | { type: 'past' }
+  | { type: 'today' }
+  | { type: 'future'; businessDays: number }
+
+/**
+ * Conta os dias úteis (seg–sex, fora de feriados) entre `today` e `date`.
+ * Janela contada: `(today, date]` — exclui hoje, inclui `date` se for dia
+ * útil; fins de semana e feriados no caminho não contam. `today` é
+ * injetável para testes determinísticos.
+ */
+export function getBusinessDaysUntil(
+  date: Date,
+  holidays: Array<Holiday>,
+  today: Date = new Date(),
+): BusinessDaysResult {
+  const holidayKeys = new Set(holidays.map((h) => h.holiday_date.slice(0, 10)))
+  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+
+  if (target.getTime() < start.getTime()) return { type: 'past' }
+  if (target.getTime() === start.getTime()) return { type: 'today' }
+
+  let businessDays = 0
+  const cursor = new Date(start)
+  cursor.setDate(cursor.getDate() + 1)
+  while (cursor.getTime() <= target.getTime()) {
+    if (!isWeekend(cursor) && !holidayKeys.has(toDateKey(cursor))) {
+      businessDays++
+    }
+    cursor.setDate(cursor.getDate() + 1)
+  }
+  return { type: 'future', businessDays }
+}
+
+/**
  * Próximos `count` dias úteis a partir de `startDate` (inclusive),
  * excluindo sábados e domingos.
  */
