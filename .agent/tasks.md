@@ -99,7 +99,7 @@
 
 - [x] Deploy/validação da Edge Function `invite-user` em produção
 - [x] Matriz de testes de RLS maliciosos (API direta como vendedor: alterar role, total_amount, user_id, delete)
-- [x] RPC `create_order` com validação de prazo no banco
+- [ ] RPC `create_order` com validação de prazo no banco — ⚠️ **não implementada**: `createOrder` faz `.insert()` direto (`src/services/orders.ts:34`) e a constraint `orders_delivery_not_past` foi dropped em `0004_designer_admin_pedidos.sql:148`. **Decisão (08/10/2026): proteção contra data passada só no front por enquanto** (Slice 21, item C) — dívida consciente registrada na Slice 21
 - [x] Migração manual dos dados históricos (substituir ids da planilha pelos uuids do Supabase)
 - [x] Merge da branch e desligamento final do Apps Script
 - [x] Chevrons do DaySelector navegam apenas por dias úteis (pula fds/feriados via shiftBusinessDay)
@@ -195,7 +195,7 @@
 - [x] **Commit 6:** `feat: add calendar interactions + image/follow` — integração `OrderImageViewer`, follow link
 - [x] **Commit 7:** `feat: add keyboard nav + responsive + polish` — `CalendarNavigationContext`, `GlobalHotkeys` rota-aware, `C` para abrir calendário
 
-## Slice 16: Refinamentos visuais e UX do Calendário de Produção
+## Slice 16: Refinamentos visuais e UX do Calendário de Produção ✅
 
 ### 16.1 Ajustes visuais do grid mensal
 
@@ -245,7 +245,7 @@
 - [x] **Código morto removido**: `users`/`canWrite` no `ProductionCalendar`, `weeks`/`i` no mês, imports `Tooltip*` nos dias, prop `highlightId` do `OrdersTable` (nunca implementada — a paleta busca por nome, `search: { q }`), `isLoading` em `AuthGate`/`login`/`onboarding`, `navigate` em `/pedidos`, `viewLabels` duplicado na toolbar
 - [x] **Tipagem**: `navigate({ to: '/pedidos' })` → `search: { q: undefined }` (o `validateSearch` devolve `q` obrigatório, então `search: {}` não compila)
 - [x] **DRO (deuda técnica) paga**: `tsc --noEmit` de 17 erros → **0**; `pnpm lint` de 3 erros → **0** (restam 7 warnings `no-shadow` preexistentes em `ui/calendar.tsx`/`ui/chart.tsx`); `prettier --check src .agent` limpo
-- [ ] **Validação visual do usuário** em `lg+` e abaixo de `lg` (não há browser headless no ambiente)
+- [x] **Validação visual do usuário** em `lg+` e abaixo de `lg` (aceita em 08/10/2026)
 
 ---
 
@@ -272,7 +272,7 @@
 - [x] Extrair `OrderDoneCheckbox` para `src/components/OrderDoneCheckbox.tsx`, compartilhado com `OrdersTable` (em vez de um `CalendarOrderDoneCheckbox` paralelo), consumindo `useData().toggleOrderDone` e `useAuth().profile` (readOnly para designer)
 - [x] Em `ProductionCalendarOrder.tsx`, renderizar checkbox à esquerda do nome, com `after:hidden` — senão a área de clique ampliada do checkbox invade ícone e nome
 - [x] `onCheckedChange` chama `toggleOrderDone(order.id, checked)` → atualização otimista via `DataProvider` remove o item do `grouped` (já filtra `is_done=true`)
-- [ ] Testar: marcar/desmarcar em 7-dias e 3-dias, verificar rollback em erro — validação manual
+- [x] Testar: marcar/desmarcar em 7-dias e 3-dias, verificar rollback em erro — validação manual (aceita em 08/10/2026)
 
 ### 17.3 Animação de desaparecimento (exit) nas views 7/3 dias
 
@@ -326,7 +326,7 @@
 - [x] Como `OrdersTable` já separa `pendingOrders` + `doneOrders` e concatena (`[...pendingOrders, ...doneOrders]`), a mudança de `is_done` move o item entre arrays → `layout` anima automaticamente
 - [x] `layout="position"` em vez de `layout`: só a posição muda, e sem `scale` na distorção
 - [x] A alternativa com `motion.tbody` + `display: contents` não foi necessária
-- [ ] Testar: marcar pedido como concluído → desce para seção de concluídos; desmarcar → sobe — validação manual
+- [x] Testar: marcar pedido como concluído → desce para seção de concluídos; desmarcar → sobe — validação manual (aceita em 08/10/2026)
 
 **Commits sugeridos:**
 
@@ -350,7 +350,7 @@
 - [x] Opção B escolhida: grade `grid-cols-7` mantida, com um único scrollport no wrapper do card (`overflow-x-auto`) e piso de `min-w-[840px]` no card (7 × 120px) — equivale a `repeat(7, minmax(120px, 1fr))` e mantém cabeçalho e células na mesma template
 - [x] Cabeçalho dos dias da semana e grade no mesmo scrollport: as colunas não desalinham ao arrastar
 - [x] `lg:overflow-visible` no scrollport — em CSS `overflow-x: auto` força `overflow-y: auto`; acima de lg a grade cabe na tela, então o estouro vertical (janela baixa) continua rolando no contêiner externo, sem scroll aninhado
-- [ ] Testar alinhamento cabeçalho × colunas e o piso de 120px no celular — validação manual
+- [x] Testar alinhamento cabeçalho × colunas e o piso de 120px no celular — validação manual (aceita em 08/10/2026)
 
 **Commits sugeridos:**
 
@@ -358,3 +358,143 @@
 | --- | ------------------------------------------------------------------- | ----------------------------- |
 | 1   | `feat(calendario): 3/7 days horizontal scroll with min-width cards` | `ProductionCalendarDays.tsx`  |
 | 2   | `feat(calendario): month view mobile horizontal scroll`             | `ProductionCalendarMonth.tsx` |
+
+---
+
+## Slice 21: Dias úteis na home + UX do modal de pedido (PLANEJADA — 08/10/2026)
+
+> **Regra de execução (pedido do usuário):** ao concluir cada item, sugerir a mensagem de commit e **aguardar a confirmação do usuário de que o commit foi feito** antes de avançar para o próximo item. Ao final da slice, atualizar a documentação `.agent`.
+
+### Decisões confirmadas (08/10/2026)
+
+| Tema                        | Decisão                                                                                                  |
+| --------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Mensagem no `/home`         | **substitui** a linha `Visão diária {dayLabel} ({entrega}).` (mantém o hint de entrega entre parênteses) |
+| Onde exibir no modal        | duas linhas **logo abaixo** do `"A produção da fábrica será dia X."`                                     |
+| Base dos números no modal   | `delivery_date` (a home continua em `production_date`)                                                   |
+| O que contar no modal       | **peças totais** = camisetas + shorts/outros (`sumPieces`)                                               |
+| Bloqueio de data no passado | **somente na criação** — editar pedido antigo continua aceitando data passada                            |
+| Proteção no banco           | **fora de escopo** — só front por enquanto (dívida consciente, ver "Fora de escopo" abaixo)              |
+
+### Semântica da contagem (regra travada por teste)
+
+`getBusinessDaysUntil` conta dias úteis na janela **`(hoje, dataSelecionada]`** — exclui hoje, inclui a data selecionada se ela for útil; ignora sábado, domingo e feriado.
+
+> A tabela de referência da planejação trazia `10/10 sábado → 1 dia útil`, o que não fecha com essa regra (daria 2). Como **/home bloqueia fds e feriados no `DaySelector`**, o caso é inalcançável na prática — implementar a regra acima e cobri-la com teste.
+
+### 21.1 `getBusinessDaysUntil` em `src/lib/dates.ts`
+
+- [ ] Novo type no próprio `dates.ts` (sem arquivo novo — decisão do usuário):
+
+```ts
+export type BusinessDaysResult =
+  | { type: 'past' }
+  | { type: 'today' }
+  | { type: 'future'; businessDays: number }
+
+export function getBusinessDaysUntil(
+  date: Date,
+  holidays: Array<Holiday>,
+  today: Date = new Date(), // injetável → testes determinísticos
+): BusinessDaysResult
+```
+
+- [ ] Normalizar `date` e `today` para meia-noite local antes de comparar (o `day` do `FilterProvider` carrega a hora do boot — `src/components/FilterProvider.tsx:16`); comparar por timestamp (`getTime()`), não por string.
+- [ ] Se `date < today` → `{ type: 'past' }`; se igual → `{ type: 'today' }`; senão loop dia a dia de `today` até `date` somando dias úteis (`isWeekend` + `Set` de `holidayKeys` via `toDateKey`).
+- [ ] Manter a mesma convenção do módulo: `holidays: Array<Holiday>` (mesma assinatura de `shiftBusinessDay`/`businessDaysBack`).
+- [ ] **Testes** em `src/lib/dates.test.ts` — `describe('getBusinessDaysUntil')`, com `today` injetado (~10 casos): data passada → `past`; hoje → `today`; amanhã útil → `1`; dois dias úteis à frente → `2`; atravessando fds (sex→seg); atravessando feriado; data-alvo em fds (conta só até o último útil); data-alvo em feriado; virada de mês; virada de ano.
+
+```text
+feat(dates): getBusinessDaysUntil com estados past/today/future
+```
+
+### 21.2 Mensagem no `/home` — `src/routes/index.tsx:186-193`
+
+- [ ] Substituir o parágrafo `Visão diária {dayLabel} ({deliveryDayLabel}).` pelo resultado de `getBusinessDaysUntil(day, holidays)`, mantendo as classes atuais (`text-muted-foreground`, data/`hoje` em `font-medium text-primary`) e o hint de entrega.
+- [ ] Só no branch `activeTab === 'day'` — o branch mês (`Acompanhamento mensal …`) não muda.
+- [ ] Copy exata (a interface monta o texto; `lib` só devolve o resultado estruturado):
+
+| Caso     | Texto                                                                    |
+| -------- | ------------------------------------------------------------------------ |
+| passado  | `Visão diária para {dayLabel} ({entrega}). essa data já passou.`         |
+| hoje     | `Visão diária para hoje ({entrega}). aqui estão os pedidos pra hoje.`    |
+| futuro 1 | `Visão diária para {dayLabel} ({entrega}). 1 dia útil de distância.`     |
+| futuro n | `Visão diária para {dayLabel} ({entrega}). {n} dias úteis de distância.` |
+
+```text
+feat(home): distância em dias úteis na visão diária
+```
+
+### 21.3 Bloqueio de data passada na criação
+
+- [ ] `src/components/NewOrderDialog.tsx:314` — no `disabled` do `Calendar`, adicionar o matcher `{ before: <hoje em meia-noite> }` **apenas quando `!isEdit`** (em edição o picker continua livre).
+- [ ] `src/components/DateMaskInput.tsx` — nova prop opcional `disallowPast?: boolean` (padrão `false` → o `DaySelector` da home segue aceitando data passada para ver histórico). Em `commit()`, após validar a data real e **antes** da checagem de fds/feriado: se `disallowPast` e `parsed < hoje` → `toast.error('A data de entrega não pode estar no passado.')` + `setText(toMask(date))` e retorna.
+- [ ] `NewOrderDialog.tsx` `handleSubmit` (~linha 111) — guarda de defesa, **só `!isEdit`**: `toDateKey(deliveryDate) < toDateKey(new Date())` → `setError('A data de entrega não pode estar no passado.')` e não submete.
+- [ ] Sem mudança no banco (decisão 08/10/2026 — ver "Fora de escopo").
+
+```text
+feat(pedido): bloquear data no passado na criação
+```
+
+### 21.4 Resumo no modal — duas linhas abaixo do hint de produção
+
+**Arquivo:** `src/components/NewOrderDialog.tsx` (hoje só `holidays, refreshOrders` no `useData()` — linha 61; adicionar `orders`).
+
+- [ ] `src/lib/orders.ts`: **exportar** o `ordersForDay` privado (linha 29) renomeando para `ordersDeliveredOnDay` — fecha a tríade de nomes já documentada no comentário de convenção (`ordersForProductionDay` = produção, `ordersCreatedOnDay` = created_at, `ordersDeliveredOnDay` = entrega). Atualizar o uso interno em `businessDaysBreakdown` (linha 113) e o comentário.
+- [ ] Bloco `<div className="space-y-1">` com as duas linhas em `text-xs text-muted-foreground`, imediatamente **depois** do `<p>` "A produção da fábrica será dia {dd/mm}.":
+
+| Linha | Conteúdo                                                                                                                 |
+| ----- | ------------------------------------------------------------------------------------------------------------------------ |
+| 1     | `{n} pedidos · {m} peças` (`sumPieces` dos pedidos com `delivery_date` do dia); `n = 0` → `Nenhum pedido para este dia.` |
+| 2     | resultado de `getBusinessDaysUntil(deliveryDate, holidays)` (ver copy abaixo)                                            |
+
+| Estado   | Texto da linha 2                                  |
+| -------- | ------------------------------------------------- |
+| passado  | `Esta data já passou.` (só faz sentido em edição) |
+| hoje     | `Esta data é hoje.`                               |
+| futuro 1 | `Faltam 1 dia útil até a entrega.`                |
+| futuro n | `Faltam {n} dias úteis até a entrega.`            |
+
+- [ ] **Testes** em `src/lib/orders.test.ts`: `describe('ordersDeliveredOnDay')` — filtra por `delivery_date` (ignora hora/ISO), devolve lista vazia quando não há pedidos no dia.
+
+```text
+feat(pedido): resumo de pedidos/peças e dias úteis no modal
+```
+
+### 21.5 Recolher o calendário ao pressionar Tab
+
+**Arquivo:** `src/components/NewOrderDialog.tsx:262-276` (o wrapper `div.relative` já trata `Escape`).
+
+- [ ] Em `onKeyDown`: `e.key === 'Tab'` → `e.preventDefault()`, `setCalendarOpen(false)` e mover o foco explicitamente.
+- [ ] **Por que `preventDefault`:** o `DayPicker` sempre deixa um dia com `tabIndex=0` (`isFocusTarget` em `react-day-picker/dist/esm/useFocus.js`), então o Tab nativo entraria no grid; se o grid desmontar depois, o foco cai no `body` e o próximo Tab recomeça do topo do dialog.
+- [ ] Helper local `focusSibling(input, +1 | -1)`: pega `input.closest('form')`, lista os focáveis (`input, button, select, textarea, a[href]` habilitados), encontra o índice do input de data e foca o vizinho. Shift+Tab fecha e volta para o campo "Imagem do pedido".
+- [ ] O calendário continua **abrindo** ao entrar no campo pelo Tab (`onFocus` do wrapper não muda) — só o segundo Tab recolhe.
+
+```text
+feat(pedido): fechar calendário no Tab com foco explícito
+```
+
+### 21.6 Documentação e housekeeping (ao final da slice)
+
+- [ ] Fechar os itens abertos aceitos em 08/10/2026 (feito nesta sessão): Slice 16.7 validação visual, 17.2, 19.1 e 20.2 — marcados ✅.
+- [ ] `src/lib/dates.test.ts` / `orders.test.ts` novos → total de testes sobe (baseline: 85).
+- [ ] Commitar o `package.json` solto (script `test:watch`).
+- [ ] Ao terminar os itens 21.1–21.5: marcar esta slice ✅ e atualizar `project-context.md` + `architecture.md` com as funcionalidades novas.
+
+**Commits sugeridos (6):**
+
+| #   | Mensagem                                                          | Escopo                                                      |
+| --- | ----------------------------------------------------------------- | ----------------------------------------------------------- |
+| 1   | `feat(dates): getBusinessDaysUntil com estados past/today/future` | `src/lib/dates.ts`, `src/lib/dates.test.ts`                 |
+| 2   | `feat(home): distância em dias úteis na visão diária`             | `src/routes/index.tsx`                                      |
+| 3   | `feat(pedido): bloquear data no passado na criação`               | `src/components/NewOrderDialog.tsx`, `DateMaskInput.tsx`    |
+| 4   | `feat(pedido): resumo de pedidos/peças e dias úteis no modal`     | `NewOrderDialog.tsx`, `src/lib/orders.ts`, `orders.test.ts` |
+| 5   | `feat(pedido): fechar calendário no Tab com foco explícito`       | `src/components/NewOrderDialog.tsx`                         |
+| 6   | `docs(agenda): fechar Slice 21 e registrar decisões`              | `.agent/*`, `package.json`                                  |
+
+**Verificação após cada item:** `npx tsc --noEmit` · `pnpm lint` · `pnpm test` · `pnpm check`.
+
+### Fora de escopo (decisão consciente de 08/10/2026)
+
+- **Proteção contra data passada no banco:** não será feita nesta slice. Hoje **não existe** nenhuma trava server-side — `createOrder` faz `.insert()` direto (`src/services/orders.ts:34`) e a constraint `orders_delivery_not_past` foi dropped em `0004_designer_admin_pedidos.sql:148` (ela quebraria a edição de pedidos antigos). Se um dia for feita, o caminho é RPC `create_order` validando `delivery_date >= current_date` **no INSERT** (não recriar a check constraint).
+- Nada muda em `/pedidos`, `/producao` e `/calendario`; o `DaySelector` da home segue aceitando datas passadas (histórico).

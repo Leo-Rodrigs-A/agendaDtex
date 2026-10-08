@@ -25,7 +25,8 @@ Sistema interno para registrar pedidos, atribuir a vendedores autenticados, calc
 
 **Planejadas/Próximas:**
 
-- Regra de prazo validada no banco (RPC `create_order` — dívida consciente do MVP; hoje é client-side).
+- **Slice 21** (backlog detalhado em `tasks.md`): contagem de dias úteis até o dia selecionado exibida no `/home`, bloqueio de data passada **na criação** de pedido (só front), resumo de "pedidos · peças" + dias úteis no modal de pedido e recolhimento do calendário ao pressionar Tab.
+- Regra de prazo validada no banco (RPC `create_order` — dívida consciente do MVP; hoje é client-side e a constraint `orders_delivery_not_past` foi removida).
 - Offline-first real (PWA hoje é só instalável; escritas exigem conexão).
 
 ## Stack Tecnológica
