@@ -20,6 +20,7 @@ import {
   capitalize,
   formatDayMonth,
   formatMonthLong,
+  getBusinessDaysUntil,
 } from '@/lib/dates'
 import { useAuth } from '@/components/AuthProvider'
 import {
@@ -56,6 +57,17 @@ function DashboardPage() {
   // é a data de entrega correspondente (2 dias úteis à frente).
   const deliveryDay = businessDaysForward(day, 2, holidays)
   const deliveryDayLabel = formatDayMonth(deliveryDay)
+
+  const businessDaysUntil = getBusinessDaysUntil(day, holidays)
+  const distanceText =
+    businessDaysUntil.type === 'past'
+      ? 'essa data já passou.'
+      : businessDaysUntil.type === 'today'
+        ? 'aqui estão os pedidos pra hoje.'
+        : businessDaysUntil.businessDays === 1
+          ? '1 dia útil de distância.'
+          : `${businessDaysUntil.businessDays} dias úteis de distância.`
+  const dayToken = businessDaysUntil.type === 'today' ? 'hoje' : dayLabel
 
   const monthLabel = capitalize(formatMonthLong(new Date(year, month, 1)))
 
@@ -184,12 +196,12 @@ function DashboardPage() {
           {/* KPIs do dia — altura estável: linhas condicionais reservam espaço */}
           <section className="shrink-0 space-y-4">
             <p className="text-muted-foreground">
-              Visão diária{' '}
-              <span className="font-medium text-primary">{dayLabel}</span>{' '}
+              Visão diária para{' '}
+              <span className="font-medium text-primary">{dayToken}</span>{' '}
               <span className="text-xs font-normal text-muted-foreground">
                 ({deliveryDayLabel})
               </span>
-              .
+              . {distanceText}
             </p>
             <KpiPair>
               <div
