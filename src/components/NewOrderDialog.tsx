@@ -44,6 +44,23 @@ function toSafeNumber(value: string): number {
   return Number.isFinite(n) ? n : 0
 }
 
+// Fecha o calendário no Tab devolvendo o foco ao campo vizinho do form.
+// O DayPicker mantém sempre um dia com tabIndex=0 (isFocusTarget): sem
+// preventDefault o Tab entraria no grid e, ao desmontar, o foco cairia no
+// body — o próximo Tab recomeçaria do topo do dialog.
+function focusSibling(current: HTMLElement, direction: 1 | -1): void {
+  const form = current.closest('form')
+  if (!form) return
+  const focusables = Array.from(
+    form.querySelectorAll<HTMLElement>(
+      'input, button, select, textarea, a[href]',
+    ),
+  ).filter((el) => !el.hasAttribute('disabled'))
+  const index = focusables.indexOf(current)
+  const next = focusables.at(index + direction)
+  if (next) next.focus()
+}
+
 type NewOrderDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -297,7 +314,19 @@ export function NewOrderDialog({
               className="relative"
               onFocus={() => setCalendarOpen(true)}
               onKeyDown={(e) => {
-                if (e.key === 'Escape') setCalendarOpen(false)
+                if (e.key === 'Escape') {
+                  setCalendarOpen(false)
+                  return
+                }
+                // Tab com o calendário aberto: fecha e segue para o campo
+                // vizinho do form (Entrar digitando continua abrindo no foco).
+                if (e.key === 'Tab' && calendarOpen) {
+                  e.preventDefault()
+                  setCalendarOpen(false)
+                  const input =
+                    e.currentTarget.querySelector<HTMLInputElement>('input')
+                  if (input) focusSibling(input, e.shiftKey ? -1 : 1)
+                }
               }}
             >
               <DateMaskInput
