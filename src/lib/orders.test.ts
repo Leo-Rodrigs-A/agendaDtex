@@ -7,6 +7,7 @@ import {
   formatBRL,
   ordersCreatedInMonth,
   ordersCreatedOnDay,
+  ordersDeliveredOnDay,
   ordersForProductionDay,
   productionDateOf,
   sortOrders,
@@ -121,6 +122,23 @@ describe('ordersCreatedInMonth', () => {
     ]
     const result = ordersCreatedInMonth(orders, 9, 2026) // mês 9 = outubro
     expect(result.map((o) => o.id)).toEqual(['1', '3'])
+  })
+})
+
+describe('ordersDeliveredOnDay', () => {
+  it('filtra por delivery_date no dia (ignora o horário da ISO)', () => {
+    const orders = [
+      createOrder({ id: '1', delivery_date: '2026-10-15T10:00:00.000Z' }),
+      createOrder({ id: '2', delivery_date: '2026-10-15' }),
+      createOrder({ id: '3', delivery_date: '2026-10-16' }),
+    ]
+    const result = ordersDeliveredOnDay(orders, localDate(2026, 10, 15))
+    expect(result.map((o) => o.id)).toEqual(['1', '2'])
+  })
+
+  it('retorna lista vazia quando não há entrega no dia', () => {
+    const orders = [createOrder({ id: '1', delivery_date: '2026-10-15' })]
+    expect(ordersDeliveredOnDay(orders, localDate(2026, 10, 20))).toEqual([])
   })
 })
 

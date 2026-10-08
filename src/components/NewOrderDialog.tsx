@@ -23,11 +23,13 @@ import {
   WEEKEND_MATCHER,
   businessDaysBack,
   formatNumericDayMonth,
+  getBusinessDaysUntil,
   holidayDates,
   nextBusinessDays,
   parseDateKey,
   toDateKey,
 } from '@/lib/dates'
+import { ordersDeliveredOnDay, sumPieces } from '@/lib/orders'
 import type { Order } from '@/types'
 
 // Texto colado pode trazer quebras de linha/espaços extras — limpa antes de enviar
@@ -58,7 +60,7 @@ export function NewOrderDialog({
   onOpenChange,
   order = null,
 }: NewOrderDialogProps) {
-  const { holidays, refreshOrders } = useData()
+  const { orders, holidays, refreshOrders } = useData()
   const { profile } = useAuth()
   const isEdit = order != null
 
@@ -86,6 +88,25 @@ export function NewOrderDialog({
   // No mobile o calendário abre ACIMA do input para não cortar na borda
   // inferior da tela; no desktop ele abre abaixo (âncora CSS, sem medição).
   const isMobile = useIsMobile()
+
+  // Resumo abaixo do hint de produção: entregas previstas para o dia
+  // selecionado + distância em dias úteis até a entrega
+  const dayDeliveries = ordersDeliveredOnDay(orders, deliveryDate)
+  const deliveriesCount = dayDeliveries.length
+  const deliveriesPieces = sumPieces(dayDeliveries)
+  const deliveriesSummary =
+    deliveriesCount === 0
+      ? 'Nenhum pedido para este dia.'
+      : `${deliveriesCount} ${deliveriesCount === 1 ? 'pedido' : 'pedidos'} · ${deliveriesPieces} ${deliveriesPieces === 1 ? 'peça' : 'peças'}`
+  const daysUntil = getBusinessDaysUntil(deliveryDate, holidays)
+  const deliveryHint =
+    daysUntil.type === 'past'
+      ? 'Esta data já passou.'
+      : daysUntil.type === 'today'
+        ? 'Esta data é hoje.'
+        : daysUntil.businessDays === 1
+          ? 'Faltam 1 dia útil até a entrega.'
+          : `Faltam ${daysUntil.businessDays} dias úteis até a entrega.`
 
   // Abre o calendário já no mês da data selecionada (única ou do pedido)
   useEffect(() => setCalendarMonth(deliveryDate), [deliveryDate])
@@ -347,6 +368,12 @@ export function NewOrderDialog({
               )}
               .
             </p>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">
+                {deliveriesSummary}
+              </p>
+              <p className="text-xs text-muted-foreground">{deliveryHint}</p>
+            </div>
           </div>
           {error && (
             <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
