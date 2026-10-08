@@ -47,6 +47,7 @@ export function DateMaskInput({
   onSelect,
   holidays,
   allowSaturday = false,
+  disallowPast = false,
   id,
   className,
   ref,
@@ -58,6 +59,9 @@ export function DateMaskInput({
   /** Se true, permite selecionar sábado (usado em /producao onde o dia
    *  representa created_at). Domingo e feriados continuam bloqueados. */
   allowSaturday?: boolean
+  /** Se true, bloqueia datas anteriores a hoje (usado na criação de
+   *  pedido; o DaySelector da home deixa passar para ver histórico). */
+  disallowPast?: boolean
   ref?: Ref<HTMLInputElement>
 } & Omit<
   ComponentProps<'input'>,
@@ -96,6 +100,11 @@ export function DateMaskInput({
     const parsed = parseMask(target)
     if (!parsed) {
       toast.error('Data inválida. Use o formato DD/MM/AAAA.')
+      setText(toMask(date))
+      return
+    }
+    if (disallowPast && toDateKey(parsed) < toDateKey(new Date())) {
+      toast.error('A data de entrega não pode estar no passado.')
       setText(toMask(date))
       return
     }

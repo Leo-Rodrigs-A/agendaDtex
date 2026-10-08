@@ -65,6 +65,14 @@ export function NewOrderDialog({
   // Default: próximo dia útil a partir de hoje
   const defaultDate = () => nextBusinessDays(new Date(), 1)[0]
 
+  // Hoje em meia-noite local — bloqueia datas passadas só na criação
+  // (em edição, pedidos antigos continuam com data no passado)
+  const todayStart = (() => {
+    const t = new Date()
+    t.setHours(0, 0, 0, 0)
+    return t
+  })()
+
   const [orderName, setOrderName] = useState('')
   const [shirts, setShirts] = useState('')
   const [others, setOthers] = useState('')
@@ -123,6 +131,11 @@ export function NewOrderDialog({
     const cleanImageUrl = imageUrl.replace(/\s/g, '')
     if (cleanImageUrl && !/^https?:\/\//i.test(cleanImageUrl)) {
       setError('A imagem precisa ser uma URL começando com http:// ou https://')
+      return
+    }
+    // Defesa contra data no passado (só criação; edição não bloqueia)
+    if (!isEdit && toDateKey(deliveryDate) < toDateKey(new Date())) {
+      setError('A data de entrega não pode estar no passado.')
       return
     }
 
@@ -269,6 +282,7 @@ export function NewOrderDialog({
               <DateMaskInput
                 date={deliveryDate}
                 holidays={holidays}
+                disallowPast={!isEdit}
                 onSelect={(date) => {
                   setDeliveryDate(date)
                   setCalendarMonth(date)
@@ -310,8 +324,17 @@ export function NewOrderDialog({
                           setCalendarOpen(false)
                         }
                       }}
-                      // Regra de agendamento: fds e feriados bloqueados aqui
-                      disabled={[WEEKEND_MATCHER, ...holidayDates(holidays)]}
+                      // Regra de agendamento: fds e feriados bloqueados aqui;
+                      // na criação, também datas passadas (edição libera)
+                      disabled={
+                        isEdit
+                          ? [WEEKEND_MATCHER, ...holidayDates(holidays)]
+                          : [
+                              WEEKEND_MATCHER,
+                              { before: todayStart },
+                              ...holidayDates(holidays),
+                            ]
+                      }
                     />
                   </div>
                 </>
