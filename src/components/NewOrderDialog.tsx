@@ -122,8 +122,8 @@ export function NewOrderDialog({
       : daysUntil.type === 'today'
         ? 'Esta data é hoje.'
         : daysUntil.businessDays === 1
-          ? 'Faltam 1 dia útil até a entrega.'
-          : `Faltam ${daysUntil.businessDays} dias úteis até a entrega.`
+          ? '1 dia útil até a entrega.'
+          : `${daysUntil.businessDays} dias úteis até a entrega.`
 
   // Abre o calendário já no mês da data selecionada (única ou do pedido)
   useEffect(() => setCalendarMonth(deliveryDate), [deliveryDate])

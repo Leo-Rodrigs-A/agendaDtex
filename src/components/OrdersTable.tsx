@@ -168,6 +168,7 @@ type SortableHeadProps = {
   sortDir: OrderSortDir
   onSort: (column: OrderSortKey) => void
   alignRight?: boolean
+  className?: string
 }
 
 /** Cabeçalho clicável com seta de direção (asc/desc) ou neutro. */
@@ -178,6 +179,7 @@ function SortableHead({
   sortDir,
   onSort,
   alignRight,
+  className,
 }: SortableHeadProps) {
   const active = sortKey === column
   return (
@@ -186,6 +188,7 @@ function SortableHead({
         'cursor-pointer select-none',
         alignRight && 'text-right',
         active && 'text-foreground',
+        className,
       )}
       onClick={() => onSort(column)}
     >
@@ -298,11 +301,13 @@ export function OrdersTable({
   const headProps = { sortKey, sortDir, onSort: handleSort }
 
   return (
-    <div className="overflow-x-auto">
-      <Table>
+    <div className="overflow-x-auto print:overflow-x-visible">
+      {/* text-xs na impressão: cabe as 8 colunas na largura do A4 */}
+      <Table className="print:text-xs">
         <TableHeader>
           <TableRow>
-            <TableHead className="w-10 sticky left-0 z-30 bg-card" />
+            {/* Checkbox não vai pro papel (Slice 22) */}
+            <TableHead className="w-10 sticky left-0 z-30 bg-card print:hidden" />
             <SortableHead
               label="Nome do pedido"
               column="order_name"
@@ -326,13 +331,19 @@ export function OrdersTable({
               column="created_at"
               {...headProps}
             />
-            <TableHead title="2 dias úteis antes da entrega">
+            {/* Datas de Produção e Entrega não vão pro papel — restam 6 colunas
+              (Nome, Vendedor, Camisetas, Shorts/Outros, Encomendado em, Valor) */}
+            <TableHead
+              title="2 dias úteis antes da entrega"
+              className="print:hidden"
+            >
               Produção
             </TableHead>
             {showDeliveryDate && (
               <SortableHead
                 label="Entrega"
                 column="delivery_date"
+                className="print:hidden"
                 {...headProps}
               />
             )}
@@ -343,7 +354,7 @@ export function OrdersTable({
               {...headProps}
             />
             {canWrite && (
-              <TableHead className="w-20 sticky right-0 z-30 bg-card" />
+              <TableHead className="w-20 sticky right-0 z-30 bg-card print:hidden" />
             )}
           </TableRow>
         </TableHeader>
@@ -371,16 +382,16 @@ export function OrdersTable({
                     hasImage && 'cursor-pointer',
                   )}
                 >
-                  <TableCell className="w-10 sticky left-0 bg-card">
+                  <TableCell className="w-10 sticky left-0 bg-card print:hidden">
                     <OrderDoneCheckbox order={order} />
                   </TableCell>
                   {/* Nome: teto de 30ch — truncate + "..."; hover mostra o nome completo */}
-                  <TableCell className="max-w-[30ch] pr-6 font-medium">
+                  <TableCell className="max-w-[30ch] pr-6 font-medium print:max-w-[18ch] print:pr-2">
                     <div className="flex items-center gap-1">
                       {hasImage ? (
-                        <ImageIcon className="h-4 w-4 shrink-0 text-primary" />
+                        <ImageIcon className="h-4 w-4 shrink-0 text-primary print:hidden" />
                       ) : (
-                        <ImageOff className="h-4 w-4 shrink-0 text-muted-foreground/40" />
+                        <ImageOff className="h-4 w-4 shrink-0 text-muted-foreground/40 print:hidden" />
                       )}
                       <span
                         title={order.order_name}
@@ -395,7 +406,7 @@ export function OrdersTable({
                   </TableCell>
                   {/* Vendedor: teto de 14ch, mesmo padrão de truncate + hint */}
                   <TableCell
-                    className="max-w-[14ch] truncate"
+                    className="max-w-[14ch] truncate print:max-w-[9ch]"
                     title={sellerName(order.user_id)}
                   >
                     {sellerName(order.user_id)}
@@ -407,11 +418,14 @@ export function OrdersTable({
                     {order.others_items_count}
                   </TableCell>
                   <TableCell>{formatCreatedAt(order.created_at)}</TableCell>
-                  <TableCell title="2 dias úteis antes da entrega">
+                  <TableCell
+                    className="print:hidden"
+                    title="2 dias úteis antes da entrega"
+                  >
                     {dateFormatter.format(productionDateOf(order, holidays))}
                   </TableCell>
                   {showDeliveryDate && (
-                    <TableCell>
+                    <TableCell className="print:hidden">
                       {dateFormatter.format(parseDateKey(order.delivery_date))}
                     </TableCell>
                   )}
@@ -419,7 +433,7 @@ export function OrdersTable({
                     {formatBRL(Number(order.total_amount) || 0)}
                   </TableCell>
                   {canWrite && (
-                    <TableCell className="w-20 sticky right-0 bg-card">
+                    <TableCell className="w-20 sticky right-0 bg-card print:hidden">
                       <OrderActions
                         order={order}
                         onEdit={() => setEditingOrder(order)}

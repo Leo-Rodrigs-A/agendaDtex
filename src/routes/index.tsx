@@ -65,8 +65,8 @@ function DashboardPage() {
       : businessDaysUntil.type === 'today'
         ? 'aqui estão os pedidos pra hoje.'
         : businessDaysUntil.businessDays === 1
-          ? '1 dia útil de distância.'
-          : `${businessDaysUntil.businessDays} dias úteis de distância.`
+          ? '1 dia útil até a entrega.'
+          : `${businessDaysUntil.businessDays} dias úteis até a entrega.`
   const dayToken = businessDaysUntil.type === 'today' ? 'hoje' : dayLabel
 
   const monthLabel = capitalize(formatMonthLong(new Date(year, month, 1)))

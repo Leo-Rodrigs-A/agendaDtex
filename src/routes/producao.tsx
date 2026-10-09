@@ -111,9 +111,19 @@ function ProducaoPage() {
   ) : null
 
   return (
-    <div className="space-y-6 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:gap-6 lg:space-y-0">
+    <div className="space-y-6 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:gap-6 lg:space-y-0 print:h-auto print:overflow-visible">
+      {/* Cabeçalho impresso (Slice 22): Ctrl+P imprime só isso + tabela.
+          Reusa os cálculos da tela (periodLabel/scopeName/peças/valor). */}
+      <div className="mb-4 hidden print:block">
+        <h1 className="text-xl font-semibold">Produção — {periodLabel}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Vendedor: {scopeName} · {sumPieces(scopedOrders)} peças ·{' '}
+          {formatBRL(revenue)} vendidos
+        </p>
+      </div>
+
       {error && (
-        <p className="shrink-0 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+        <p className="shrink-0 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive print:hidden">
           {error}
         </p>
       )}
@@ -122,7 +132,7 @@ function ProducaoPage() {
           mobile → linha 1: segmented (esq) + dropdown de escopo (dir);
                    linha 2: seletor de avanço centralizado.
           desktop → segmented à esquerda; escopo + seletor à direita (linha única) */}
-      <div className="flex shrink-0 flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex shrink-0 flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between print:hidden">
         <div className="flex items-center justify-between gap-2 lg:contents">
           <div className="inline-flex items-center gap-1 self-start rounded-lg bg-muted p-1">
             {(['day', 'month'] as const).map((mode) => (
@@ -156,12 +166,12 @@ function ProducaoPage() {
         </div>
       </div>
 
-      <p className="shrink-0 text-muted-foreground">
+      <p className="shrink-0 text-muted-foreground print:hidden">
         Encomendas de{' '}
         <span className="font-medium text-primary">{periodLabel}</span>.
       </p>
 
-      <div className="shrink-0">
+      <div className="shrink-0 print:hidden">
         <KpiPair>
           <div
             key="kpi-orders"
@@ -203,13 +213,14 @@ function ProducaoPage() {
         </KpiPair>
       </div>
 
-      {/* Tabela: estica (flex-1) e rola internamente no desktop */}
-      <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card p-6 shadow-sm">
-        <h3 className="mb-1 shrink-0 text-lg font-semibold">
+      {/* Tabela: estica (flex-1) e rola internamente no desktop.
+          Na impressão: sem corte, sem moldura, sem padding do card */}
+      <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card p-6 shadow-sm print:h-auto print:flex-none print:overflow-visible print:border-0 print:shadow-none print:p-0">
+        <h3 className="mb-1 shrink-0 text-lg font-semibold print:hidden">
           Pedidos encomendados em{' '}
           <span className="font-medium text-primary">{periodLabel}</span>
         </h3>
-        <p className="mb-4 shrink-0 text-sm text-muted-foreground">
+        <p className="mb-4 shrink-0 text-sm text-muted-foreground print:hidden">
           {isLoading
             ? 'Carregando pedidos…'
             : `${orderCount} pedidos · ${sumPieces(scopedOrders)} peças · ${formatBRL(revenue)} em vendas`}
@@ -219,7 +230,7 @@ function ProducaoPage() {
             Carregando pedidos…
           </div>
         ) : (
-          <div className="min-h-0 flex-1 lg:overflow-y-auto">
+          <div className="min-h-0 flex-1 lg:overflow-y-auto print:h-auto print:flex-none print:overflow-visible">
             <OrdersTable
               orders={scopedOrders}
               users={users}

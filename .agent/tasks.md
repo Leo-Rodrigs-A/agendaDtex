@@ -500,3 +500,61 @@ feat(pedido): fechar calendário no Tab com foco explícito
 
 - **Proteção contra data passada no banco:** não será feita nesta slice. Hoje **não existe** nenhuma trava server-side — `createOrder` faz `.insert()` direto (`src/services/orders.ts:34`) e a constraint `orders_delivery_not_past` foi dropped em `0004_designer_admin_pedidos.sql:148` (ela quebraria a edição de pedidos antigos). Se um dia for feita, o caminho é RPC `create_order` validando `delivery_date >= current_date` **no INSERT** (não recriar a check constraint).
 - Nada muda em `/pedidos`, `/producao` e `/calendario`; o `DaySelector` da home segue aceitando datas passadas (histórico).
+
+---
+
+## Slice 22: Impressão de `/producao` — Ctrl+P com tabela completa em A4 ⏳ PLANEJADA
+
+> **Status:** adicionada ao backlog em 08/10/2026 — **não implementada**. Aguardando a confirmação do usuário para iniciar.
+> **Regra de execução (a valer quando implementar):** ao concluir cada item, sugerir a mensagem de commit e **aguardar a confirmação** de que o commit foi feito antes de avançar; ao final, atualizar as docs `.agent`.
+
+### Requisito
+
+Ao pressionar **Ctrl+P** em `/producao`, imprimir **somente** a tabela de pedidos **por completo** + um cabeçalho resumido. Vale para a visão de **dia** ou **mês**. A tabela sempre ocupa a **largura total da folha A4**; se o conteúdo ficar maior verticalmente, a impressão **se divide em duas (ou mais) folhas**.
+
+### Decisões confirmadas (08/10/2026)
+
+| Tema                  | Decisão                                                                                                                                                                    |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cabeçalho impresso    | `Produção — {periodLabel}` (título) + linha `Vendedor: {scopeName} · {N} peças · {formatBRL(revenue)} vendidos` — renderizado só na impressão (`hidden print:block`)       |
+| Colunas impressas     | **Todas as de conteúdo** — Nome, Vendedor, Camisetas, Shorts/Outros, Encomendado em, Produção, Entrega, Valor                                                              |
+| Esconder na impressão | checkbox (`is_done`), ações editar/excluir e ícone de imagem por linha (`print:hidden`); no shell, sidebar + header; na página, toolbar, subtítulo, KPIs e h3/sub da seção |
+| Folha                 | `@page { size: A4 portrait }` + margens padrão; tabela `w-full`; a divisão em várias folhas é natural do `table` quando o corte/overflow é anulado                         |
+| Abordagem             | **Sem JS** — Ctrl+P é nativo do navegador → só CSS (`@media print` + variantes `print:` do Tailwind v4)                                                                    |
+
+### 22.1 `src/styles.css` — base de impressão
+
+- [ ] `@page { size: A4 portrait; margin: 12mm; }`.
+- [ ] Bloco `@media print`: `html, body, #app { height: auto !important; overflow: visible !important; }` — anula o shell `lg:h-dvh lg:overflow-hidden` e os scrollports internos que clipariam a impressão numa única página.
+- [ ] `thead { display: table-header-group; }` — o cabeçalho da tabela repete no topo das folhas seguintes.
+- [ ] `tr { break-inside: avoid; }` — a quebra de página acontece só entre linhas.
+- [ ] Largura total + tipografia de impressão via `[data-slot="table"]` (fonte/padding menores) para caber nos ~190mm úteis do A4.
+
+### 22.2 `src/routes/__root.tsx` — esconder o shell na impressão
+
+- [ ] Envolver `<AppSidebar />` e `<Header />` em `div print:hidden` (os componentes não aceitam className).
+- [ ] Container flex (`:36`): `print:h-auto print:overflow-visible`; `<main>` (`:41`): `print:h-auto print:overflow-visible print:p-0` — garante o reset mesmo se `lg:` casar na largura do papel.
+
+### 22.3 `src/routes/producao.tsx` — página print-friendly
+
+- [ ] `print:hidden` na toolbar (`:125`), no subtítulo do período (`:159`), no bloco de KPIs (`:164`) e no h3/sub da seção da tabela (`:208,:212`).
+- [ ] Anular altura/scroll do card da tabela (`:207` → `print:h-auto print:flex-none print:overflow-visible print:border-0 print:shadow-none print:p-0`) e do wrapper interno (`:222` → `print:h-auto print:flex-none print:overflow-visible`).
+- [ ] Bloco de cabeçalho só-impressão: `<div className="mb-4 hidden print:block">` com `Produção — {periodLabel}` + `Vendedor: {scopeName} · {N} peças · {formatBRL(revenue)} vendidos` — reusa `periodLabel`, `scopeName`, `sumPieces(scopedOrders)`, `revenue` e `formatBRL` já disponíveis na página.
+
+### 22.4 `src/components/OrdersTable.tsx` — limpar colunas interativas na impressão
+
+- [ ] `print:hidden` no th/td do checkbox (`:305,:374`), no th/td das ações (`:346,:422`) e nos ícones de imagem da coluna Nome (`:380,:383`).
+- [ ] Wrapper `overflow-x-auto` → `print:overflow-x-visible` (`:301`); encurtar os tetos `max-w` de Nome/Vendedor na impressão para caber no A4 retrato.
+- [ ] Contingência (só se estourar a largura no teste real): variante compacta da tabela dedicada à impressão.
+
+### 22.5 Verificação
+
+- [ ] `npx tsc --noEmit` · `pnpm lint` · `pnpm test` · `pnpm check`.
+- [ ] Manual: preview de impressão em `/producao` — dia com poucos pedidos → 1 folha; mês cheio → 2+ folhas com cabeçalho da tabela repetido; tabela sempre na largura total.
+
+**Commits sugeridos (provisórios — a confirmar na execução):**
+
+| #   | Mensagem                                                    | Escopo                                                        |
+| --- | ----------------------------------------------------------- | ------------------------------------------------------------- |
+| 1   | `feat(producao): view de impressão — tabela completa em A4` | `styles.css`, `__root.tsx`, `producao.tsx`, `OrdersTable.tsx` |
+| 2   | `docs(agenda): fechar Slice 22`                             | `.agent/*`                                                    |

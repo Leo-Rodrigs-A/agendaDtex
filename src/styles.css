@@ -344,3 +344,37 @@ body {
 .splash-svg {
   overflow: visible;
 }
+
+/* Impressão (Slice 22): Ctrl+P em /producao imprime só a tabela por
+   completo + cabeçalho resumido, ocupando a largura da folha A4. */
+@page {
+  size: A4 portrait;
+  margin: 12mm;
+}
+
+@media print {
+  /* Anula o shell lg:h-dvh/overflow-hidden e os scrollports internos, que
+     clipariam a impressão numa única página (o conteúdo cresce em altura e
+     o table quebra nas folhas seguintes por natureza). */
+  html,
+  body,
+  #app {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Cabeçalho da tabela repete no topo de cada folha */
+  thead {
+    display: table-header-group;
+  }
+
+  /* Quebra de página só entre linhas — nunca no meio de uma linha */
+  tr {
+    break-inside: avoid;
+  }
+
+  /* Garante largura total da folha em qualquer impressão */
+  [data-slot='table'] {
+    width: 100%;
+  }
+}
