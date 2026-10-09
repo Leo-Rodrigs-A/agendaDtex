@@ -29,6 +29,7 @@ Sistema interno para registrar pedidos, atribuir a vendedores autenticados, calc
 
 - Regra de prazo validada no banco (RPC `create_order` — dívida consciente do MVP; hoje é client-side: a constraint `orders_delivery_not_past` foi removida e `createOrder` faz insert direto).
 - Offline-first real (PWA hoje é só instalável; escritas exigem conexão).
+- **Impressão de `/producao` (Slice 22, planejada):** Ctrl+P imprime somente a tabela completa + cabeçalho resumido (período, vendedor, qtd de peças, valor vendido); A4 retrato, tabela na largura total e dividida em múltiplas folhas se o conteúdo crescer. Sem JS — só CSS (`@media print` + variantes `print:`).
 
 ## Stack Tecnológica
 
