@@ -33,12 +33,17 @@ function RootContent() {
     <AuthGate>
       {/* lg+: app preso na viewport (sem scroll de página) — quem rola é o
           conteúdo de cada tela (tabelas/cards) dentro de <main> */}
-      <div className="flex min-h-screen w-full bg-muted/20 lg:h-dvh lg:overflow-hidden">
-        <AppSidebar />
+      <div className="flex min-h-screen w-full bg-muted/20 lg:h-dvh lg:overflow-hidden print:h-auto print:overflow-visible">
+        {/* Impressão: sidebar e header saem do papel (Slice 22) */}
+        <div className="print:hidden">
+          <AppSidebar />
+        </div>
         {/* min-w-0: permite o conteúdo encolher — scroll horizontal fica só dentro das tabelas */}
         <SidebarInset className="flex min-w-0 flex-1 flex-col">
-          <Header />
-          <main className="min-w-0 flex-1 p-4 sm:p-6 lg:flex lg:min-h-0 lg:flex-col lg:overflow-hidden lg:p-8">
+          <div className="print:hidden">
+            <Header />
+          </div>
+          <main className="min-w-0 flex-1 p-4 sm:p-6 lg:flex lg:min-h-0 lg:flex-col lg:overflow-hidden lg:p-8 print:h-auto print:overflow-visible print:p-0">
             <Outlet />
           </main>
         </SidebarInset>
